@@ -1,4 +1,4 @@
-flask
+Flask==3.0.3
 sentence-transformers==2.2.2
 langchain
 langchain-pinecone
