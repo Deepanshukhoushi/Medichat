@@ -11,7 +11,8 @@ const deleteChatButton = document.querySelector(
 let userMessage = null;
 let isResponseGenerating = false;
 // API configuration
-const API_URL = "/get";
+const API_KEY = "YOUR_GEMINE_API_HERE"; // Your API key here
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 // Load theme and chat data from local storage on page load
 const loadDataFromLocalstorage = () => {
     const savedChats = localStorage.getItem("saved-chats");
@@ -70,20 +71,26 @@ const generateAPIResponse = async (incomingMessageDiv) => {
     const textElement = incomingMessageDiv.querySelector(".text"); // Getting text element
     try {
         // Send a POST request to the API with the user's message
-        const formData = new FormData();
-        formData.append("msg", userMessage);
-        
         const response = await fetch(API_URL, {
             method: "POST",
-            body: formData
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: userMessage }],
+                    },
+                ],
+            }),
         });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || "Failed to get response");
-        }
-        
-        const apiResponse = await response.text();
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error.message);
+        // Get the API response text and remove asterisks from it
+        const apiResponse =
+            data.candidates[0].content.parts[0].text.replace(
+                /\*\*(.*?)\*\*/g,
+                "$1"
+            );
         showTypingEffect(
             apiResponse,
             textElement,
@@ -103,7 +110,7 @@ const generateAPIResponse = async (incomingMessageDiv) => {
 // Show a loading animation while waiting for the API response
 const showLoadingAnimation = () => {
     const html = `<div class="message-content">
-      <img class="avatar" src="./gemini.png" alt="gemini avatar">
+      <img class="avatar" src="./gemini.png" alt="Gemini avatar">
       <p class="text"></p>
       <div class="loading-indicator">
         <div class="loading-bar"></div>

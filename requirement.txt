@@ -1,10 +1,11 @@
 Flask==3.0.3
+gunicorn==21.2.0
 sentence-transformers==2.2.2
 langchain
-langchain-pinecone
-langchain_community
-langchain_openai
-langchain_experimental
-pinecone[grpc]
 pypdf
 python-dotenv
+pinecone-client[grpc]
+langchain-pinecone
+langchain-community
+langchain-openai
+langchain-experimental

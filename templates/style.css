@@ -6,7 +6,7 @@
     font-family: "Poppins", sans-serif;
 }
 :root {
-    /* Dark mode colors */
+    
     --text-color: #e3e3e3;
     --subheading-color: #828282;
     --placeholder-color: #a6a6a6;
@@ -15,7 +15,7 @@
     --secondary-hover-color: #444;
 }
 .light_mode {
-    /* Light mode colors */
+    
     --text-color: #222;
     --subheading-color: #a0a0a0;
     --placeholder-color: #6c6c6c;
@@ -269,7 +269,6 @@ body.hide-header .header {
     margin-top: 1rem;
     color: var(--placeholder-color);
 }
-/* Responsive media query code for small screen */
 @media (max-width: 768px) {
     .header :is(.title, .subtitle) {
         font-size: 2rem;
@@ -296,3 +295,14 @@ body.hide-header .header {
         margin-top: 0.5rem;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
