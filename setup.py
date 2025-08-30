@@ -10,3 +10,4 @@ setup(
 )
 
 
+#python -m streamlit run app_streamlit.py
