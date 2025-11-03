@@ -9,3 +9,6 @@ langchain-pinecone
 langchain-community
 langchain-openai
 langchain-experimental
+langchain-google-genai
+supabase
+langchain-cohere
