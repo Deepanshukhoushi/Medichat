@@ -1,8 +1,27 @@
+# Flask==3.0.3
+# gunicorn==21.2.0
+# langchain
+# langchain-core
+# langchain-community
+# langchain-pinecone
+# langchain-cohere
+# langchain-huggingface
+# pypdf
+# python-dotenv
+# pinecone
+# supabase
+# cohere
+# streamlit
+
+
+
+
+
 Flask==3.0.3
 gunicorn==21.2.0
-langchain
-langchain-core
-langchain-community
+langchain==0.1.17
+langchain-core==0.1.42
+langchain-community==0.0.37
 langchain-pinecone
 langchain-cohere
 langchain-huggingface
