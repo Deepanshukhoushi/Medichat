@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://api.medichat.local'
+  apiBaseUrl: 'https://medichat-api-luwt.onrender.com'
 };
