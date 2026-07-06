@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.orb-shell {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.orb-glow {
+  position: absolute;
+  inset: 16%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255, 153, 199, 0.35), transparent 46%),
+    radial-gradient(circle at 30% 30%, rgba(108, 223, 255, 0.35), transparent 38%);
+  filter: blur(38px);
+  transform: translateY(16px);
+  z-index: 0;
+}
+
+.orb-canvas {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-orb {
+  width: min(100%, 31rem);
+  aspect-ratio: 1;
+}
+
+.compact-orb {
+  width: min(100%, 18rem);
+  aspect-ratio: 1;
+}

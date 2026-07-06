@@ -18,24 +18,27 @@
 
 
 # Core web framework
-Flask==3.0.3
-gunicorn==21.2.0
-streamlit>=1.28.0
+Flask>=3.0.3,<3.1
+gunicorn>=21.2.0,<22.0
+streamlit>=1.28.0,<2.0
 
 # LangChain ecosystem
-langchain>=0.2.0
-langchain-core>=0.2.0
-langchain-community>=0.2.0
-langchain-pinecone>=0.1.0
-langchain-cohere>=0.1.0
+langchain>=0.2.0,<0.3
+langchain-core>=0.2.0,<0.3
+langchain-community>=0.2.0,<0.3
+langchain-pinecone>=0.1.0,<0.2
+langchain-cohere>=0.1.0,<0.2
 
 # AI/ML dependencies
-cohere>=5.0.0
-pinecone[grpc]>=4.0.0
+cohere>=5.0.0,<6.0
+pinecone[grpc]>=4.0.0,<5.0
 
 # Data processing
-pypdf>=4.0.0
+pypdf>=4.0.0,<5.0
 
 # Database & utilities
-supabase>=2.0.0
-python-dotenv>=1.0.0
+supabase>=2.0.0,<3.0
+python-dotenv>=1.0.0,<2.0
+pydantic>=2.0.0,<3.0
+celery>=5.3.0,<6.0
+redis>=5.0.0,<6.0

@@ -1,0 +1,102 @@
+<div class="space-y-5">
+  <mc-glass-card>
+    <mc-section-heading
+      eyebrow="Study tools"
+      title="AI-powered medical tooling."
+      description="Explain complex topics, summarize long texts, and generate memorable mnemonics."
+    />
+  </mc-glass-card>
+
+  <mc-glass-card>
+    <h2 class="text-xl font-semibold">Document Knowledge Base</h2>
+    <p class="mb-4 mt-2 text-sm text-ink/60">Upload clinical guidelines, research papers, or lecture notes as PDF files to securely index them into your vector search.</p>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" accept=".pdf">
+      <button type="button" (click)="fileInput.click()" [disabled]="isUploading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+        {{ isUploading() ? 'Uploading...' : 'Select File' }}
+      </button>
+      <p class="text-xs text-ink/40">Accepted: PDF only. Max 20MB.</p>
+    </div>
+
+    @if (isUploading()) {
+      <div class="mt-4 h-2 overflow-hidden rounded-full bg-ink/10">
+        <div class="h-full rounded-full bg-gradient-to-r from-accent to-success transition-all duration-300" [style.width.%]="uploadPulse()"></div>
+      </div>
+    }
+    @if (uploadResult()) {
+      <p class="mt-3 text-sm font-medium text-success">Success: {{ uploadResult() }}</p>
+    }
+    @if (uploadError()) {
+      <p class="mt-3 text-sm font-medium text-warning">{{ uploadError() }}</p>
+    }
+  </mc-glass-card>
+
+  <div class="grid gap-5 lg:grid-cols-3">
+    <mc-glass-card class="flex flex-col">
+      <h2 class="text-xl font-semibold">Explain Topic</h2>
+      <p class="mb-4 mt-2 text-sm text-ink/60">Get a clear, structured explanation of any medical topic.</p>
+
+      <form [formGroup]="explainForm" (ngSubmit)="explainTopic()" class="flex flex-col gap-3">
+        <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Action Potential">
+        <button type="submit" [disabled]="explainForm.invalid || explainLoading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+          {{ explainLoading() ? 'Explaining...' : 'Explain' }}
+        </button>
+      </form>
+
+      @if (explainError()) {
+        <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ explainError() }}</p>
+      }
+      @if (explainResult()) {
+        <div class="mt-4 max-h-64 overflow-auto border-t border-ink/10 pt-4 text-sm text-ink/80">
+          <div class="mb-2 text-[11px] uppercase tracking-widest text-ink/40">Scroll for more</div>
+          <markdown [data]="explainResult() ?? ''" class="prose prose-sm max-w-none prose-p:text-ink/80 prose-li:text-ink/75" />
+        </div>
+      }
+    </mc-glass-card>
+
+    <mc-glass-card class="flex flex-col">
+      <h2 class="text-xl font-semibold">Summarize Text</h2>
+      <p class="mb-4 mt-2 text-sm text-ink/60">Paste long clinical notes or paper abstracts for a quick summary.</p>
+
+      <form [formGroup]="summarizeForm" (ngSubmit)="summarizeText()" class="flex flex-col gap-3">
+        <textarea formControlName="text" class="h-24 w-full resize-none rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="Paste text here..."></textarea>
+        <button type="submit" [disabled]="summarizeForm.invalid || summarizeLoading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+          {{ summarizeLoading() ? 'Summarizing...' : 'Summarize' }}
+        </button>
+      </form>
+
+      @if (summarizeError()) {
+        <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ summarizeError() }}</p>
+      }
+      @if (summarizeResult()) {
+        <div class="mt-4 max-h-64 overflow-auto border-t border-ink/10 pt-4 text-sm text-ink/80">
+          <div class="mb-2 text-[11px] uppercase tracking-widest text-ink/40">Scroll for more</div>
+          <markdown [data]="summarizeResult() ?? ''" class="prose prose-sm max-w-none prose-p:text-ink/80 prose-li:text-ink/75" />
+        </div>
+      }
+    </mc-glass-card>
+
+    <mc-glass-card class="flex flex-col">
+      <h2 class="text-xl font-semibold">Generate Mnemonics</h2>
+      <p class="mb-4 mt-2 text-sm text-ink/60">Create memorable mnemonics for diseases, symptoms, or anatomy.</p>
+
+      <form [formGroup]="mnemonicsForm" (ngSubmit)="generateMnemonics()" class="flex flex-col gap-3">
+        <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Cranial Nerves">
+        <button type="submit" [disabled]="mnemonicsForm.invalid || mnemonicsLoading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+          {{ mnemonicsLoading() ? 'Generating...' : 'Generate' }}
+        </button>
+      </form>
+
+      @if (mnemonicsError()) {
+        <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ mnemonicsError() }}</p>
+      }
+      @if (mnemonicsResult()) {
+        <div class="mt-4 max-h-64 overflow-auto border-t border-ink/10 pt-4 text-sm text-ink/80">
+          <div class="mb-2 text-[11px] uppercase tracking-widest text-ink/40">Scroll for more</div>
+          <markdown [data]="mnemonicsResult() ?? ''" class="prose prose-sm max-w-none prose-p:text-ink/80 prose-li:text-ink/75" />
+        </div>
+      }
+    </mc-glass-card>
+  </div>
+</div>

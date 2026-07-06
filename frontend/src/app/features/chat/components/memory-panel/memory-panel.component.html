@@ -1,0 +1,57 @@
+@if (chatService.activeConversationId() && (chatService.topicMemory().current_topic || chatService.sessionSummary())) {
+  <div class="memory-panel">
+    <!-- Header -->
+    <div class="memory-header">
+      <div class="memory-header-icon">
+        <svg [lucideIcon]="icons.Brain" class="h-3.5 w-3.5"></svg>
+      </div>
+      <span class="memory-header-label">Study Context</span>
+    </div>
+
+    <!-- Current Topic -->
+    @if (chatService.topicMemory().current_topic) {
+      <div class="memory-section">
+        <p class="memory-label">Current Topic</p>
+        <div class="topic-badge">
+          <svg [lucideIcon]="icons.BookOpen" class="h-3 w-3 shrink-0"></svg>
+          <span>{{ chatService.topicMemory().current_topic }}</span>
+        </div>
+
+        <!-- Related Topics -->
+        @if (chatService.topicMemory().related_topics.length > 0) {
+          <div class="related-topics">
+            @for (topic of chatService.topicMemory().related_topics; track topic) {
+              <span class="related-chip">{{ topic }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Session Summary -->
+    @if (chatService.sessionSummary()) {
+      <div class="memory-section memory-divider">
+        <button
+          id="memory-toggle-summary"
+          class="memory-summary-toggle"
+          type="button"
+          (click)="toggleSummary()"
+          [attr.aria-expanded]="summaryExpanded()"
+        >
+          <p class="memory-label">Session Summary</p>
+          <svg
+            [lucideIcon]="icons.ChevronDown"
+            class="h-3.5 w-3.5 text-ink/50 transition-transform duration-200"
+            [class.rotate-180]="summaryExpanded()"
+          ></svg>
+        </button>
+
+        @if (summaryExpanded()) {
+          <div class="memory-summary-body">
+            <p class="memory-summary-text">{{ chatService.sessionSummary() }}</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

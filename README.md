@@ -1,110 +1,46 @@
-# MediChat - Medical Assistant
+# MediChat
 
-A deployment-ready medical chatbot that uses RAG (Retrieval-Augmented Generation) to answer medical questions based on indexed medical documents.
+MediChat is a medical learning assistant with a Flask backend and an Angular 21 frontend.
 
-## Features
+## What is connected now
 
-- **Vector Database First**: Always checks Pinecone vector database for relevant medical information
-- **Clear Data Sources**: Explicitly indicates whether answers come from indexed medical data or general knowledge
-- **Fast Performance**: Optimized for quick response times
-- **Dual Interface**: Available as both Flask web app and Streamlit app
-- **Guest Mode**: No authentication required for immediate use
+- `GET /health` returns backend status and sets the CSRF cookie.
+- `POST /get` sends real chat prompts to the Flask RAG backend.
+- `POST /login`, `POST /signup`, and `POST /logout` are wired from the Angular auth screens.
+- The Flask app can serve the built Angular frontend from `frontend/dist/medichat-frontend/browser`.
 
-## Data Source
+## Run the backend
 
-Currently indexed with "Anatomy and Physiology 2e" textbook for comprehensive medical knowledge.
-
-## Quick Start
-
-### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
+python -m app
 ```
 
-### 2. Environment Setup
-Copy `.env.example` to `.env` and fill in your API keys:
+## Run the frontend in development
+
 ```bash
-cp .env.example .env
+cd frontend
+npm.cmd install
+npm.cmd start
 ```
 
-Required environment variables:
-- `PINECONE_API_KEY`: Your Pinecone API key
-- `COHERE_API_KEY`: Your Cohere API key
-- `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_KEY`: Your Supabase anon key
+The frontend dev server targets `http://localhost:8000` and the Flask backend allows credentials + CSRF headers from `http://localhost:4200`.
 
-### 3. Index Your Data
+## Build the frontend
+
 ```bash
-python store_index.py
+cd frontend
+npm.cmd run build
 ```
 
-### 4. Run the Application
+## Notes
 
-**Quick Deployment (Recommended):**
-```bash
-python deploy.py
-```
+- Required backend environment variables still include `PINECONE_API_KEY`, `COHERE_API_KEY`, `FLASK_SECRET_KEY`, and Supabase settings when persistence is enabled.
+- Set `FRONTEND_ORIGINS` if you want to allow additional Angular dev hosts.
+- The remaining study-tool pages are honest shells until their backend endpoints exist.
 
-**Manual Setup:**
+## Frontend docs
 
-**Flask Web App:**
-```bash
-python app.py
-```
-Access at: http://localhost:8000
-
-**Streamlit App:**
-```bash
-streamlit run app_streamlit.py
-```
-Access at: http://localhost:8501
-
-## How It Works
-
-1. **Question Processing**: Every medical question is first searched against the vector database
-2. **Data Source Priority**:
-   - If relevant medical data is found: Uses RAG with indexed content + "📚 Based on indexed medical data"
-   - If no relevant data found: Uses general medical knowledge + "🧠 Based on general medical knowledge"
-3. **Performance**: Optimized retrieval with MMR search and conversation memory
-
-## Deployment
-
-### Railway/Render/Vercel
-1. Set environment variables in your deployment platform
-2. Use `gunicorn` for Flask: `gunicorn app:app`
-3. For Streamlit: Use their built-in deployment
-
-### Docker
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-EXPOSE 8000
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000"]
-```
-
-## API Usage
-
-The core function `get_answer(user_input, user_id, conversation_id)` returns answers with clear source indicators.
-
-## Project Structure
-
-```
-├── app.py                 # Main Flask application
-├── app_streamlit.py       # Streamlit interface
-├── store_index.py         # Data indexing script
-├── src/                   # Helper modules
-├── Data/                  # Source documents
-├── requirements.txt       # Dependencies
-├── .env.example          # Environment template
-└── README.md             # This file
-```
-
-## Performance Notes
-
-- Vector database queries are optimized for speed
-- Conversation history is maintained per session
-- Responses include timing information in logs
-- Error handling ensures graceful fallbacks
+- [Frontend README](frontend/README.md)
+- [Architecture](docs/architecture.md)
+- [Migration guide](docs/migration-guide.md)

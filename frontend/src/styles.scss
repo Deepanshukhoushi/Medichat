@@ -1,0 +1,205 @@
+@use '../themes/theme-tokens';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  
+  /* Text */
+  --color-ink: 255 255 255;
+  --color-muted: 179 184 197;
+  --color-placeholder: 107 114 128;
+  
+  /* Backgrounds */
+  --color-canvas: 13 17 23;
+  --color-surface: 26 31 43;
+  --color-sidebar: 22 27 34;
+  
+  /* Borders */
+  --color-line: 255 255 255; /* Use with /8 opacity for borders */
+  
+  /* Brand/Accents */
+  --color-accent: 34 197 94;
+  --color-accent-hover: 52 211 153;
+  
+  /* States */
+  --color-success: 22 163 74;
+  --color-error: 239 68 68;
+  --color-warning: 250 204 21;
+  
+  /* Glass configuration */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --surface-blur: 20px;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-canvas text-ink font-sans antialiased transition-colors duration-500;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+/* Custom Scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight text-ink;
+  }
+  
+  h1 { font-size: 34px; line-height: 1.7; letter-spacing: -0.02em; }
+  h2 { font-size: 28px; line-height: 1.7; letter-spacing: -0.02em; }
+  h3 { font-size: 22px; line-height: 1.7; letter-spacing: -0.01em; }
+  
+  p {
+    @apply leading-7 text-muted;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    @apply font-sans;
+  }
+
+  /* Accessibility: Focus rings tailored for glassmorphism */
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-accent));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .shell {
+    @apply relative mx-auto min-h-screen px-4 pb-8 pt-4 sm:px-6 lg:px-8;
+  }
+
+  .glass-panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    box-shadow: theme('boxShadow.glass');
+  }
+  
+  @supports (backdrop-filter: blur(20px)) {
+    .glass-panel {
+      backdrop-filter: blur(var(--surface-blur));
+      -webkit-backdrop-filter: blur(var(--surface-blur));
+    }
+  }
+  @supports not (backdrop-filter: blur(20px)) {
+    .glass-panel {
+      background: rgba(26, 31, 43, 0.95);
+    }
+  }
+
+  .glass-panel:hover {
+    box-shadow: theme('boxShadow.glassHover');
+  }
+
+  .glass-sidebar {
+    background: var(--glass-bg);
+    border-right: 1px solid var(--glass-border);
+    border-radius: 22px;
+  }
+  @supports (backdrop-filter: blur(20px)) {
+    .glass-sidebar {
+      backdrop-filter: blur(var(--surface-blur));
+      -webkit-backdrop-filter: blur(var(--surface-blur));
+    }
+  }
+  @supports not (backdrop-filter: blur(20px)) {
+    .glass-sidebar {
+      background: rgba(22, 27, 34, 0.95);
+    }
+  }
+
+  .pill-button {
+    @apply inline-flex items-center gap-2 rounded-[14px] px-4 py-2 text-sm font-medium text-ink transition duration-300;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+  }
+
+  .pill-button:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-[14px] bg-accent px-5 py-3 text-sm font-semibold text-white transition duration-300;
+  }
+
+  .primary-button:hover {
+    @apply bg-accentHover;
+    transform: translateY(-1px);
+    box-shadow: theme('boxShadow.glow');
+  }
+
+  .secondary-button {
+    @apply pill-button;
+  }
+
+  .field-shell {
+    @apply glass-panel relative flex items-center rounded-[14px] px-4 py-3;
+  }
+
+  .floating-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* Shared Auth Styles */
+  .auth-input {
+    @apply w-full rounded-[12px] border border-white/[0.08] bg-[#1A1F2B] px-4 h-11 text-sm text-white outline-none placeholder-[#6B7280] focus:border-accent focus-visible:ring-2 focus-visible:ring-accent/50 transition-all;
+  }
+
+  .auth-toggle {
+    @apply absolute inset-y-0 right-3 my-auto flex items-center justify-center rounded-md px-2 text-xs font-medium text-white/60 transition hover:text-white focus-visible:ring-2 focus-visible:ring-accent/50;
+  }
+
+  .auth-google-btn {
+    @apply flex w-full items-center justify-center gap-3 rounded-[12px] border border-white/[0.08] bg-[#161B22] h-11 text-sm font-medium text-white transition hover:bg-white/5 no-underline shadow-sm;
+  }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

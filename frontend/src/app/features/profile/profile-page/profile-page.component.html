@@ -1,0 +1,99 @@
+<div class="space-y-5 p-6">
+  <mc-section-heading
+    eyebrow="Profile"
+    title="Your account."
+    description="Manage your personal details and medical program information."
+  />
+
+  @if (isLoading()) {
+    <!-- Loading skeleton -->
+    <mc-glass-card class="space-y-4 animate-pulse">
+      <div class="h-5 w-40 rounded bg-ink/10"></div>
+      <div class="h-10 w-full rounded-xl bg-ink/10"></div>
+      <div class="h-5 w-32 rounded bg-ink/10"></div>
+      <div class="h-10 w-full rounded-xl bg-ink/10"></div>
+    </mc-glass-card>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="saveProfile()">
+      <!-- Personal Info -->
+      <mc-glass-card class="mb-5">
+        <h2 class="text-lg font-semibold text-ink mb-5">Personal Information</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-ink/80 mb-1">Display Name <span class="text-red-400">*</span></label>
+            <input
+              formControlName="display_name"
+              type="text"
+              placeholder="Your full name"
+              class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+            />
+            @if (form.get('display_name')?.invalid && form.get('display_name')?.touched) {
+              <p class="mt-1 text-xs text-red-500">Display name is required.</p>
+            }
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="block text-sm font-medium text-ink/80 mb-1">Specialty / Program</label>
+              <select
+                formControlName="specialty"
+                class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+              >
+                <option value="">Select specialty</option>
+                <option value="MBBS">MBBS</option>
+                <option value="BDS">BDS</option>
+                <option value="Nursing">Nursing</option>
+                <option value="Medical aspirant">Medical aspirant</option>
+                <option value="MD">MD</option>
+                <option value="MS">MS</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-ink/80 mb-1">Medical Year</label>
+              <select
+                formControlName="medical_year"
+                class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+              >
+                <option [value]="null">Select year</option>
+                <option [value]="1">Year 1</option>
+                <option [value]="2">Year 2</option>
+                <option [value]="3">Year 3</option>
+                <option [value]="4">Year 4</option>
+                <option [value]="5">Year 5</option>
+                <option [value]="6">Year 6 / Internship</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-ink/80 mb-1">University / College</label>
+            <input
+              formControlName="university"
+              type="text"
+              placeholder="e.g. AIIMS Delhi"
+              class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+            />
+          </div>
+        </div>
+      </mc-glass-card>
+
+      <!-- Save Button -->
+      <div class="flex items-center gap-4">
+        <button
+          type="submit"
+          [disabled]="form.invalid || isSaving()"
+          class="primary-button px-6 py-2.5"
+        >
+          {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+        </button>
+        @if (successMessage()) {
+          <p class="text-sm font-medium text-success">✓ {{ successMessage() }}</p>
+        }
+        @if (errorMsg()) {
+          <p class="text-sm font-medium text-red-500">{{ errorMsg() }}</p>
+        }
+      </div>
+    </form>
+  }
+</div>

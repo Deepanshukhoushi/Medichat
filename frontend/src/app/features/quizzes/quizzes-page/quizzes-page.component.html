@@ -1,0 +1,169 @@
+<div class="space-y-5">
+  @if (!activeQuiz()) {
+    <div>
+      <mc-glass-card>
+        <mc-section-heading
+          eyebrow="Quizzes"
+          title="Timed quiz shell."
+          description="Generate multiple-choice quizzes on any medical topic using AI."
+        />
+
+        <form [formGroup]="form" (ngSubmit)="generateQuiz()" class="mt-6 flex flex-wrap items-end gap-4">
+          <div class="flex-1">
+            <label class="mb-1 block text-sm font-medium">Topic</label>
+            <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Cardiac Physiology">
+          </div>
+          <div class="w-24">
+            <label class="mb-1 block text-sm font-medium">Questions</label>
+            <input type="number" formControlName="count" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm">
+          </div>
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+            {{ isGenerating() ? 'Generating...' : 'Generate' }}
+          </button>
+        </form>
+
+        @if (generateError()) {
+          <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ generateError() }}</p>
+        }
+        @if (quizLoadError()) {
+          <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ quizLoadError() }}</p>
+        }
+      </mc-glass-card>
+
+      <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        @for (session of sessions$ | async; track session.id) {
+          <mc-glass-card class="flex flex-col">
+            <h3 class="text-lg font-semibold">{{ session.topic }}</h3>
+            <p class="mt-1 text-sm text-ink/50">Generated: {{ session.created_at | date }}</p>
+
+            <div class="mt-3">
+              @if (session.score !== null) {
+                <span class="inline-block rounded bg-green-500/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300">
+                  Score: {{ session.score }}%
+                </span>
+              } @else {
+                <span class="inline-block rounded bg-yellow-500/20 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300">
+                  Pending
+                </span>
+              }
+            </div>
+
+            <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
+              <button (click)="takeQuiz(session.id)" class="text-sm text-primary transition-colors hover:text-primary-light">
+                {{ session.score !== null ? 'Review Quiz' : 'Take Quiz' }} &rarr;
+              </button>
+            </div>
+          </mc-glass-card>
+        }
+      </div>
+
+      @if ((sessions$ | async)?.length === 0) {
+        <mc-glass-card class="mt-5">
+          <h2 class="text-xl font-semibold">No quizzes found</h2>
+          <p class="mt-2 text-sm text-ink/70">Generate your first quiz above.</p>
+        </mc-glass-card>
+      }
+    </div>
+  }
+
+  @if (activeQuiz(); as quiz) {
+    <div class="mx-auto mt-4 max-w-3xl space-y-5">
+      <div class="mb-2 flex items-center justify-between gap-3">
+        <button (click)="closeQuiz()" class="text-sm font-medium text-ink/60 transition-colors hover:text-ink">&larr; Back to Quizzes</button>
+        <div class="flex items-center gap-4 text-sm font-medium">
+          <span class="text-ink/60">Question {{ currentQuestionIndex() + 1 }} of {{ quiz.questions.length }}</span>
+          <span class="rounded-full bg-ink/5 px-3 py-1 text-ink/70">Timer: {{ getElapsedTime() }}</span>
+          @if (quizSubmitted()) {
+            <span class="font-bold text-primary">Score: {{ quiz.score }}%</span>
+          }
+        </div>
+      </div>
+
+      @if (quiz.questions && quiz.questions.length > 0) {
+        @if (getCurrentQuestion(); as currentQuestion) {
+          <mc-glass-card class="min-h-[400px] flex flex-col">
+            <div class="flex-1">
+              <h3 class="mb-3 text-xl font-semibold text-ink">{{ currentQuestion.question }}</h3>
+              <p class="mb-6 text-xs uppercase tracking-widest text-ink/40">Press A, B, C, or D to answer</p>
+
+              <div class="space-y-3">
+                @for (option of currentQuestion.options; track i; let i = $index) {
+                  <button
+                    (click)="selectOption(i)"
+                    [disabled]="quizSubmitted()"
+                    [class.border-primary]="!quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i"
+                    [class.bg-primary/5]="!quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i"
+                    [class.border-success]="quizSubmitted() && i === currentQuestion.correct"
+                    [class.bg-success/10]="quizSubmitted() && i === currentQuestion.correct"
+                    [class.border-warning]="quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i && i !== currentQuestion.correct"
+                    [class.bg-warning/10]="quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i && i !== currentQuestion.correct"
+                    class="flex w-full items-start gap-3 rounded-xl border border-ink/10 p-4 text-left transition-colors hover:bg-ink/5 disabled:cursor-default disabled:opacity-100"
+                    type="button"
+                  >
+                    <span class="mt-0.5 font-medium text-ink/50">{{ ['A', 'B', 'C', 'D'][i] }}.</span>
+                    <span class="flex-1">{{ option }}</span>
+                  </button>
+                }
+              </div>
+
+              @if (quizSubmitted() && currentQuestion.explanation) {
+                <div class="mt-6 rounded-2xl border border-accent/20 bg-accent/5 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-widest text-accent">Why this answer is correct</p>
+                  <p class="mt-2 text-sm text-ink/75">{{ currentQuestion.explanation }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="mt-8 flex items-center justify-between gap-3 border-t border-ink/10 pt-4">
+              <button
+                (click)="prevQuestion()"
+                [disabled]="currentQuestionIndex() === 0"
+                class="rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"
+                type="button"
+              >
+                Previous
+              </button>
+
+              <div class="flex gap-3">
+                @if (!quizSubmitted()) {
+                  <button
+                    (click)="submitQuiz()"
+                    [disabled]="!isQuizComplete() || isSubmitting()"
+                    class="rounded-md bg-primary/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50"
+                    type="button"
+                  >
+                    {{ isSubmitting() ? 'Submitting...' : 'Submit Quiz' }}
+                  </button>
+                  @if (currentQuestionIndex() < quiz.questions.length - 1) {
+                    <button
+                      (click)="nextQuestion()"
+                      class="rounded-md bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
+                      type="button"
+                    >
+                      Next
+                    </button>
+                  }
+                } @else {
+                  <button
+                    (click)="restartQuiz()"
+                    class="rounded-md bg-primary/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary"
+                    type="button"
+                  >
+                    Retry Quiz
+                  </button>
+                  <button
+                    (click)="closeQuiz()"
+                    class="rounded-md bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
+                    type="button"
+                  >
+                    New Quiz
+                  </button>
+                }
+              </div>
+            </div>
+          </mc-glass-card>
+        }
+      }
+    </div>
+  }
+</div>

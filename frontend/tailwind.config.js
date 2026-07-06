@@ -1,0 +1,55 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{html,ts}"],
+  darkMode: ["class", '[data-theme="dark"]'],
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ["'Inter'", "sans-serif"],
+        sans: ["'Inter'", "sans-serif"]
+      },
+      colors: {
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        muted: "rgb(var(--color-muted) / <alpha-value>)",
+        placeholder: "rgb(var(--color-placeholder) / <alpha-value>)",
+        canvas: "rgb(var(--color-canvas) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        sidebar: "rgb(var(--color-sidebar) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)",
+        accent: "rgb(var(--color-accent) / <alpha-value>)",
+        accentHover: "rgb(var(--color-accent-hover) / <alpha-value>)",
+        success: "rgb(var(--color-success) / <alpha-value>)",
+        warning: "rgb(var(--color-warning) / <alpha-value>)",
+        error: "rgb(var(--color-error) / <alpha-value>)"
+      },
+      boxShadow: {
+        glow: "0 24px 80px rgba(34, 197, 94, 0.15)",
+        glass: "0 12px 40px rgba(0, 0, 0, 0.35)",
+        glassHover: "0 20px 50px rgba(0, 0, 0, 0.45)"
+      },
+      backgroundImage: {
+        aurora: "radial-gradient(circle at top left, rgba(255, 188, 176, 0.42), transparent 34%), radial-gradient(circle at top right, rgba(124, 228, 255, 0.38), transparent 36%), linear-gradient(135deg, rgba(255,255,255,0.86), rgba(236,243,255,0.72))"
+      },
+      animation: {
+        float: "float 8s ease-in-out infinite",
+        pulseGlow: "pulseGlow 4s ease-in-out infinite",
+        "fade-in": "fadeIn 0.4s ease-out forwards"
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-12px)" }
+        },
+        pulseGlow: {
+          "0%, 100%": { boxShadow: "0 0 0 rgba(124, 228, 255, 0.2)" },
+          "50%": { boxShadow: "0 0 42px rgba(255, 123, 172, 0.3)" }
+        }
+      }
+    }
+  },
+  plugins: []
+};

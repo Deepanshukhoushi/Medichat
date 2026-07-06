@@ -1,0 +1,21 @@
+{
+  "name": "MediChat",
+  "short_name": "MediChat",
+  "theme_color": "#f4f8ff",
+  "background_color": "#f4f8ff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

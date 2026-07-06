@@ -1,0 +1,199 @@
+<div class="shell">
+  <div class="grid h-[calc(100vh-2rem)] gap-5 lg:grid-cols-[auto_1fr]">
+    <!-- Mobile Hamburger Menu Button (visible only on small screens) -->
+    <div class="lg:hidden flex items-center p-4">
+      <button class="pill-button" (click)="toggleSidebar()">
+        <svg [lucideIcon]="icons.Menu" class="h-5 w-5"></svg>
+      </button>
+      <span class="ml-3 font-semibold text-ink">MediChat</span>
+    </div>
+
+    <aside
+      class="glass-sidebar fixed inset-y-4 left-4 z-40 flex flex-col overflow-hidden transition-transform duration-500 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:translate-x-0"
+      [class.w-[270px]]="isSidebarOpen()"
+      [class.w-[80px]]="!isSidebarOpen() && !isMobile()"
+      [class.-translate-x-[150%]]="!isSidebarOpen() && isMobile()"
+    >
+      <div class="flex items-center justify-between gap-3 p-4 shrink-0">
+        @if (isSidebarOpen()) {
+          <mc-app-logo />
+        } @else {
+          <span class="logo-minified mx-auto">
+            <svg [lucideIcon]="icons.HeartPulse" class="h-6 w-6 text-ink"></svg>
+          </span>
+        }
+        <button class="pill-button shrink-0" type="button" [attr.aria-label]="sidebarLabel()" (click)="toggleSidebar()">
+          <svg [lucideIcon]="isSidebarOpen() ? icons.PanelLeftClose : icons.PanelLeftOpen" class="h-4 w-4"></svg>
+        </button>
+      </div>
+
+      <div class="px-3 pb-2 shrink-0">
+        @if (isSidebarOpen()) {
+          <button class="w-full flex items-center gap-2 rounded-xl bg-ink text-canvas hover:opacity-90 px-3 py-2 text-sm font-semibold transition" type="button" (click)="startNewChat()">
+            <svg [lucideIcon]="icons.Plus" class="h-4 w-4 shrink-0"></svg>
+            New Chat
+          </button>
+        } @else {
+          <button class="w-full flex items-center justify-center rounded-xl bg-ink text-canvas hover:opacity-90 p-2 transition" type="button" (click)="startNewChat()" title="New Chat">
+            <svg [lucideIcon]="icons.Plus" class="h-4 w-4"></svg>
+          </button>
+        }
+      </div>
+
+      <nav class="px-3 pb-2 shrink-0">
+        @if (isSidebarOpen()) {
+          <p class="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-ink/40">Navigation</p>
+        }
+        <div class="space-y-1 mt-1">
+          @for (item of navItems; track item.route) {
+            <a
+              [routerLink]="item.route"
+              class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink/70 no-underline transition-colors hover:bg-ink/5 hover:text-ink"
+              [class.nav-active]="isActiveRoute(item.route)"
+              [title]="isSidebarOpen() ? '' : item.label"
+            >
+              <svg [lucideIcon]="item.icon" class="h-4 w-4 shrink-0"></svg>
+              @if (isSidebarOpen()) {
+                <span>{{ item.label }}</span>
+              }
+            </a>
+          }
+        </div>
+      </nav>
+
+      <div class="border-t border-ink/10 mx-3 shrink-0"></div>
+
+      <div class="px-3 pt-3 pb-2 shrink-0">
+        @if (isSidebarOpen()) {
+          <label class="flex items-center gap-2 rounded-xl bg-ink/5 px-3 py-2">
+            <svg [lucideIcon]="icons.Search" class="h-4 w-4 shrink-0 text-ink/45"></svg>
+            <input
+              class="w-full border-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink/45"
+              type="search"
+              placeholder="Search chats"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+            />
+          </label>
+        } @else {
+          <button
+            class="flex w-full items-center justify-center rounded-xl bg-ink/5 p-2 text-ink/60 transition hover:bg-ink/10 hover:text-ink"
+            type="button"
+            title="Open search"
+            (click)="toggleSidebar()"
+          >
+            <svg [lucideIcon]="icons.Search" class="h-4 w-4"></svg>
+          </button>
+        }
+      </div>
+
+      <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2">
+        @if (isSidebarOpen()) {
+          <p class="px-3 py-1 text-xs font-semibold text-ink/50">Recent Chats</p>
+          <div class="mt-1 space-y-1">
+            @for (conversation of historyPreview(); track conversation.id) {
+              <div class="group flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-ink/5">
+                <button class="min-w-0 flex-1 text-left" type="button" (click)="loadConversation(conversation.id)">
+                  <span class="truncate font-medium text-ink/90">{{ conversation.title }}</span>
+                </button>
+                <button
+                  class="rounded-md p-1 text-ink/35 opacity-0 transition hover:bg-warning/10 hover:text-warning group-hover:opacity-100"
+                  type="button"
+                  title="Delete conversation"
+                  (click)="deleteConversation(conversation.id, $event)"
+                >
+                  <svg [lucideIcon]="icons.Square" class="h-3.5 w-3.5"></svg>
+                </button>
+              </div>
+            }
+            @if (isHistoryLoading()) {
+              <div class="px-3 py-2 space-y-2">
+                <div class="h-3 w-3/4 rounded bg-ink/10 animate-pulse"></div>
+                <div class="h-3 w-1/2 rounded bg-ink/10 animate-pulse"></div>
+              </div>
+            }
+            @if (!isHistoryLoading() && historyPreview().length === 0) {
+              <p class="px-3 py-2 text-xs text-ink/45">No recent chats found.</p>
+            }
+          </div>
+        } @else {
+          <div class="mt-1 flex flex-col items-center gap-2 px-2">
+            @for (conversation of historyPreview(); track conversation.id) {
+              <button
+                class="flex h-10 w-10 items-center justify-center rounded-xl bg-ink/5 text-xs font-semibold text-ink/80 hover:bg-ink/10"
+                type="button"
+                (click)="loadConversation(conversation.id)"
+                [attr.title]="conversation.title"
+              >
+                {{ conversation.title.charAt(0).toUpperCase() }}
+              </button>
+            }
+            @if (isHistoryLoading()) {
+              <div class="mt-2 space-y-2">
+                <div class="h-10 w-10 rounded-xl bg-ink/10 animate-pulse"></div>
+                <div class="h-10 w-10 rounded-xl bg-ink/10 animate-pulse"></div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="relative user-menu-container shrink-0 border-t border-ink/10 p-3">
+        <button
+          class="flex w-full items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-ink/5"
+          type="button"
+          (click)="toggleUserMenu()"
+        >
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/20 font-semibold text-accent text-sm">
+            {{ userProfile()?.display_name?.charAt(0)?.toUpperCase() || 'U' }}
+          </div>
+          @if (isSidebarOpen()) {
+            <span class="flex-1 truncate text-left text-sm font-medium">{{ userProfile()?.display_name || 'User' }}</span>
+            <svg [lucideIcon]="icons.ChevronDown" class="h-4 w-4 shrink-0 text-ink/50 transition-transform duration-200" [class.rotate-180]="isUserMenuOpen()"></svg>
+          }
+        </button>
+
+        @if (isUserMenuOpen()) {
+          <div class="absolute bottom-[4.5rem] left-3 right-3 z-50 max-h-[70vh] overflow-y-auto rounded-[18px] border border-white/10 bg-surface/95 backdrop-blur-xl p-2 shadow-glassHover">
+            <p class="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-ink/45">Navigation</p>
+            <nav class="space-y-1 text-sm">
+              @for (item of userNavItems; track item.route) {
+                <a
+                  [routerLink]="item.route"
+                  (click)="closeUserMenu()"
+                  class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-ink no-underline transition hover:bg-ink/5"
+                  [class.nav-active]="isActiveRoute(item.route)"
+                >
+                  <svg [lucideIcon]="item.icon" class="h-4 w-4 text-ink/50"></svg>
+                  <span class="flex-1">{{ item.label }}</span>
+                  @if (item.hint) {
+                    <span class="text-xs text-ink/45">{{ item.hint }}</span>
+                  }
+                </a>
+              }
+            </nav>
+
+            <div class="my-2 border-t border-white/5"></div>
+
+            <button (click)="logout()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left font-medium text-warning hover:bg-warning/10">
+              <svg [lucideIcon]="icons.LogOut" class="h-4 w-4"></svg>
+              Log out
+            </button>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <section class="h-full min-w-0 overflow-hidden">
+      @if (isGuestUser()) {
+        <div class="mb-4 rounded-2xl border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-ink/80">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p class="font-medium">You are using MediChat as a guest. Sign up to save conversations and unlock your full profile.</p>
+            <a class="pill-button no-underline" routerLink="/auth/signup">Create account</a>
+          </div>
+        </div>
+      }
+      <router-outlet />
+    </section>
+  </div>
+</div>

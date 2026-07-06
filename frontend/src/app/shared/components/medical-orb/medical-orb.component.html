@@ -1,0 +1,10 @@
+<div
+  class="orb-shell"
+  [ngClass]="{
+    'hero-orb': size() === 'hero',
+    'compact-orb': size() === 'compact'
+  }"
+>
+  <div class="orb-glow"></div>
+  <canvas #orbCanvas class="orb-canvas" [ngClass]="extraClass()"></canvas>
+</div>

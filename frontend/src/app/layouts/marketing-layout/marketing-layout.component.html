@@ -1,0 +1,30 @@
+<div class="shell">
+  <header class="glass-panel-strong surface-outline sticky top-4 z-40 rounded-[30px] px-4 py-4 sm:px-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <mc-app-logo />
+
+      <nav class="hidden items-center gap-3 lg:flex">
+        <a class="pill-button no-underline" href="#features">Features</a>
+        <a class="pill-button no-underline" href="#testimonials">Testimonials</a>
+        <a class="pill-button no-underline" href="#study-flow">Study Flow</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <mc-theme-toggle class="hidden lg:block" />
+        <a class="primary-button no-underline" routerLink="/auth/signup">Start Learning</a>
+      </div>
+
+      <div class="flex w-full flex-wrap items-center gap-2 lg:hidden">
+        <a class="pill-button no-underline" href="#features">Features</a>
+        <a class="pill-button no-underline" href="#testimonials">Testimonials</a>
+        <a class="pill-button no-underline" href="#study-flow">Study Flow</a>
+        <span class="flex-1"></span>
+        <mc-theme-toggle />
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-8">
+    <router-outlet />
+  </main>
+</div>

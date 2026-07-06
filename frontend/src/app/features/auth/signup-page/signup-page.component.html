@@ -1,0 +1,118 @@
+<div class="space-y-6 text-left">
+  <div class="space-y-2 text-center">
+    <h1 class="text-2xl font-bold text-white">Create Account</h1>
+    <p class="text-sm text-ink/70">Join MediChat to personalize your learning experience.</p>
+  </div>
+
+  <form class="auth-form mt-8" (ngSubmit)="submit()" novalidate>
+    <div class="field-group">
+      <label for="signup-display-name" class="block text-sm font-medium text-ink/80 mb-1.5">Display Name</label>
+      <input id="signup-display-name" class="auth-input" [class.border-error]="displayNameField.invalid && (displayNameField.dirty || displayNameField.touched || submitted())" type="text" placeholder="How should we call you?" [ngModel]="displayName()" (ngModelChange)="displayName.set($event)" name="displayName" required minlength="2" #displayNameField="ngModel" />
+      @if (displayNameField.invalid && (displayNameField.dirty || displayNameField.touched || submitted())) {
+        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
+          <span aria-hidden="true">!</span> Display name must be at least 2 characters.
+        </p>
+      }
+    </div>
+    <div class="field-group mt-4">
+      <label for="signup-email" class="block text-sm font-medium text-ink/80 mb-1.5">Email</label>
+      <input id="signup-email" class="auth-input" [class.border-error]="emailField.invalid && (emailField.dirty || emailField.touched || submitted())" type="email" placeholder="your@email.com" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" required email #emailField="ngModel" />
+      @if (emailField.invalid && (emailField.dirty || emailField.touched || submitted())) {
+        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
+          <span aria-hidden="true">!</span> Please enter a valid email address.
+        </p>
+      }
+    </div>
+    <div class="field-group mt-4">
+      <label for="signup-password" class="block text-sm font-medium text-ink/80 mb-1.5">Password</label>
+      <div class="relative">
+        <input id="signup-password" class="auth-input pr-12" [class.border-error]="passwordField.invalid && (passwordField.dirty || passwordField.touched || submitted())" [type]="showPassword() ? 'text' : 'password'" placeholder="Create a strong password" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" required minlength="6" #passwordField="ngModel" />
+        <button
+          class="auth-toggle"
+          type="button"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          (click)="togglePasswordVisibility()"
+        >
+          {{ showPassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      @if (passwordField.invalid && (passwordField.dirty || passwordField.touched || submitted())) {
+        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
+          <span aria-hidden="true">!</span> Password is required (min 6 characters).
+        </p>
+      }
+      @if (password()) {
+        <div class="mt-2 space-y-1">
+          <div class="h-1.5 overflow-hidden rounded-full bg-ink/10" aria-hidden="true">
+            <div class="h-full rounded-full transition-all duration-200" [style.width.%]="passwordStrengthPercent()" [class]="passwordStrengthClass()"></div>
+          </div>
+          <p class="text-[11px] text-ink/60">Strength: <span class="font-semibold text-ink">{{ passwordStrengthLabel() }}</span></p>
+        </div>
+      }
+    </div>
+    <div class="field-group mt-4">
+      <label for="confirm-password" class="block text-sm font-medium text-ink/80 mb-1.5">Confirm Password</label>
+      <div class="relative">
+        <input id="confirm-password" class="auth-input pr-12" [class.border-error]="(confirmPasswordField.invalid && (confirmPasswordField.dirty || confirmPasswordField.touched || submitted())) || (submitted() && password() !== confirmPassword())" [type]="showConfirmPassword() ? 'text' : 'password'" placeholder="Re-enter your password" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" name="confirmPassword" required minlength="6" #confirmPasswordField="ngModel" />
+        <button
+          class="auth-toggle"
+          type="button"
+          [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
+          (click)="toggleConfirmPasswordVisibility()"
+        >
+          {{ showConfirmPassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      @if (confirmPasswordField.invalid && (confirmPasswordField.dirty || confirmPasswordField.touched || submitted())) {
+        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
+          <span aria-hidden="true">!</span> Please confirm your password.
+        </p>
+      } @else if (submitted() && password() !== confirmPassword()) {
+        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
+          <span aria-hidden="true">!</span> Passwords do not match.
+        </p>
+      }
+    </div>
+    <button class="primary-button mt-6 w-full py-2.5 text-sm" type="submit" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <svg class="mr-2 inline-block h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V2.5" />
+        </svg>
+      }
+      {{ isSubmitting() ? 'Creating...' : 'Create Account' }}
+    </button>
+    <div class="relative mt-6 flex items-center justify-center">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-white/[0.08]"></div>
+      </div>
+      <div class="relative bg-[#1a1f2b] px-4 text-sm text-[#B3B8C5] shadow-[0_0_15px_15px_#1a1f2b] mix-blend-screen opacity-0 hidden"></div>
+      <div class="relative px-4 text-xs font-medium text-[#B3B8C5] z-10 bg-[#0D1117]">Or continue with</div>
+    </div>
+    <a class="mt-5 auth-google-btn" [href]="googleOAuthUrl">
+      <mc-google-icon class="scale-90" />
+      Google
+    </a>
+  </form>
+
+  @if (statusMessage()) {
+    <p
+      class="mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-center text-sm"
+      [class.bg-success/15]="statusType() === 'success'"
+      [class.text-success]="statusType() === 'success'"
+      [class.bg-red-500/10]="statusType() === 'error'"
+      [class.text-red-600]="statusType() === 'error'"
+      [class.bg-ink/5]="statusType() !== 'success' && statusType() !== 'error'"
+      [class.text-ink/75]="statusType() !== 'success' && statusType() !== 'error'"
+      aria-live="polite"
+      role="status"
+    >
+      <span aria-hidden="true">{{ statusType() === 'error' ? '!' : statusType() === 'success' ? '✓' : 'i' }}</span>
+      <span>{{ statusMessage() }}</span>
+    </p>
+  }
+
+  <p class="mt-6 text-center text-sm text-ink/60">
+    Already have an account?
+    <a class="font-semibold text-ink no-underline hover:text-accent" routerLink="/auth/login">Sign in</a>
+  </p>
+</div>

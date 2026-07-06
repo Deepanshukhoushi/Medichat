@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+.quiz-option {
+  border: 0;
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.52);
+  padding: 1rem 1.1rem;
+  text-align: left;
+  color: rgb(var(--color-ink) / 0.8);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.quiz-option:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.78);
+}

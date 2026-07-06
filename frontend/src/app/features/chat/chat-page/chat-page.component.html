@@ -1,0 +1,146 @@
+<div class="relative flex h-full flex-col overflow-hidden bg-canvas">
+  <div #scrollContainer class="relative flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 transition-all flex flex-col" (scroll)="onScroll()" style="overflow-anchor: none;">
+    <div class="mx-auto w-full max-w-[850px] space-y-8 flex-1 flex flex-col">
+      
+      @if (chatService.isHistoryLoading()) {
+        <div class="space-y-6">
+          <div class="flex animate-pulse gap-4 opacity-60">
+            <div class="h-10 w-10 rounded-full bg-ink/10"></div>
+            <div class="flex-1 space-y-3 py-1">
+              <div class="h-4 w-3/4 rounded bg-ink/10"></div>
+              <div class="h-4 w-5/6 rounded bg-ink/10"></div>
+            </div>
+          </div>
+          <div class="flex animate-pulse gap-4 flex-row-reverse opacity-60">
+            <div class="h-10 w-10 rounded-full bg-primary/20"></div>
+            <div class="flex-1 space-y-3 py-1 flex flex-col items-end">
+              <div class="h-4 w-1/2 rounded bg-primary/20"></div>
+            </div>
+          </div>
+        </div>
+      } @else if (chatService.historyLoadError()) {
+        <div class="flex flex-col items-center justify-center pt-20 text-center">
+          <div class="max-w-lg rounded-3xl border border-warning/15 bg-warning/10 px-6 py-5 text-left text-warning shadow-sm">
+            <p class="text-sm font-semibold">Conversation failed to load</p>
+            <p class="mt-2 text-sm leading-6 text-warning/90">{{ chatService.historyLoadError() }}</p>
+            <button class="pill-button mt-4 border-warning/20 bg-canvas text-warning hover:bg-warning/10" type="button" (click)="retryHistoryLoad()">
+              Try Again
+            </button>
+          </div>
+        </div>
+      } @else if (chatService.messages().length === 0) {
+        <div class="flex-1 flex flex-col items-center justify-center text-center relative w-full h-full overflow-hidden min-h-[300px]">
+          <div class="absolute inset-[-50vh] floating-grid opacity-20 pointer-events-none -z-10" style="mask-image: radial-gradient(circle, black 30%, transparent 70%); -webkit-mask-image: radial-gradient(circle, black 30%, transparent 70%);"></div>
+          
+          <div class="relative flex h-24 w-24 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,#22C55E_0%,rgba(34,197,94,0.05)_70%)] shadow-[0_0_40px_rgba(34,197,94,0.15)]">
+            <div class="absolute inset-2 rounded-full border border-white/20 backdrop-blur-md"></div>
+          </div>
+          
+          <h2 class="mt-8 text-2xl font-semibold sm:text-3xl bg-gradient-to-r from-white via-white to-accent/80 bg-clip-text text-transparent">
+            How can I help you study today?
+          </h2>
+          
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            @for (prompt of starterPrompts(); track prompt) {
+              <button class="flex items-center gap-2 rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-ink transition hover:border-accent/30 hover:bg-white/[0.05] hover:shadow-[0_0_15px_rgba(34,197,94,0.1)] backdrop-blur-md" type="button" (click)="startConversation(prompt.prompt)">
+                <svg [lucideIcon]="icons.PenTool" class="h-4 w-4 text-accent/80"></svg>
+                {{ prompt.label }}
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="space-y-6">
+          @for (message of chatService.messages(); track message.id; let last = $last) {
+            <mc-chat-message 
+              [message]="message" 
+              [isLast]="last"
+              [isStreaming]="chatService.isStreaming()"
+              (deleted)="removeMessage($event)"
+              (reacted)="react(message.id, $event)"
+              (regenerated)="regenerate()"
+            />
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (!isNearBottom() && chatService.messages().length > 0 && !composerFocused()) {
+    <button
+      class="absolute bottom-28 right-6 z-20 rounded-full bg-ink/10 px-4 py-3 text-xs font-semibold text-ink shadow-lg transition hover:bg-ink/20 backdrop-blur-xl max-sm:bottom-24 max-sm:right-4 border border-white/5"
+      type="button"
+      (click)="scrollToBottom()"
+    >
+      Jump to latest
+    </button>
+  }
+
+  <div class="mx-auto w-full max-w-[850px] p-4 sm:px-6 sm:pb-6 relative z-10">
+    <mc-memory-panel class="mb-3 block" />
+    <div class="relative">
+      <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
+      
+      <!-- Footer Info Row -->
+      <div class="mt-2.5 flex items-center justify-between px-2 text-[11px] text-ink/45 font-medium tracking-wide">
+        <p>MediChat can make mistakes. Check important medical information.</p>
+        
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:flex items-center gap-1.5 opacity-80">
+            <span>Enter to send</span>
+            <span>&bull;</span>
+            <span>Shift + Enter for new line</span>
+          </div>
+          <button 
+            class="flex h-5 w-5 items-center justify-center rounded-full border border-ink/20 bg-ink/5 text-ink/60 transition hover:bg-ink/10 hover:text-ink/90" 
+            type="button" 
+            (click)="openShortcuts()" 
+            title="Keyboard shortcuts"
+            aria-label="Open keyboard shortcuts"
+          >
+            <span class="text-[10px] font-bold">?</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (showShortcuts()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-4 py-6" role="presentation" (click)="closeShortcuts()" (keydown.escape)="closeShortcuts()" tabindex="-1">
+      <div class="w-full max-w-lg rounded-[28px] border border-white/10 bg-canvas p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title" (click)="$event.stopPropagation()">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink/40">Composer help</p>
+            <h2 id="shortcuts-title" class="mt-1 text-xl font-semibold text-ink">Keyboard shortcuts</h2>
+          </div>
+          <button class="rounded-full p-2 text-ink/50 transition hover:bg-ink/5 hover:text-ink" type="button" (click)="closeShortcuts()" aria-label="Close keyboard shortcuts">
+            <svg [lucideIcon]="icons.Square" class="h-4 w-4"></svg>
+          </button>
+        </div>
+
+        <div class="mt-5 space-y-3 text-sm text-ink/75">
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+            <span>Send message</span>
+            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Enter</kbd>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+            <span>New line</span>
+            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Shift + Enter</kbd>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+            <span>Clear composer</span>
+            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Ctrl / Cmd + K</kbd>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+            <span>Close composer / modal</span>
+            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Esc</kbd>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+            <span>Open this help panel</span>
+            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">?</kbd>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

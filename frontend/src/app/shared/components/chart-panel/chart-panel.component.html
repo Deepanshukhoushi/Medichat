@@ -1,0 +1,35 @@
+<div class="glass-panel surface-outline rounded-[30px] p-6 sm:p-7">
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h3 class="text-xl font-semibold">{{ title() }}</h3>
+      @if (subtitle()) {
+        <p class="mt-2 text-sm">{{ subtitle() }}</p>
+      }
+    </div>
+  </div>
+
+  @if (mode() === 'line') {
+    <apx-chart
+      [chart]="lineChart"
+      [series]="lineSeries()"
+      [stroke]="lineStroke"
+      [xaxis]="lineXAxis"
+      [colors]="['#52c6ff', '#ff7cb8']"
+      [fill]="{ type: 'gradient', gradient: { opacityFrom: 0.32, opacityTo: 0.02 } }"
+      [dataLabels]="{ enabled: false }"
+      [grid]="{ borderColor: 'rgba(148, 163, 184, 0.18)' }"
+      [legend]="{ show: true }"
+    />
+  } @else {
+    <apx-chart
+      [chart]="donutChart"
+      [series]="donutSeries()"
+      [labels]="donutLabels()"
+      [colors]="['#52c6ff', '#ff7cb8', '#f6b149']"
+      [dataLabels]="{ enabled: false }"
+      [legend]="{ position: 'bottom' }"
+      [responsive]="donutResponsive"
+      [stroke]="{ width: 0 }"
+    />
+  }
+</div>

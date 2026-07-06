@@ -1,0 +1,121 @@
+from __future__ import annotations
+
+import logging
+
+from langchain_community.chat_message_histories import ChatMessageHistory
+
+from app.core.config.settings import AppSettings
+from app.core.security.exceptions import RepositoryError
+
+
+logger = logging.getLogger(__name__)
+
+
+class ChatHistoryRepository:
+    def __init__(self, supabase_client, settings: AppSettings) -> None:
+        self.supabase = supabase_client
+        self.settings = settings
+
+    def load_history_as_langchain(self, session_id: str) -> ChatMessageHistory:
+        history = ChatMessageHistory()
+        if not session_id or session_id.startswith(self.settings.guest_session_prefix):
+            return history
+
+        try:
+            result = (
+                self.supabase.table("chat_messages")
+                .select("role, content, created_at")
+                .eq("session_id", session_id)
+                .order("created_at")
+                .execute()
+            )
+        except Exception as exc:
+            logger.exception("Failed to load chat messages")
+            raise RepositoryError("Failed to load chat messages") from exc
+
+        for row in result.data or []:
+            role = row.get("role")
+            message = row.get("content", "")
+            if role == "user":
+                history.add_user_message(message)
+            elif role == "assistant":
+                history.add_ai_message(message)
+
+        return history
+
+    # ------------------------------------------------------------------
+    # chat_messages table — used by the advanced memory system
+    # ------------------------------------------------------------------
+
+    def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> None:
+        """Persist a message to the new chat_messages table."""
+        if user_id.startswith(self.settings.guest_session_prefix):
+            return
+
+        try:
+            self.supabase.table("chat_messages").insert(
+                {
+                    "session_id": session_id,
+                    "user_id": user_id,
+                    "role": role,
+                    "content": content,
+                }
+            ).execute()
+        except Exception as exc:
+            logger.exception("Failed to save chat message to chat_messages")
+            raise RepositoryError("Failed to save chat message") from exc
+
+    def delete_latest_exchange(self, session_id: str) -> None:
+        """Delete the latest user and assistant messages for regeneration."""
+        try:
+            # Supabase doesn't support DELETE with LIMIT directly easily, 
+            # so we fetch the last 2 IDs and delete them.
+            result = (
+                self.supabase.table("chat_messages")
+                .select("id")
+                .eq("session_id", session_id)
+                .order("created_at", desc=True)
+                .limit(2)
+                .execute()
+            )
+            if not result.data:
+                return
+                
+            ids_to_delete = [row["id"] for row in result.data]
+            if ids_to_delete:
+                self.supabase.table("chat_messages").delete().in_("id", ids_to_delete).execute()
+        except Exception as exc:
+            logger.exception("Failed to delete latest exchange for session %s", session_id)
+            raise RepositoryError("Failed to delete latest exchange") from exc
+
+    def get_recent_messages(self, session_id: str, limit: int = 10) -> list[dict]:
+        """Return the most recent *limit* messages for the session, oldest-first."""
+        try:
+            result = (
+                self.supabase.table("chat_messages")
+                .select("role, content, created_at")
+                .eq("session_id", session_id)
+                .order("created_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
+            # Reverse so messages are in chronological order (oldest first)
+            rows = list(reversed(result.data or []))
+            return [{"role": r["role"], "content": r["content"]} for r in rows]
+        except Exception as exc:
+            logger.exception("Failed to fetch recent messages for session %s", session_id)
+            raise RepositoryError("Failed to fetch recent messages") from exc
+
+    def get_message_count(self, session_id: str) -> int:
+        """Return total number of stored messages for the session."""
+        try:
+            result = (
+                self.supabase.table("chat_messages")
+                .select("id", count="exact")
+                .eq("session_id", session_id)
+                .execute()
+            )
+            return result.count or 0
+        except Exception as exc:
+            logger.exception("Failed to count messages for session %s", session_id)
+            return 0

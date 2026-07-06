@@ -1,0 +1,8 @@
+<button class="pill-button" type="button" (click)="themeService.cycleTheme()">
+  @if (themeService.activeTheme() === 'dark') {
+    <svg [lucideIcon]="icons.MoonStar" class="h-4 w-4"></svg>
+  } @else {
+    <svg [lucideIcon]="icons.SunMedium" class="h-4 w-4"></svg>
+  }
+  <span class="capitalize">{{ themeService.preference() }}</span>
+</button>

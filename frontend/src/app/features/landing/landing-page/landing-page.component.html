@@ -1,0 +1,134 @@
+<section mcReveal class="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center py-20 text-center">
+  <div mcReveal class="mx-auto flex max-w-3xl flex-col items-center space-y-8">
+    <div class="mb-4">
+      <mc-medical-orb size="compact" />
+    </div>
+
+    <div class="space-y-6">
+      <h1 class="font-display text-5xl font-bold tracking-tight text-ink sm:text-6xl lg:text-7xl">
+        MediChat
+      </h1>
+      <p class="text-xl font-medium text-ink/70 sm:text-2xl">
+        AI-powered medical learning assistant.
+      </p>
+      <p class="mx-auto max-w-2xl text-base text-ink/60 sm:text-lg">
+        Learn directly from trusted medical textbooks through intelligent conversations,
+        flashcards, quizzes, and AI-powered study tools.
+      </p>
+    </div>
+
+    <div class="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row sm:gap-6">
+      <a class="primary-button text-base no-underline" routerLink="/auth/signup">
+        Start Learning
+      </a>
+      <a class="secondary-button text-base no-underline" routerLink="/auth/login">
+        Sign In
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="features" mcReveal class="py-24">
+  <div class="mx-auto max-w-5xl px-4">
+    <div class="mb-16 text-center">
+      <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-accent">Features</p>
+      <h2 class="font-display text-3xl font-bold text-ink sm:text-4xl">Everything you need to excel</h2>
+      <p class="mx-auto mt-4 max-w-xl text-ink/60">A complete suite of AI-powered tools designed specifically for medical students.</p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      @for (feature of features; track feature.title) {
+        <div mcReveal class="glass-panel surface-outline flex flex-col gap-4 rounded-[24px] p-6">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15">
+            <svg [lucideIcon]="feature.icon" class="h-5 w-5 text-accent"></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-ink">{{ feature.title }}</h3>
+          <p class="text-sm leading-relaxed text-ink/60">{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" mcReveal class="py-24">
+  <div class="mx-auto max-w-5xl px-4">
+    <div class="mb-16 text-center">
+      <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-accent">Beta Vision</p>
+      <h2 class="font-display text-3xl font-bold text-ink sm:text-4xl">What we are aiming for with student feedback</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-sm text-ink/60">These are target outcomes for the beta program, not current user testimonials.</p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div mcReveal class="glass-panel surface-outline flex flex-col gap-4 rounded-[24px] p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-accent">Clarity</p>
+        <p class="text-sm leading-relaxed text-ink/70">Students can ask a topic in plain language and immediately get concise, syllabus-aligned explanations they can trust.</p>
+        <div class="mt-auto border-t border-ink/10 pt-4 text-xs text-ink/50">
+          Target for early beta interviews
+        </div>
+      </div>
+
+      <div mcReveal class="glass-panel surface-outline flex flex-col gap-4 rounded-[24px] p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-success">Retention</p>
+        <p class="text-sm leading-relaxed text-ink/70">After each study session, learners can generate flashcards and quick quizzes in seconds to reinforce memory while the topic is fresh.</p>
+        <div class="mt-auto border-t border-ink/10 pt-4 text-xs text-ink/50">
+          Target for early beta interviews
+        </div>
+      </div>
+
+      <div mcReveal class="glass-panel surface-outline flex flex-col gap-4 rounded-[24px] p-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-warning">Confidence</p>
+        <p class="text-sm leading-relaxed text-ink/70">Learners can upload class notes, ask follow-up questions, and feel prepared before exams without switching between multiple tools.</p>
+        <div class="mt-auto border-t border-ink/10 pt-4 text-xs text-ink/50">
+          Target for early beta interviews
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="study-flow" mcReveal class="py-24">
+  <div class="mx-auto max-w-3xl px-4 text-center">
+    <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-accent">Study Flow</p>
+    <h2 class="font-display text-3xl font-bold text-ink sm:text-4xl">Your AI-powered study cycle</h2>
+    <p class="mx-auto mt-4 max-w-xl text-ink/60">MediChat fits naturally into your daily study rhythm.</p>
+
+    <div class="mt-14 flex flex-col gap-6 text-left">
+      <div mcReveal class="glass-panel surface-outline flex items-start gap-5 rounded-[24px] p-6">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/20 text-lg font-bold text-accent">1</div>
+        <div>
+          <h3 class="text-lg font-semibold text-ink">Ask & Explore</h3>
+          <p class="mt-1 text-sm text-ink/60">Start a conversation. Ask about any medical topic - anatomy, pharmacology, physiology. Get clear AI explanations sourced from medical texts.</p>
+        </div>
+      </div>
+
+      <div mcReveal class="glass-panel surface-outline flex items-start gap-5 rounded-[24px] p-6">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success/20 text-lg font-bold text-success">2</div>
+        <div>
+          <h3 class="text-lg font-semibold text-ink">Reinforce with Flashcards</h3>
+          <p class="mt-1 text-sm text-ink/60">Generate a flashcard deck on any topic you just studied. Review with active recall to cement the knowledge in long-term memory.</p>
+        </div>
+      </div>
+
+      <div mcReveal class="glass-panel surface-outline flex items-start gap-5 rounded-[24px] p-6">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/20 text-lg font-bold text-warning">3</div>
+        <div>
+          <h3 class="text-lg font-semibold text-ink">Test with Quizzes</h3>
+          <p class="mt-1 text-sm text-ink/60">Challenge yourself with timed MCQ quizzes. See your score, review correct answers, and identify your weak areas.</p>
+        </div>
+      </div>
+
+      <div mcReveal class="glass-panel surface-outline flex items-start gap-5 rounded-[24px] p-6">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/20 text-lg font-bold text-accent">4</div>
+        <div>
+          <h3 class="text-lg font-semibold text-ink">Track Your Progress</h3>
+          <p class="mt-1 text-sm text-ink/60">Monitor your daily study streak, session count, and topic diversity through the analytics dashboard. Stay consistent, stay ahead.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-14">
+      <a class="primary-button px-8 py-4 text-base no-underline" routerLink="/auth/signup">Get Started Free</a>
+      <p class="mt-4 text-xs text-ink/40">No credit card required. Start learning immediately.</p>
+    </div>
+  </div>
+</section>

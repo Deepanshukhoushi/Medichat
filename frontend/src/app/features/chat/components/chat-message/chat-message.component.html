@@ -1,0 +1,63 @@
+<article class="flex w-full py-4 sm:py-6" [class.justify-end]="message().role === 'user'">
+  @if (message().role === 'assistant') {
+    <div class="relative flex w-full max-w-3xl flex-col rounded-[18px] border border-white/[0.06] bg-[#1A1F2B] p-6 md:p-8 shadow-sm animate-fade-in">
+      
+      <div class="mb-5 flex items-center gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/20">
+          <mc-medical-orb size="compact" class="h-6 w-6" />
+        </div>
+        <span class="font-semibold text-ink">MediChat</span>
+      </div>
+
+      @if (message().content) {
+        <markdown class="prose prose-sm prose-invert max-w-none mc-assistant-prose" [data]="message().content" />
+      } @else {
+        <div class="flex items-center gap-3 text-muted">
+          <p class="text-sm animate-pulse">Thinking...</p>
+        </div>
+      }
+
+      @if (message().content && (!isStreaming() || !isLast())) {
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap gap-2">
+            @for (citation of message().citations; track citation.title) {
+              <div class="rounded-xl border border-white/10 bg-surface/50 px-3 py-2 text-xs text-muted">
+                <span class="font-semibold text-ink">{{ citation.title }}</span>
+                <span class="ml-1 opacity-70">{{ citation.source }} · {{ citation.chapter }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="flex items-center gap-1 border-t border-white/5 pt-4 w-full sm:w-auto sm:border-0 sm:pt-0">
+            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Copy message" type="button" (click)="copy()">
+              <svg [lucideIcon]="icons.Copy" class="h-4 w-4"></svg>
+            </button>
+            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Mark as helpful" type="button" (click)="react(true)">
+              <svg [lucideIcon]="icons.ThumbsUp" class="h-4 w-4"></svg>
+            </button>
+            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Mark as not helpful" type="button" (click)="react(false)">
+              <svg [lucideIcon]="icons.ThumbsDown" class="h-4 w-4"></svg>
+            </button>
+            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Regenerate" type="button" (click)="regenerate()">
+              <svg [lucideIcon]="icons.RefreshCcw" class="h-4 w-4"></svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="flex max-w-3xl flex-col items-end gap-2">
+      <div class="group relative rounded-[18px] bg-success px-5 py-3 text-white animate-fade-in shadow-sm">
+        <p class="whitespace-pre-line">{{ message().content }}</p>
+        <button class="absolute -right-8 top-0 hidden rounded-md p-1.5 text-muted hover:bg-white/5 hover:text-error group-hover:block transition" title="Delete message" aria-label="Delete message" type="button" (click)="deleteMessage()">
+          <svg [lucideIcon]="icons.Square" class="h-4 w-4"></svg>
+        </button>
+      </div>
+      @if (message().timestamp) {
+        <p class="text-[11px] text-muted text-right">
+          {{ message().timestamp }}
+        </p>
+      }
+    </div>
+  }
+</article>

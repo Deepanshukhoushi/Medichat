@@ -1,0 +1,169 @@
+<div class="space-y-5 p-6">
+  <mc-section-heading
+    eyebrow="Analytics"
+    title="Study analytics."
+    description="Deep insights into your learning patterns, progress, and consistency."
+  />
+
+  @if (errorMessage()) {
+    <div class="rounded-xl bg-warning/10 border border-warning/20 px-4 py-3 text-sm text-warning">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (stats(); as stats) {
+    <!-- Main Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <mc-glass-card class="flex flex-col gap-3">
+        <div class="h-10 w-10 rounded-xl bg-accent/15 flex items-center justify-center">
+          <svg [lucideIcon]="icons.Flame" class="h-5 w-5 text-accent"></svg>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-ink">{{ stats.streak_days }}</p>
+          <p class="text-sm font-medium text-ink/60 mt-0.5">Day Streak</p>
+        </div>
+        <p class="text-xs text-ink/40">Keep it going! Study every day to maintain your streak.</p>
+      </mc-glass-card>
+
+      <mc-glass-card class="flex flex-col gap-3">
+        <div class="h-10 w-10 rounded-xl bg-success/15 flex items-center justify-center">
+          <svg [lucideIcon]="icons.CalendarClock" class="h-5 w-5 text-success"></svg>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-ink">{{ stats.total_sessions }}</p>
+          <p class="text-sm font-medium text-ink/60 mt-0.5">Study Sessions</p>
+        </div>
+        <p class="text-xs text-ink/40">Total completed learning sessions.</p>
+      </mc-glass-card>
+
+      <mc-glass-card class="flex flex-col gap-3">
+        <div class="h-10 w-10 rounded-xl bg-warning/15 flex items-center justify-center">
+          <svg [lucideIcon]="icons.MessagesSquare" class="h-5 w-5 text-warning"></svg>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-ink">{{ stats.total_messages }}</p>
+          <p class="text-sm font-medium text-ink/60 mt-0.5">AI Interactions</p>
+        </div>
+        <p class="text-xs text-ink/40">Questions asked and answered by the AI.</p>
+      </mc-glass-card>
+
+      <mc-glass-card class="flex flex-col gap-3">
+        <div class="h-10 w-10 rounded-xl bg-accent/15 flex items-center justify-center">
+          <svg [lucideIcon]="icons.BookOpen" class="h-5 w-5 text-accent"></svg>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-ink">{{ stats.unique_topics }}</p>
+          <p class="text-sm font-medium text-ink/60 mt-0.5">Topics Explored</p>
+        </div>
+        <p class="text-xs text-ink/40">Unique medical topics you've studied.</p>
+      </mc-glass-card>
+    </div>
+
+    <!-- Engagement Summary -->
+    <mc-glass-card>
+      <h2 class="text-lg font-semibold text-ink mb-5">Learning Insights</h2>
+      <div class="space-y-4">
+        <!-- Streak Progress -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-ink/70">Study Streak</span>
+            <span class="text-sm font-semibold text-ink">{{ stats.streak_days }} / 30 days</span>
+          </div>
+          <div class="h-2 rounded-full bg-ink/10 overflow-hidden">
+            <div
+              class="h-full rounded-full bg-gradient-to-r from-accent to-success transition-all duration-700"
+              [style.width.%]="Math.min((stats.streak_days / 30) * 100, 100)"
+            ></div>
+          </div>
+          <p class="mt-1 text-xs text-ink/40">Target: 30-day study streak</p>
+        </div>
+
+        <!-- Sessions Progress -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-ink/70">Sessions This Month</span>
+            <span class="text-sm font-semibold text-ink">{{ stats.total_sessions }}</span>
+          </div>
+          <div class="h-2 rounded-full bg-ink/10 overflow-hidden">
+            <div
+              class="h-full rounded-full bg-gradient-to-r from-success to-warning transition-all duration-700"
+              [style.width.%]="Math.min((stats.total_sessions / 50) * 100, 100)"
+            ></div>
+          </div>
+          <p class="mt-1 text-xs text-ink/40">Target: 50 sessions</p>
+        </div>
+
+        <!-- Topics Explored -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-ink/70">Topics Breadth</span>
+            <span class="text-sm font-semibold text-ink">{{ stats.unique_topics }} topics</span>
+          </div>
+          <div class="h-2 rounded-full bg-ink/10 overflow-hidden">
+            <div
+              class="h-full rounded-full bg-gradient-to-r from-warning to-accent transition-all duration-700"
+              [style.width.%]="Math.min((stats.unique_topics / 20) * 100, 100)"
+            ></div>
+          </div>
+          <p class="mt-1 text-xs text-ink/40">Target: 20 unique topics</p>
+        </div>
+      </div>
+    </mc-glass-card>
+
+    <mc-chart-panel
+      title="Engagement Mix"
+      subtitle="A quick visual summary of your current activity profile."
+      mode="donut"
+      [donutSeries]="chartSeries()"
+      [donutLabels]="chartLabels"
+    />
+
+    <!-- Tips -->
+    <mc-glass-card>
+      <h2 class="text-lg font-semibold text-ink mb-4">Study Tips</h2>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="flex items-start gap-3 rounded-xl bg-accent/5 border border-accent/10 p-4">
+          <svg [lucideIcon]="icons.Lightbulb" class="h-5 w-5 text-accent mt-0.5 shrink-0"></svg>
+          <div>
+            <p class="text-sm font-semibold text-ink">Use Flashcards Daily</p>
+            <p class="text-xs text-ink/60 mt-1">Active recall with flashcards is proven to improve long-term memory retention.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl bg-success/5 border border-success/10 p-4">
+          <svg [lucideIcon]="icons.ClipboardList" class="h-5 w-5 text-success mt-0.5 shrink-0"></svg>
+          <div>
+            <p class="text-sm font-semibold text-ink">Test After Each Topic</p>
+            <p class="text-xs text-ink/60 mt-1">Generate a quick quiz after studying each topic to identify gaps immediately.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl bg-warning/5 border border-warning/10 p-4">
+          <svg [lucideIcon]="icons.Flame" class="h-5 w-5 text-warning mt-0.5 shrink-0"></svg>
+          <div>
+            <p class="text-sm font-semibold text-ink">Maintain Your Streak</p>
+            <p class="text-xs text-ink/60 mt-1">Even 10 minutes of study per day keeps the streak alive and habits strong.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl bg-accent/5 border border-accent/10 p-4">
+          <svg [lucideIcon]="icons.BookOpen" class="h-5 w-5 text-accent mt-0.5 shrink-0"></svg>
+          <div>
+            <p class="text-sm font-semibold text-ink">Upload Your Notes</p>
+            <p class="text-xs text-ink/60 mt-1">Upload lecture notes to Study Tools for personalized AI explanations.</p>
+          </div>
+        </div>
+      </div>
+    </mc-glass-card>
+  } @else {
+    @if (!errorMessage()) {
+      <!-- Loading skeleton -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (_ of [1,2,3,4]; track $index) {
+          <div class="glass-panel surface-outline rounded-[30px] p-5 space-y-3 animate-pulse">
+            <div class="h-10 w-10 rounded-xl bg-ink/10"></div>
+            <div class="h-8 w-16 rounded bg-ink/10"></div>
+            <div class="h-4 w-24 rounded bg-ink/10"></div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
