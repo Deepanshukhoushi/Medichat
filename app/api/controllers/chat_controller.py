@@ -124,14 +124,6 @@ class ChatController:
             response = make_response(send_from_directory(spa_root, "index.html"))
         else:
             response = make_response("Angular SPA not built. Run 'npm run build' in the frontend directory.", 404)
-        if session_context:
-            response.set_cookie(
-                self.settings.session_cookie_name,
-                session_context.cookie_value,
-                max_age=self.settings.session_cookie_max_age_seconds,
-                httponly=True,
-                samesite="Strict",
-            )
         return response
 
     def chat(self):
@@ -145,15 +137,6 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         answer = self.chat_service.get_answer(message, user_id, conversation_id)
         response = make_response(answer)
-        session_context = getattr(g, "session_context", None)
-        if session_context:
-            response.set_cookie(
-                self.settings.session_cookie_name,
-                session_context.cookie_value,
-                max_age=self.settings.session_cookie_max_age_seconds,
-                httponly=True,
-                samesite="Strict",
-            )
         return response
 
     def chat_stream(self):
@@ -232,15 +215,6 @@ class ChatController:
                     details={"email": auth_request.email},
                 )
             response = make_response(jsonify({"message": "Login successful"}))
-            
-            session_max_age = self.settings.session_cookie_max_age_seconds if g.remember_me else None
-            response.set_cookie(
-                self.settings.session_cookie_name,
-                auth_session.cookie_value,
-                max_age=session_max_age,
-                httponly=True,
-                samesite="Strict",
-            )
             return response
         except ValidationError as exc:
             logger.warning("Login validation failed: %s, details: %s", exc, exc.details)
@@ -292,13 +266,6 @@ class ChatController:
                     remote_addr=request.remote_addr,
                 )
             response = make_response(redirect("/app/chat"))
-            response.set_cookie(
-                self.settings.session_cookie_name,
-                auth_session.cookie_value,
-                max_age=self.settings.session_cookie_max_age_seconds,
-                httponly=True,
-                samesite="Strict",
-            )
             return response
         except Exception as exc:
             logger.exception("Failed to exchange Google OAuth code")
@@ -309,13 +276,6 @@ class ChatController:
         if not self.settings.persistence_enabled:
             guest_context = self.auth_service.session_manager.create_guest_cookie()
             response = make_response(jsonify({"message": "Logged out"}))
-            response.set_cookie(
-                self.settings.session_cookie_name,
-                guest_context.cookie_value,
-                max_age=self.settings.session_cookie_max_age_seconds,
-                httponly=True,
-                samesite="Strict",
-            )
             return response
 
         try:
@@ -333,13 +293,6 @@ class ChatController:
         guest_context = self.auth_service.session_manager.create_guest_cookie()
         g.session_context = guest_context
         response = make_response(jsonify({"message": "Logged out"}))
-        response.set_cookie(
-            self.settings.session_cookie_name,
-            guest_context.cookie_value,
-            max_age=self.settings.session_cookie_max_age_seconds,
-            httponly=True,
-            samesite="Strict",
-        )
         return response
 
     def reset_password_request(self):
@@ -417,7 +370,6 @@ class ChatController:
             response = make_response(
                 jsonify({"message": "Password updated successfully. Please log in again."})
             )
-            response.delete_cookie(self.settings.session_cookie_name, samesite="Strict")
             return response
         except AppError as exc:
             logger.warning("Password update failed: %s", exc)
