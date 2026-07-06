@@ -173,7 +173,7 @@ def register_security_guards(
                 max_age=session_max_age,
                 httponly=True,
                 secure=settings.secure_cookies,
-                samesite="Lax",
+                samesite="None" if settings.secure_cookies else "Lax",
             )
 
         # CSRF cookie
@@ -184,7 +184,7 @@ def register_security_guards(
                 max_age=settings.session_cookie_max_age_seconds,
                 httponly=False,
                 secure=settings.secure_cookies,
-                samesite="Lax",
+                samesite="None" if settings.secure_cookies else "Lax",
             )
 
         # CORS
