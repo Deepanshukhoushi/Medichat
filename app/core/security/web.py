@@ -107,14 +107,15 @@ def register_security_guards(
 
         # CSRF + POST rate-limiting
         if request.method == "POST" and endpoint in _RATE_LIMITED_POST_ENDPOINTS:
-            header_token = request.headers.get(settings.csrf_header_name)
-            if not csrf_manager.is_valid(csrf_cookie, header_token):
-                logger.warning(
-                    "CSRF validation failed endpoint=%s remote_addr=%s",
-                    endpoint,
-                    request.remote_addr,
-                )
-                raise AppError("CSRF validation failed", status_code=403, error_type="csrf_error")
+            origin = request.headers.get("Origin")
+            if origin and origin in settings.frontend_origins:
+                # Request is from a trusted cross-origin frontend, preflight ensures safety
+                pass
+            else:
+                header_token = request.headers.get(settings.csrf_header_name)
+                if not csrf_manager.is_valid(csrf_cookie, header_token):
+                    logger.warning("CSRF validation failed for POST %s from %s", request.path, request.remote_addr)
+                    raise AppError("CSRF validation failed", status_code=403, error_type="csrf_error")
 
             if endpoint in ("login", "signup", "reset_password", "reset_password_request"):
                 rate_key = f"rl:{endpoint}:{request.remote_addr}"
@@ -176,8 +177,9 @@ def register_security_guards(
                 samesite="None" if settings.secure_cookies else "Lax",
             )
 
-        # CSRF cookie
+        # CSRF cookie & header
         if getattr(g, "csrf_token", None):
+            response.headers["X-CSRF-Token"] = g.csrf_token
             response.set_cookie(
                 settings.csrf_cookie_name,
                 g.csrf_token,
@@ -195,6 +197,7 @@ def register_security_guards(
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Expose-Headers"] = "X-CSRF-Token"
             response.headers.setdefault("Vary", "Origin")
 
         # Security headers
