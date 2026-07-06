@@ -61,8 +61,12 @@ def _probe_pinecone_health(api_key: str, cache_ttl_seconds: float = _PINECONE_HE
         return cached[1]
 
     try:
-        pc = get_pinecone_client(api_key)
-        pc.list_indexes()
+        import httpx
+        httpx.get(
+            "https://api.pinecone.io/indexes",
+            headers={"Api-Key": api_key},
+            timeout=3.0,
+        )
         healthy = True
     except Exception:
         healthy = False

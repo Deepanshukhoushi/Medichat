@@ -30,7 +30,7 @@ export const csrfInterceptor: HttpInterceptorFn = (req, next) => {
     if (!token && typeof window !== 'undefined') {
       // Use fetch directly to avoid interceptor loops and ensure cookies are set
       return from(
-        fetch(buildBackendUrl(runtimeConfig.apiBaseUrl, '/health'), {
+        fetch(buildBackendUrl(runtimeConfig.apiBaseUrl, '/api/profile/me'), {
           method: 'GET',
           credentials: 'include',
         }).then(() => {
