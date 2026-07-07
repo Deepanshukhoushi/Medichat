@@ -2,15 +2,17 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { BackendApiService } from '../../../core/services/backend-api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { GoogleIconComponent } from '../../../shared/components/google-icon/google-icon.component';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-login-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, GoogleIconComponent],
+  imports: [FormsModule, RouterLink, GoogleIconComponent, LucideDynamicIcon],
   templateUrl: './login-page.component.html',
   styleUrls: ['./login-page.component.scss', '../auth-page.shared.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -20,6 +22,8 @@ export class LoginPageComponent {
   private readonly router = inject(Router);
   private readonly backendApi = inject(BackendApiService);
   private readonly toastr = inject(ToastrService);
+
+  protected readonly icons = appIcons;
 
   protected readonly email = signal('');
   protected readonly password = signal('');

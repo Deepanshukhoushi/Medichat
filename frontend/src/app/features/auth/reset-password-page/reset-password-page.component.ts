@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -14,7 +15,9 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class ResetPasswordPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly toastr = inject(ToastrService);
 
   private accessToken = '';
 
@@ -23,6 +26,7 @@ export class ResetPasswordPageComponent implements OnInit {
   protected readonly isSubmitting = signal(false);
   protected readonly statusMessage = signal('');
   protected readonly isTokenValid = signal(false);
+  protected readonly isSuccess = signal(false);
   protected readonly submitted = signal(false);
 
   ngOnInit(): void {
@@ -77,11 +81,11 @@ export class ResetPasswordPageComponent implements OnInit {
     this.isSubmitting.set(true);
 
     this.authService.updatePassword(pass, this.accessToken).subscribe({
-      next: () => {
-        this.statusMessage.set('Password updated successfully. You can now log in.');
+      next: async () => {
+        this.isSuccess.set(true);
         this.isSubmitting.set(false);
-        this.password.set('');
-        this.confirmPassword.set('');
+        this.toastr.success('Password updated successfully. You can now log in.', 'Success');
+        await this.router.navigateByUrl('/auth/login');
       },
       error: (error: { error?: { error?: string } }) => {
         this.statusMessage.set(error?.error?.error ?? 'Unable to update password right now.');

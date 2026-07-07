@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { alreadyAuthGuard } from './core/guards/already-auth.guard';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth',
+    canActivate: [alreadyAuthGuard],
     loadComponent: () => import('./layouts/auth-layout/auth-layout.component').then((m) => m.AuthLayoutComponent),
     children: [
       {
@@ -64,11 +66,13 @@ export const routes: Routes = [
       {
         path: 'chat',
         title: 'Chat | MediChat',
+        data: { allowGuest: true },
         loadComponent: () => import('./features/chat/chat-page/chat-page.component').then((m) => m.ChatPageComponent)
       },
       {
         path: 'study-tools',
         title: 'Study Tools | MediChat',
+        data: { allowGuest: true },
         loadComponent: () => import('./features/study-tools/study-tools-page/study-tools-page.component').then((m) => m.StudyToolsPageComponent)
       },
       {

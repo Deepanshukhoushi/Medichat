@@ -1,42 +1,47 @@
 .auth-form {
-  display: grid;
-  gap: 1rem;
+  @apply flex flex-col gap-3;
 }
 
 .field-group {
-  display: grid;
-  gap: 0.5rem;
+  @apply flex flex-col gap-1 relative;
+
+  label {
+    @apply text-[11px] uppercase tracking-wider font-bold text-ink/70 ml-1;
+  }
+
+  input,
+  select {
+    @apply w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 py-2 text-[13px] text-ink outline-none transition-all duration-300 shadow-sm placeholder:text-muted/50;
+    
+    &:hover {
+      @apply bg-ink/[0.04] border-line/[0.15];
+    }
+    
+    &:focus {
+      @apply border-accent bg-ink/[0.02] shadow-[0_0_0_3px_rgba(34,197,94,0.1)];
+    }
+    
+    &.border-error {
+      @apply border-red-500 bg-error/5 shadow-[0_0_0_3px_rgba(239,68,68,0.1)];
+    }
+
+    &.has-icon {
+      @apply pl-10;
+    }
+    &.has-right-icon {
+      @apply pr-10;
+    }
+  }
+
+  .input-icon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 text-muted transition-colors duration-300 h-4 w-4 pointer-events-none;
+  }
+
+  &:focus-within .input-icon {
+    @apply text-accent;
+  }
 }
 
-.field-group label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgb(var(--color-ink) / 0.7);
-}
-
-.field-group input,
-.field-group select {
-  width: 100%;
-  border: 1px solid transparent;
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 0.95rem 1rem;
-  color: rgb(var(--color-ink));
-  outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-}
-
-[data-theme='dark'] .field-group input,
-[data-theme='dark'] .field-group select {
-  background: rgba(13, 22, 40, 0.82);
-}
-
-.field-group input:focus,
-.field-group select:focus {
-  border-color: rgba(84, 191, 255, 0.8);
-}
-
-.field-group input:focus-visible,
-.field-group select:focus-visible {
-  box-shadow: 0 0 0 2px rgba(84, 191, 255, 0.5);
+.auth-google-btn {
+  @apply flex w-full items-center justify-center gap-2 rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 py-2 text-[13px] font-semibold text-ink transition-all hover:bg-ink/[0.05] hover:shadow-sm;
 }

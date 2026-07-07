@@ -1,30 +1,60 @@
-<div class="shell">
-  <header class="glass-panel-strong surface-outline sticky top-4 z-40 rounded-[30px] px-4 py-4 sm:px-6">
-    <div class="flex flex-wrap items-center justify-between gap-4">
+<div class="min-h-screen bg-canvas text-ink flex flex-col font-sans selection:bg-accent/30 selection:text-white">
+  <!-- Navbar -->
+  <header class="fixed top-0 left-0 right-0 z-50 border-b border-line/[0.08] bg-canvas/60 backdrop-blur-xl transition-all duration-300">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
       <mc-app-logo />
 
-      <nav class="hidden items-center gap-3 lg:flex">
-        <a class="pill-button no-underline" href="#features">Features</a>
-        <a class="pill-button no-underline" href="#testimonials">Testimonials</a>
-        <a class="pill-button no-underline" href="#study-flow">Study Flow</a>
+      <nav class="hidden items-center gap-8 md:flex text-sm font-medium text-muted">
+        <a class="transition-colors hover:text-ink" href="#features">Features</a>
+        <a class="transition-colors hover:text-ink" href="#how-it-works">How It Works</a>
+        <a class="transition-colors hover:text-ink" href="#testimonials">Testimonials</a>
+        <a class="transition-colors hover:text-ink" href="#faq">FAQ</a>
       </nav>
 
-      <div class="flex items-center gap-3">
-        <mc-theme-toggle class="hidden lg:block" />
-        <a class="primary-button no-underline" routerLink="/auth/signup">Start Learning</a>
-      </div>
-
-      <div class="flex w-full flex-wrap items-center gap-2 lg:hidden">
-        <a class="pill-button no-underline" href="#features">Features</a>
-        <a class="pill-button no-underline" href="#testimonials">Testimonials</a>
-        <a class="pill-button no-underline" href="#study-flow">Study Flow</a>
-        <span class="flex-1"></span>
-        <mc-theme-toggle />
+      <div class="flex items-center gap-4">
+        <mc-theme-toggle class="hidden md:block" />
+        <a class="primary-button text-sm h-10 px-6" [routerLink]="isLoggedIn() ? '/app/dashboard' : '/auth/login'">
+          {{ isLoggedIn() ? 'Go to App' : 'Get Started' }}
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="pt-8">
+  <!-- Main Content -->
+  <main class="flex-1">
     <router-outlet />
   </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-line/[0.08] bg-canvas py-12 text-sm text-muted">
+    <div class="mx-auto max-w-7xl px-6 grid gap-8 md:grid-cols-4">
+      <div class="flex flex-col gap-4">
+        <mc-app-logo />
+        <p class="max-w-xs text-xs leading-relaxed">
+          The ultimate AI-powered medical learning assistant for students to master complex topics instantly.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h3 class="font-semibold text-ink">Product</h3>
+        <a href="#features" class="hover:text-accent transition-colors">Features</a>
+        <a href="#how-it-works" class="hover:text-accent transition-colors">How it Works</a>
+        <a href="#pricing" class="hover:text-accent transition-colors">Pricing</a>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h3 class="font-semibold text-ink">Resources</h3>
+        <a href="#" class="hover:text-accent transition-colors">Documentation</a>
+        <a href="#" class="hover:text-accent transition-colors">Blog</a>
+        <a href="#" class="hover:text-accent transition-colors">Help Center</a>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h3 class="font-semibold text-ink">Legal</h3>
+        <a href="#" class="hover:text-accent transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-accent transition-colors">Terms of Service</a>
+        <a href="#" class="hover:text-accent transition-colors">Contact</a>
+      </div>
+    </div>
+    <div class="mx-auto max-w-7xl px-6 mt-12 pt-8 border-t border-line/[0.04] flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+      <p>&copy; 2026 MediChat Inc. All rights reserved.</p>
+    </div>
+  </footer>
 </div>

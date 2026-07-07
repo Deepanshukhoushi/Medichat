@@ -1,51 +1,66 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 
-import { MedicalOrbComponent } from '../../../shared/components/medical-orb/medical-orb.component';
 import { RevealDirective } from '../../../shared/directives/reveal.directive';
 import { appIcons } from '../../../shared/icons/lucide-icons';
+import { BackendApiService } from '../../../core/services/backend-api.service';
 
 @Component({
   selector: 'mc-landing-page',
   standalone: true,
-  imports: [RouterLink, LucideDynamicIcon, MedicalOrbComponent, RevealDirective],
+  imports: [RouterLink, LucideDynamicIcon, RevealDirective],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LandingPageComponent {
+export class LandingPageComponent implements OnInit {
+  private readonly backendApi = inject(BackendApiService);
+  private readonly router = inject(Router);
+
+  protected readonly isLoggedIn = signal(false);
+  protected readonly activeFaq = signal<number | null>(null);
+
+  ngOnInit(): void {
+    this.backendApi.getProfile().subscribe({
+      next: (profile) => {
+        if (profile?.user_id && !profile.user_id.startsWith('guest_')) {
+          this.isLoggedIn.set(true);
+        }
+      },
+      error: () => { }
+    });
+  }
+
+  protected toggleFaq(index: number) {
+    this.activeFaq.update(current => current === index ? null : index);
+  }
+
   protected readonly icons = appIcons;
+  
   protected readonly features = [
-    {
-      title: 'AI Chat',
-      description: 'Ask follow-up questions and get clear explanations for complex medical topics.',
-      icon: appIcons.MessagesSquare
-    },
-    {
-      title: 'Smart Flashcards',
-      description: 'Turn lecture notes into active-recall flashcards you can study anywhere.',
-      icon: appIcons.WandSparkles
-    },
-    {
-      title: 'Timed Quizzes',
-      description: 'Check your knowledge with multiple-choice quizzes built around your study topics.',
-      icon: appIcons.Clock3
-    },
-    {
-      title: 'Document Upload',
-      description: 'Upload PDFs, notes, or handouts and turn them into searchable study material.',
-      icon: appIcons.Paperclip
-    },
-    {
-      title: 'AI Study Tools',
-      description: 'Summarize, explain, and generate mnemonics when you need a faster study pass.',
-      icon: appIcons.Lightbulb
-    },
-    {
-      title: 'Analytics',
-      description: 'Track sessions, streaks, and learning trends so you can see consistent progress.',
-      icon: appIcons.ChartColumnBig
-    }
+    { title: 'AI Chat', description: 'Ask complex questions, get clear explanations backed by trusted medical textbooks.', icon: appIcons.MessagesSquare },
+    { title: 'Smart Flashcards', description: 'Generate active-recall flashcards instantly from your current study session.', icon: appIcons.Layers },
+    { title: 'Quiz Generator', description: 'Test your knowledge with multiple-choice questions tailored to your weaknesses.', icon: appIcons.ClipboardList },
+    { title: 'Study Planner', description: 'Organize your topics, set goals, and track your learning streak every day.', icon: appIcons.Calendar },
+    { title: 'Document Upload', description: 'Upload your class PDFs or notes to chat with them directly.', icon: appIcons.FileText },
+    { title: 'Conversation History', description: 'Never lose a good explanation. All your past chats are safely stored and searchable.', icon: appIcons.History },
+    { title: 'Streaming AI', description: 'Experience lightning-fast streaming responses so you never have to wait to learn.', icon: appIcons.Zap },
+    { title: 'Bookmarks', description: 'Save specific messages, definitions, or mnemonics to review them later.', icon: appIcons.Bookmark },
+    { title: 'Medical Images', description: 'Analyze anatomical diagrams and radiology images with vision AI.', icon: appIcons.Image }
+  ];
+
+  protected readonly faqs = [
+    { q: 'Is MediChat free to use?', a: 'Yes, MediChat offers a generous free tier for medical students to get started.' },
+    { q: 'Can I trust the AI answers?', a: 'Our AI is specifically tuned on medical literature and encourages you to cross-reference important clinical information. However, it is an educational tool, not a diagnostic one.' },
+    { q: 'Does it work for nursing or pre-med?', a: 'Absolutely. MediChat adapts its complexity based on the questions you ask, making it perfect for MBBS, nursing, BDS, and pre-med students.' },
+    { q: 'Can I upload my own lectures?', a: 'Yes! You can upload your PDF handouts and the AI will answer questions directly from your own material.' }
+  ];
+
+  protected readonly testimonials = [
+    { quote: "MediChat completely changed how I study for anatomy. The instant flashcards save me hours.", author: "Sarah J.", role: "Med Student" },
+    { quote: "The ability to upload my lecture slides and just ask questions is mind-blowing. It's like a 24/7 tutor.", author: "Michael T.", role: "Pre-med" },
+    { quote: "I use the quiz generator before every exam. It finds the exact weak spots I didn't know I had.", author: "Dr. Emily R.", role: "Resident" },
+    { quote: "Finally, an AI that understands medical terminology accurately without hallucinating random facts.", author: "James K.", role: "Nursing Student" },
   ];
 }

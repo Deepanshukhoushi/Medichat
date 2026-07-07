@@ -1,84 +1,119 @@
-<div class="space-y-6 text-left">
-  <div class="space-y-2 text-center">
-    <h1 class="text-2xl font-bold text-white">Welcome back</h1>
-    <p class="text-sm text-ink/70">Sign in to access your learning dashboard.</p>
+<div class="w-full text-left">
+  <div class="space-y-1.5 text-center mb-6">
+    <h1 class="font-display text-2xl font-bold text-ink tracking-tight">Welcome back</h1>
+    <p class="text-sm text-muted">Sign in to your AI learning dashboard.</p>
   </div>
 
-  <form class="auth-form mt-8" (ngSubmit)="submit()" novalidate>
+  <form class="auth-form" (ngSubmit)="submit()" novalidate>
     <div class="field-group">
-      <label for="email" class="block text-sm font-medium text-ink/80 mb-1.5">Email</label>
-      <input id="email" class="auth-input" [class.border-error]="emailField.invalid && (emailField.dirty || emailField.touched || submitted())" type="email" placeholder="student@college.edu" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" required email #emailField="ngModel" />
+      <label for="email">Email address</label>
+      <div class="relative">
+        <input 
+          id="email" 
+          class="has-icon" 
+          [class.border-error]="emailField.invalid && (emailField.dirty || emailField.touched || submitted())" 
+          type="email" 
+          placeholder="student@college.edu" 
+          [ngModel]="email()" 
+          (ngModelChange)="email.set($event)" 
+          name="email" 
+          required email 
+          #emailField="ngModel" 
+        />
+        <svg [lucideIcon]="icons.Mail" class="input-icon"></svg>
+      </div>
       @if (emailField.invalid && (emailField.dirty || emailField.touched || submitted())) {
-        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
-          <span aria-hidden="true">!</span> Please enter a valid email address.
+        <p class="mt-1 text-xs font-medium text-error flex items-center gap-1.5 animate-fade-in">
+          <svg [lucideIcon]="icons.AlertCircle" class="h-3.5 w-3.5"></svg> Valid email required.
         </p>
       }
     </div>
-    <div class="field-group mt-4">
-      <label for="password" class="block text-sm font-medium text-ink/80 mb-1.5">Password</label>
+
+    <div class="field-group">
+      <div class="flex items-center justify-between">
+        <label for="password">Password</label>
+        <a class="text-xs font-semibold text-accent no-underline hover:text-accentHover transition-colors" routerLink="/auth/forgot-password">Forgot password?</a>
+      </div>
       <div class="relative">
-        <input id="password" class="auth-input pr-12" [class.border-error]="passwordField.invalid && (passwordField.dirty || passwordField.touched || submitted())" [type]="showPassword() ? 'text' : 'password'" placeholder="Enter your password" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" required minlength="6" #passwordField="ngModel" />
+        <input 
+          id="password" 
+          class="has-icon has-right-icon" 
+          [class.border-error]="passwordField.invalid && (passwordField.dirty || passwordField.touched || submitted())" 
+          [type]="showPassword() ? 'text' : 'password'" 
+          placeholder="Enter your password" 
+          [ngModel]="password()" 
+          (ngModelChange)="password.set($event)" 
+          name="password" 
+          required minlength="6" 
+          #passwordField="ngModel" 
+        />
+        <svg [lucideIcon]="icons.Lock" class="input-icon"></svg>
         <button
-          class="auth-toggle"
+          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors outline-none focus-visible:text-accent flex items-center justify-center"
           type="button"
           [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
           (click)="togglePasswordVisibility()"
         >
-          {{ showPassword() ? 'Hide' : 'Show' }}
+          <svg [lucideIcon]="showPassword() ? icons.EyeOff : icons.Eye" class="h-4 w-4"></svg>
         </button>
       </div>
       @if (passwordField.invalid && (passwordField.dirty || passwordField.touched || submitted())) {
-        <p class="mt-1.5 text-xs font-medium text-error flex items-center gap-1">
-          <span aria-hidden="true">!</span> Password is required (min 6 characters).
+        <p class="mt-1 text-xs font-medium text-error flex items-center gap-1.5 animate-fade-in">
+          <svg [lucideIcon]="icons.AlertCircle" class="h-3.5 w-3.5"></svg> Min 6 characters.
         </p>
       }
     </div>
-    <div class="mt-4 flex items-center justify-between gap-3 text-sm">
-      <label class="flex items-center gap-2 text-ink/60">
-        <input type="checkbox" [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)" name="rememberMe" />
-        Keep me signed in
+
+    <div class="flex items-center gap-2 mt-1">
+      <label class="flex items-center gap-2 text-[13px] font-medium text-ink/70 cursor-pointer group">
+        <div class="relative flex items-center justify-center h-[18px] w-[18px] rounded border border-line/[0.15] bg-ink/[0.02] group-hover:border-accent transition-colors">
+          <input type="checkbox" class="peer sr-only" [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)" name="rememberMe" />
+          <svg [lucideIcon]="icons.Check" class="h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity absolute pointer-events-none z-10"></svg>
+          <div class="absolute inset-0 rounded bg-accent scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
+        </div>
+        Remember me
       </label>
-      <a class="text-ink no-underline hover:text-accent" routerLink="/auth/forgot-password">Forgot password?</a>
     </div>
-    <button class="primary-button mt-6 w-full py-2.5 text-sm" type="submit" [disabled]="isSubmitting()">
+
+    <button class="relative w-full mt-2 flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-accent to-emerald-400 py-2.5 text-sm font-bold text-white transition-all hover:shadow-glow hover:-translate-y-0.5 disabled:opacity-70 disabled:pointer-events-none disabled:transform-none shadow-sm" type="submit" [disabled]="isSubmitting()">
       @if (isSubmitting()) {
-        <svg class="mr-2 inline-block h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <svg class="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V2.5" />
         </svg>
       }
-      {{ isSubmitting() ? 'Signing in...' : 'Sign In' }}
+      {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
     </button>
-    <div class="relative mt-6 flex items-center justify-center">
+
+    <div class="relative mt-5 flex items-center justify-center">
       <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-white/[0.08]"></div>
+        <div class="w-full border-t border-line/[0.08]"></div>
       </div>
-      <div class="relative px-4 text-xs font-medium text-[#B3B8C5] z-10 bg-[#0D1117]">Or continue with</div>
+      <div class="relative px-3 text-[11px] font-medium text-muted bg-surface uppercase tracking-wide">Or</div>
     </div>
-    <a class="mt-5 auth-google-btn" [href]="googleOAuthUrl">
-      <mc-google-icon class="scale-90" />
-      Google
+
+    <a class="auth-google-btn mt-5" [href]="googleOAuthUrl">
+      <mc-google-icon class="h-4 w-4" />
+      Continue with Google
     </a>
   </form>
 
   @if (statusMessage()) {
-    <p
-      class="mt-4 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-center text-sm"
-      [class.bg-success/15]="statusType() === 'success'"
+    <div class="mt-5 flex items-start gap-2 rounded-xl p-3 animate-fade-in"
+      [class.bg-success/10]="statusType() === 'success'"
+      [class.border]="true"
+      [class.border-success/20]="statusType() === 'success'"
       [class.text-success]="statusType() === 'success'"
-      [class.bg-red-500/10]="statusType() === 'error'"
-      [class.text-red-600]="statusType() === 'error'"
-      [class.bg-ink/5]="statusType() !== 'success' && statusType() !== 'error'"
-      [class.text-ink/75]="statusType() !== 'success' && statusType() !== 'error'"
-      aria-live="polite"
-      role="status"
+      [class.bg-error/10]="statusType() === 'error'"
+      [class.border-error/20]="statusType() === 'error'"
+      [class.text-error]="statusType() === 'error'"
     >
-      <span aria-hidden="true">{{ statusType() === 'error' ? '!' : statusType() === 'success' ? '✓' : 'i' }}</span>
-      <span>{{ statusMessage() }}</span>
-    </p>
+      <svg [lucideIcon]="statusType() === 'error' ? icons.AlertCircle : icons.CheckCircle2" class="h-4 w-4 shrink-0 mt-0.5"></svg>
+      <p class="text-[13px] font-medium leading-relaxed">{{ statusMessage() }}</p>
+    </div>
   }
 
-  <p class="mt-6 text-center text-sm text-ink/60">
-    New to MediChat?
-    <a class="font-semibold text-ink no-underline hover:text-accent" routerLink="/auth/signup">Create an account</a>
+  <p class="mt-6 text-center text-[13px] font-medium text-ink/60">
+    Don't have an account?
+    <a class="font-bold text-ink hover:text-accent transition-colors" routerLink="/auth/signup">Sign up</a>
   </p>
 </div>

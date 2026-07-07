@@ -2,15 +2,17 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { BackendApiService } from '../../../core/services/backend-api.service';
 import { GoogleIconComponent } from '../../../shared/components/google-icon/google-icon.component';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-signup-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, GoogleIconComponent],
+  imports: [FormsModule, RouterLink, GoogleIconComponent, LucideDynamicIcon],
   templateUrl: './signup-page.component.html',
   styleUrls: ['./signup-page.component.scss', '../auth-page.shared.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -21,10 +23,13 @@ export class SignupPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
 
+  protected readonly icons = appIcons;
+
   protected readonly email = signal('');
   protected readonly displayName = signal('');
   protected readonly password = signal('');
   protected readonly confirmPassword = signal('');
+  protected readonly termsAccepted = signal(false);
   protected readonly isSubmitting = signal(false);
   protected readonly statusMessage = signal('');
   protected readonly statusType = signal<'success' | 'error' | null>(null);
@@ -46,7 +51,7 @@ export class SignupPageComponent implements OnInit {
     const passwordValue = this.password();
     const confirmPasswordValue = this.confirmPassword();
 
-    if (!emailValue || !displayNameValue || !passwordValue.trim() || !confirmPasswordValue.trim()) {
+    if (!emailValue || !displayNameValue || !passwordValue.trim() || !confirmPasswordValue.trim() || !this.termsAccepted()) {
       return;
     }
 
@@ -59,7 +64,7 @@ export class SignupPageComponent implements OnInit {
     this.authService.signup(emailValue, passwordValue, displayNameValue).subscribe({
       next: async (message: string) => {
         this.isSubmitting.set(false);
-        this.toastr.success(message, 'Account created');
+        this.toastr.success(message || 'Account created. Please check your email to verify.', 'Account created');
         await this.router.navigateByUrl('/auth/login');
       },
       error: (error: { error?: { error?: string } }) => {
@@ -134,6 +139,7 @@ export class SignupPageComponent implements OnInit {
     this.displayName.set('');
     this.password.set('');
     this.confirmPassword.set('');
+    this.termsAccepted.set(false);
     this.isSubmitting.set(false);
     this.statusMessage.set('');
     this.statusType.set(null);
