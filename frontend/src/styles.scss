@@ -6,33 +6,73 @@
 
 :root {
   color-scheme: dark;
-  
+
   /* Text */
   --color-ink: 255 255 255;
-  --color-muted: 179 184 197;
+  --color-muted: 161 161 170;
   --color-placeholder: 107 114 128;
-  
+
   /* Backgrounds */
-  --color-canvas: 13 17 23;
-  --color-surface: 26 31 43;
-  --color-sidebar: 22 27 34;
-  
+  --color-canvas: 9 11 17;
+  --color-surface: 17 21 31;
+  --color-sidebar: 9 11 17;
+
   /* Borders */
-  --color-line: 255 255 255; /* Use with /8 opacity for borders */
-  
+  --color-line: 255 255 255; /* Use with /6 opacity for borders */
+
   /* Brand/Accents */
-  --color-accent: 34 197 94;
-  --color-accent-hover: 52 211 153;
-  
+  --color-accent: 0 208 132;
+  --color-accent-hover: 0 230 145;
+
   /* States */
   --color-success: 22 163 74;
   --color-error: 239 68 68;
   --color-warning: 250 204 21;
-  
+
   /* Glass configuration */
-  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg: rgba(255, 255, 255, 0.04);
   --glass-border: rgba(255, 255, 255, 0.08);
   --surface-blur: 20px;
+}
+
+/* ── Light theme ─────────────────────────────────────────────────────────── */
+/* All --color-* values are space-separated R G B so Tailwind's              */
+/* rgb(var(--color-ink) / <alpha-value>) syntax keeps working.               */
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* Text */
+  --color-ink: 17 24 39;         /* near-black  */
+  --color-muted: 75 85 99;       /* cool-grey   */
+  --color-placeholder: 156 163 175;
+
+  /* Backgrounds */
+  --color-canvas: 248 250 252;   /* slate-50    */
+  --color-surface: 255 255 255;
+  --color-sidebar: 241 245 249;  /* slate-100   */
+
+  /* Borders */
+  --color-line: 0 0 0;           /* Use with /8 opacity for borders */
+
+  /* Brand/Accents — same green works on light */
+  --color-accent: 22 163 74;
+  --color-accent-hover: 16 185 129;
+
+  /* States */
+  --color-success: 21 128 61;
+  --color-error: 220 38 38;
+  --color-warning: 202 138 4;
+
+  /* Glass — lighter, warm-white tint */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --surface-blur: 20px;
+}
+
+/* Explicit dark block — keeps color-scheme in sync with the attribute so   */
+/* browser chrome (scrollbars, date pickers, etc.) follows the theme.        */
+[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 html,
@@ -53,7 +93,7 @@ body {
   background: rgba(34, 197, 94, 0.3);
 }
 
-/* Custom Scrollbar for dark theme */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -69,6 +109,14 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Light-mode scrollbar — thumb needs to be dark to be visible */
+[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
 @layer base {
   h1,
   h2,
@@ -77,12 +125,13 @@ body {
     @apply font-display tracking-tight text-ink;
   }
   
-  h1 { font-size: 34px; line-height: 1.7; letter-spacing: -0.02em; }
-  h2 { font-size: 28px; line-height: 1.7; letter-spacing: -0.02em; }
-  h3 { font-size: 22px; line-height: 1.7; letter-spacing: -0.01em; }
+  h1 { font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.02em; font-weight: 700; }
+  h2 { font-size: 1.5rem; line-height: 1.25; letter-spacing: -0.02em; font-weight: 600; }
+  h3 { font-size: 1.25rem; line-height: 1.3; letter-spacing: -0.01em; font-weight: 600; }
   
   p {
-    @apply leading-7 text-muted;
+    @apply text-muted text-[17px];
+    line-height: 1.7;
   }
 
   button,
@@ -119,7 +168,7 @@ body {
   }
   @supports not (backdrop-filter: blur(20px)) {
     .glass-panel {
-      background: rgba(26, 31, 43, 0.95);
+      background: rgba(14, 18, 30, 0.95);
     }
   }
 
@@ -182,7 +231,7 @@ body {
 
   /* Shared Auth Styles */
   .auth-input {
-    @apply w-full rounded-[12px] border border-white/[0.08] bg-[#1A1F2B] px-4 h-11 text-sm text-white outline-none placeholder-[#6B7280] focus:border-accent focus-visible:ring-2 focus-visible:ring-accent/50 transition-all;
+    @apply w-full rounded-[14px] border border-white/[0.08] bg-[#1A1F2B] px-4 h-11 text-sm text-white outline-none placeholder-[#6B7280] focus:border-accent focus-visible:ring-2 focus-visible:ring-accent/50 transition-all;
   }
 
   .auth-toggle {
@@ -190,7 +239,7 @@ body {
   }
 
   .auth-google-btn {
-    @apply flex w-full items-center justify-center gap-3 rounded-[12px] border border-white/[0.08] bg-[#161B22] h-11 text-sm font-medium text-white transition hover:bg-white/5 no-underline shadow-sm;
+    @apply flex w-full items-center justify-center gap-3 rounded-[14px] border border-white/[0.08] bg-[#161B22] h-11 text-sm font-medium text-white transition hover:bg-white/5 no-underline shadow-sm;
   }
 }
 
@@ -201,5 +250,76 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Medical Markdown Prose Styles (Light Cards) */
+.mc-assistant-prose {
+  @apply text-ink/90 font-sans;
+  font-size: 17px;
+  line-height: 1.7;
+  
+  p {
+    @apply mb-5 last:mb-0;
+  }
+  
+  h1, h2 {
+    @apply text-[22px] font-bold mt-10 mb-4 pb-2 border-b border-line/[0.08] text-ink;
+  }
+
+  /* Treat H3/H4 as the start of a new "card" block */
+  h3 {
+    @apply text-[13px] font-bold mt-8 mb-4 text-accent uppercase tracking-widest border-b border-line/[0.06] pb-2;
+  }
+
+  h4 {
+    @apply text-[16px] font-bold mt-6 mb-3 text-ink/90;
+  }
+
+  ul, ol {
+    @apply mb-4 pl-5;
+  }
+  
+  li {
+    @apply mb-1.5 marker:text-accent/60;
+  }
+
+  strong {
+    @apply font-bold text-ink;
+  }
+
+  blockquote {
+    @apply border-l-2 border-accent pl-4 italic text-ink/70 my-4 bg-accent/5 py-2 rounded-r-lg;
+  }
+
+  code {
+    @apply bg-line/[0.05] text-ink/80 px-1.5 py-0.5 rounded-md text-sm font-mono border border-line/[0.05];
+  }
+
+  pre {
+    @apply bg-[#0D1117] text-ink/80 p-4 rounded-xl overflow-x-auto border border-line/[0.08] my-4 shadow-sm;
+    code {
+      @apply bg-transparent p-0 border-0 text-sm;
+    }
+  }
+
+  table {
+    @apply w-full text-left border-collapse my-6 rounded-xl overflow-hidden border border-line/[0.08] shadow-sm;
+    
+    th {
+      @apply bg-surface/80 p-3 font-semibold text-sm border-b border-line/[0.08] text-ink/90;
+    }
+    
+    td {
+      @apply p-3 border-b border-line/[0.05] text-sm text-ink/80;
+    }
+    
+    tr:last-child td {
+      @apply border-b-0;
+    }
+    
+    tr:nth-child(even) {
+      @apply bg-line/[0.02];
+    }
   }
 }

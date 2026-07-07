@@ -13,7 +13,7 @@
 
     <div class="flex flex-wrap items-center gap-4">
       <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" accept=".pdf">
-      <button type="button" (click)="fileInput.click()" [disabled]="isUploading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+      <button type="button" (click)="fileInput.click()" [disabled]="isUploading()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
         {{ isUploading() ? 'Uploading...' : 'Select File' }}
       </button>
       <p class="text-xs text-ink/40">Accepted: PDF only. Max 20MB.</p>
@@ -38,16 +38,23 @@
       <p class="mb-4 mt-2 text-sm text-ink/60">Get a clear, structured explanation of any medical topic.</p>
 
       <form [formGroup]="explainForm" (ngSubmit)="explainTopic()" class="flex flex-col gap-3">
-        <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Action Potential">
-        <button type="submit" [disabled]="explainForm.invalid || explainLoading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+        <input type="text" formControlName="topic" class="w-full rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Action Potential">
+        <button type="submit" [disabled]="explainForm.invalid || explainLoading()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
           {{ explainLoading() ? 'Explaining...' : 'Explain' }}
         </button>
       </form>
 
       @if (explainError()) {
-        <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ explainError() }}</p>
+        <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ explainError() }}</p>
       }
-      @if (explainResult()) {
+      @if (explainLoading()) {
+        <div class="mt-4 border-t border-ink/10 pt-4 animate-pulse space-y-3">
+          <div class="h-3 w-3/4 rounded bg-ink/10"></div>
+          <div class="h-3 w-full rounded bg-ink/10"></div>
+          <div class="h-3 w-5/6 rounded bg-ink/10"></div>
+          <div class="h-3 w-1/2 rounded bg-ink/10"></div>
+        </div>
+      } @else if (explainResult()) {
         <div class="mt-4 max-h-64 overflow-auto border-t border-ink/10 pt-4 text-sm text-ink/80">
           <div class="mb-2 text-[11px] uppercase tracking-widest text-ink/40">Scroll for more</div>
           <markdown [data]="explainResult() ?? ''" class="prose prose-sm max-w-none prose-p:text-ink/80 prose-li:text-ink/75" />
@@ -60,16 +67,23 @@
       <p class="mb-4 mt-2 text-sm text-ink/60">Paste long clinical notes or paper abstracts for a quick summary.</p>
 
       <form [formGroup]="summarizeForm" (ngSubmit)="summarizeText()" class="flex flex-col gap-3">
-        <textarea formControlName="text" class="h-24 w-full resize-none rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="Paste text here..."></textarea>
-        <button type="submit" [disabled]="summarizeForm.invalid || summarizeLoading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+        <textarea formControlName="text" class="h-24 w-full resize-none rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="Paste text here..."></textarea>
+        <button type="submit" [disabled]="summarizeForm.invalid || summarizeLoading()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
           {{ summarizeLoading() ? 'Summarizing...' : 'Summarize' }}
         </button>
       </form>
 
       @if (summarizeError()) {
-        <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ summarizeError() }}</p>
+        <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ summarizeError() }}</p>
       }
-      @if (summarizeResult()) {
+      @if (summarizeLoading()) {
+        <div class="mt-4 border-t border-ink/10 pt-4 animate-pulse space-y-3">
+          <div class="h-3 w-3/4 rounded bg-ink/10"></div>
+          <div class="h-3 w-full rounded bg-ink/10"></div>
+          <div class="h-3 w-5/6 rounded bg-ink/10"></div>
+          <div class="h-3 w-1/2 rounded bg-ink/10"></div>
+        </div>
+      } @else if (summarizeResult()) {
         <div class="mt-4 max-h-64 overflow-auto border-t border-ink/10 pt-4 text-sm text-ink/80">
           <div class="mb-2 text-[11px] uppercase tracking-widest text-ink/40">Scroll for more</div>
           <markdown [data]="summarizeResult() ?? ''" class="prose prose-sm max-w-none prose-p:text-ink/80 prose-li:text-ink/75" />
@@ -82,16 +96,23 @@
       <p class="mb-4 mt-2 text-sm text-ink/60">Create memorable mnemonics for diseases, symptoms, or anatomy.</p>
 
       <form [formGroup]="mnemonicsForm" (ngSubmit)="generateMnemonics()" class="flex flex-col gap-3">
-        <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Cranial Nerves">
-        <button type="submit" [disabled]="mnemonicsForm.invalid || mnemonicsLoading()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+        <input type="text" formControlName="topic" class="w-full rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Cranial Nerves">
+        <button type="submit" [disabled]="mnemonicsForm.invalid || mnemonicsLoading()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
           {{ mnemonicsLoading() ? 'Generating...' : 'Generate' }}
         </button>
       </form>
 
       @if (mnemonicsError()) {
-        <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ mnemonicsError() }}</p>
+        <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ mnemonicsError() }}</p>
       }
-      @if (mnemonicsResult()) {
+      @if (mnemonicsLoading()) {
+        <div class="mt-4 border-t border-ink/10 pt-4 animate-pulse space-y-3">
+          <div class="h-3 w-3/4 rounded bg-ink/10"></div>
+          <div class="h-3 w-full rounded bg-ink/10"></div>
+          <div class="h-3 w-5/6 rounded bg-ink/10"></div>
+          <div class="h-3 w-1/2 rounded bg-ink/10"></div>
+        </div>
+      } @else if (mnemonicsResult()) {
         <div class="mt-4 max-h-64 overflow-auto border-t border-ink/10 pt-4 text-sm text-ink/80">
           <div class="mb-2 text-[11px] uppercase tracking-widest text-ink/40">Scroll for more</div>
           <markdown [data]="mnemonicsResult() ?? ''" class="prose prose-sm max-w-none prose-p:text-ink/80 prose-li:text-ink/75" />

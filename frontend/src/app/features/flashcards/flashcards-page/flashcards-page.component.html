@@ -11,38 +11,52 @@
         <form [formGroup]="form" (ngSubmit)="generateDeck()" class="mt-6 flex flex-wrap items-end gap-4">
           <div class="flex-1">
             <label class="mb-1 block text-sm font-medium">Topic</label>
-            <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Nephrotic Syndrome">
+            <input type="text" formControlName="topic" class="w-full rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Nephrotic Syndrome">
           </div>
           <div class="w-24">
             <label class="mb-1 block text-sm font-medium">Count</label>
-            <input type="number" formControlName="count" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm">
+            <input type="number" formControlName="count" class="w-full rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm">
           </div>
-          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
             {{ isGenerating() ? 'Generating...' : 'Generate' }}
           </button>
         </form>
         @if (errorMessage()) {
-          <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ errorMessage() }}</p>
+          <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ errorMessage() }}</p>
         }
       </mc-glass-card>
 
-      <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        @for (deck of decks$ | async; track deck.id) {
-          <mc-glass-card class="flex flex-col">
-            <h3 class="text-lg font-semibold">{{ deck.topic }}</h3>
-            <p class="mt-1 text-sm text-ink/50">Generated: {{ deck.created_at | date }}</p>
-            <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
-              <button (click)="studyDeck(deck.id)" class="text-sm text-primary transition-colors hover:text-primary-light">Study Deck &rarr;</button>
+      @if (isLoadingDecks()) {
+        <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          @for (_ of [1, 2, 3]; track $index) {
+            <div class="glass-panel surface-outline animate-pulse space-y-4 rounded-[30px] p-6">
+              <div class="h-4 w-3/4 rounded bg-ink/10"></div>
+              <div class="h-3 w-1/2 rounded bg-ink/10"></div>
+              <div class="mt-4 border-t border-ink/10 pt-4">
+                <div class="h-4 w-24 rounded bg-ink/10"></div>
+              </div>
             </div>
+          }
+        </div>
+      } @else {
+        <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          @for (deck of decks$ | async; track deck.id) {
+            <mc-glass-card class="flex flex-col">
+              <h3 class="text-lg font-semibold">{{ deck.topic }}</h3>
+              <p class="mt-1 text-sm text-ink/50">Generated: {{ deck.created_at | date }}</p>
+              <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
+                <button (click)="studyDeck(deck.id)" class="text-sm text-accent transition-colors hover:text-accentHover">Study Deck &rarr;</button>
+              </div>
+            </mc-glass-card>
+          }
+        </div>
+
+        @if ((decks$ | async)?.length === 0) {
+          <mc-glass-card class="mt-5">
+            <h2 class="text-xl font-semibold">No decks found</h2>
+            <p class="mt-2 text-sm text-ink/70">Generate your first deck above.</p>
           </mc-glass-card>
         }
-      </div>
-
-      @if ((decks$ | async)?.length === 0) {
-        <mc-glass-card class="mt-5">
-          <h2 class="text-xl font-semibold">No decks found</h2>
-          <p class="mt-2 text-sm text-ink/70">Generate your first deck above.</p>
-        </mc-glass-card>
       }
     </div>
   }
@@ -87,7 +101,7 @@
               class="absolute inset-0 flex flex-col items-center justify-center rounded-[30px] p-8 text-center glass-panel surface-outline"
               style="backface-visibility: hidden; -webkit-backface-visibility: hidden;"
             >
-              <span class="mb-4 text-xs font-semibold uppercase tracking-wider text-primary/80">Question</span>
+              <span class="mb-4 text-xs font-semibold uppercase tracking-wider text-accent/80">Question</span>
               @if (deck.cards) {
                 <h2 class="text-xl font-medium text-ink sm:text-2xl">{{ deck.cards[currentCardIndex()].front }}</h2>
               }
@@ -118,7 +132,7 @@
         <button
           (click)="nextCard()"
           [disabled]="deck.cards && currentCardIndex() === deck.cards.length - 1"
-          class="rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-30"
+          class="rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-30"
         >
           Next
         </button>

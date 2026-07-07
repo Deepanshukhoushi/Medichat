@@ -30,6 +30,7 @@ export class AppShellLayoutComponent implements OnInit {
 
   protected readonly isMobile = signal(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
   protected readonly isSidebarOpen = signal(!this.isMobile());
+  protected readonly isContextPanelOpen = signal(false);
   protected readonly sidebarLabel = computed(() => (this.isSidebarOpen() ? 'Collapse sidebar' : 'Expand sidebar'));
   protected readonly isUserMenuOpen = signal(false);
   protected readonly userProfile = signal<UserProfile | null>(null);
@@ -77,6 +78,10 @@ export class AppShellLayoutComponent implements OnInit {
 
   protected toggleSidebar(): void {
     this.isSidebarOpen.update((value) => !value);
+  }
+
+  protected toggleContextPanel(): void {
+    this.isContextPanelOpen.update((value) => !value);
   }
 
   protected toggleUserMenu(): void {

@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["'Inter'", "sans-serif"],
+        display: ["'General Sans'", "sans-serif"],
         sans: ["'Inter'", "sans-serif"]
       },
       colors: {
@@ -33,11 +33,20 @@ module.exports = {
       animation: {
         float: "float 8s ease-in-out infinite",
         pulseGlow: "pulseGlow 4s ease-in-out infinite",
-        "fade-in": "fadeIn 0.4s ease-out forwards"
+        "fade-in": "fadeIn 0.4s ease-out forwards",
+        "fade-up": "fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "accordion-down": "accordionDown 0.2s ease-out",
+        "accordion-up": "accordionUp 0.2s ease-out",
+        marquee: "marquee 40s linear infinite",
+        blob: "blob 10s infinite"
       },
       keyframes: {
         fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" }
+        },
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" }
         },
         float: {
@@ -47,6 +56,24 @@ module.exports = {
         pulseGlow: {
           "0%, 100%": { boxShadow: "0 0 0 rgba(124, 228, 255, 0.2)" },
           "50%": { boxShadow: "0 0 42px rgba(255, 123, 172, 0.3)" }
+        },
+        accordionDown: {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" }
+        },
+        accordionUp: {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" }
+        },
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" }
+        },
+        blob: {
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" }
         }
       }
     }

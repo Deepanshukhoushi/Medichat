@@ -32,6 +32,7 @@ export class QuizzesPageComponent implements OnInit, OnDestroy {
   private timerId: number | null = null;
 
   sessions$ = new BehaviorSubject<QuizSession[]>([]);
+  readonly isLoading = signal(false);
   readonly isGenerating = signal(false);
   readonly generateError = signal<string | null>(null);
   readonly quizLoadError = signal<string | null>(null);
@@ -49,17 +50,24 @@ export class QuizzesPageComponent implements OnInit, OnDestroy {
   readonly isSubmitting = signal(false);
 
   ngOnInit() {
-    this.loadSessions();
+    this.loadSessions(true);
   }
 
   ngOnDestroy(): void {
     this.stopTimer();
   }
 
-  loadSessions() {
+  loadSessions(initial = false) {
+    if (initial) this.isLoading.set(true);
     this.api.getQuizSessions().subscribe({
-      next: (sessions) => this.sessions$.next(sessions),
-      error: (err) => console.error('Failed to load sessions', err)
+      next: (sessions) => {
+        this.sessions$.next(sessions);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load sessions', err);
+        this.isLoading.set(false);
+      }
     });
   }
 

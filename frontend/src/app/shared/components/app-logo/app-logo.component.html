@@ -1,9 +1,9 @@
 <a class="inline-flex items-center gap-3 no-underline" routerLink="/">
-  <span class="logo-shell">
-    <svg [lucideIcon]="icons.HeartPulse" class="h-5 w-5"></svg>
+  <span class="logo-shell p-1.5 flex items-center justify-center rounded-lg bg-accent/10">
+    <svg [lucideIcon]="icons.HeartPulse" class="h-4 w-4 text-accent"></svg>
   </span>
-  <span>
-    <span class="block font-display text-lg font-bold tracking-tight text-ink">MediChat</span>
-    <span class="block text-xs uppercase tracking-[0.24em] text-ink/45">Medical learning AI</span>
+  <span class="flex flex-col justify-center leading-tight">
+    <span class="block font-display text-[15px] font-bold tracking-tight" [ngClass]="variant === 'light' ? 'text-white' : 'text-ink'">MediChat</span>
+    <span class="block text-[9px] uppercase tracking-[0.15em]" [ngClass]="variant === 'light' ? 'text-white/50' : 'text-ink/45'">Medical AI</span>
   </span>
 </a>

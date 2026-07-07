@@ -9,9 +9,9 @@
     <!-- Loading skeleton -->
     <mc-glass-card class="space-y-4 animate-pulse">
       <div class="h-5 w-40 rounded bg-ink/10"></div>
-      <div class="h-10 w-full rounded-xl bg-ink/10"></div>
+      <div class="h-10 w-full rounded-[14px] bg-ink/10"></div>
       <div class="h-5 w-32 rounded bg-ink/10"></div>
-      <div class="h-10 w-full rounded-xl bg-ink/10"></div>
+      <div class="h-10 w-full rounded-[14px] bg-ink/10"></div>
     </mc-glass-card>
   } @else {
     <form [formGroup]="form" (ngSubmit)="saveProfile()">
@@ -25,7 +25,7 @@
               formControlName="display_name"
               type="text"
               placeholder="Your full name"
-              class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+              class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
             />
             @if (form.get('display_name')?.invalid && form.get('display_name')?.touched) {
               <p class="mt-1 text-xs text-red-500">Display name is required.</p>
@@ -37,7 +37,7 @@
               <label class="block text-sm font-medium text-ink/80 mb-1">Specialty / Program</label>
               <select
                 formControlName="specialty"
-                class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+                class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
               >
                 <option value="">Select specialty</option>
                 <option value="MBBS">MBBS</option>
@@ -53,7 +53,7 @@
               <label class="block text-sm font-medium text-ink/80 mb-1">Medical Year</label>
               <select
                 formControlName="medical_year"
-                class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+                class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
               >
                 <option [value]="null">Select year</option>
                 <option [value]="1">Year 1</option>
@@ -72,7 +72,7 @@
               formControlName="university"
               type="text"
               placeholder="e.g. AIIMS Delhi"
-              class="w-full rounded-xl border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+              class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
             />
           </div>
         </div>

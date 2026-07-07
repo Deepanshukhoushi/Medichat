@@ -20,6 +20,7 @@ export class FlashcardsPageComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   decks$ = new BehaviorSubject<FlashcardDeck[]>([]);
+  readonly isLoadingDecks = signal(false);
   readonly isGenerating = signal(false);
   readonly isLoadingDeck = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -31,13 +32,22 @@ export class FlashcardsPageComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.loadDecks();
+    this.loadDecks(true);
   }
 
-  loadDecks() {
+  loadDecks(initial = false) {
+    if (initial) {
+      this.isLoadingDecks.set(true);
+    }
     this.api.getFlashcardDecks().subscribe({
-      next: (decks) => this.decks$.next(decks),
-      error: (err) => console.error('Failed to load decks', err)
+      next: (decks) => {
+        this.decks$.next(decks);
+        this.isLoadingDecks.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load decks', err);
+        this.isLoadingDecks.set(false);
+      }
     });
   }
 

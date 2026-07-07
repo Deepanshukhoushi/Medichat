@@ -1,0 +1,4 @@
+// Theme token definitions — imported by styles.scss via @use '../themes/theme-tokens'.
+// This file intentionally contains no output on its own; the actual :root / [data-theme]
+// blocks that consume these values live in styles.scss so they sit in the correct
+// Tailwind @layer context.

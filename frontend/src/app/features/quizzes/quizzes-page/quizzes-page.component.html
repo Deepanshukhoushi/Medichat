@@ -11,57 +11,72 @@
         <form [formGroup]="form" (ngSubmit)="generateQuiz()" class="mt-6 flex flex-wrap items-end gap-4">
           <div class="flex-1">
             <label class="mb-1 block text-sm font-medium">Topic</label>
-            <input type="text" formControlName="topic" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Cardiac Physiology">
+            <input type="text" formControlName="topic" class="w-full rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm" placeholder="e.g. Cardiac Physiology">
           </div>
           <div class="w-24">
             <label class="mb-1 block text-sm font-medium">Questions</label>
-            <input type="number" formControlName="count" class="w-full rounded-md border border-ink/10 bg-ink/5 px-3 py-2 text-sm">
+            <input type="number" formControlName="count" class="w-full rounded-[14px] border border-ink/10 bg-ink/5 px-3 py-2 text-sm">
           </div>
-          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50">
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
             {{ isGenerating() ? 'Generating...' : 'Generate' }}
           </button>
         </form>
 
         @if (generateError()) {
-          <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ generateError() }}</p>
+          <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ generateError() }}</p>
         }
         @if (quizLoadError()) {
-          <p class="mt-4 rounded-md bg-red-500/10 p-3 text-sm text-red-500">{{ quizLoadError() }}</p>
+          <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ quizLoadError() }}</p>
         }
       </mc-glass-card>
 
-      <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        @for (session of sessions$ | async; track session.id) {
-          <mc-glass-card class="flex flex-col">
-            <h3 class="text-lg font-semibold">{{ session.topic }}</h3>
-            <p class="mt-1 text-sm text-ink/50">Generated: {{ session.created_at | date }}</p>
-
-            <div class="mt-3">
-              @if (session.score !== null) {
-                <span class="inline-block rounded bg-green-500/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300">
-                  Score: {{ session.score }}%
-                </span>
-              } @else {
-                <span class="inline-block rounded bg-yellow-500/20 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300">
-                  Pending
-                </span>
-              }
+      @if (isLoading()) {
+        <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          @for (_ of [1, 2, 3]; track $index) {
+            <div class="glass-panel surface-outline animate-pulse space-y-4 rounded-[30px] p-6">
+              <div class="h-4 w-3/4 rounded bg-ink/10"></div>
+              <div class="h-3 w-1/2 rounded bg-ink/10"></div>
+              <div class="h-5 w-16 rounded bg-ink/10"></div>
+              <div class="mt-4 border-t border-ink/10 pt-4">
+                <div class="h-4 w-24 rounded bg-ink/10"></div>
+              </div>
             </div>
+          }
+        </div>
+      } @else {
+        <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          @for (session of sessions$ | async; track session.id) {
+            <mc-glass-card class="flex flex-col">
+              <h3 class="text-lg font-semibold">{{ session.topic }}</h3>
+              <p class="mt-1 text-sm text-ink/50">Generated: {{ session.created_at | date }}</p>
 
-            <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
-              <button (click)="takeQuiz(session.id)" class="text-sm text-primary transition-colors hover:text-primary-light">
-                {{ session.score !== null ? 'Review Quiz' : 'Take Quiz' }} &rarr;
-              </button>
-            </div>
+              <div class="mt-3">
+                @if (session.score !== null) {
+                  <span class="inline-block rounded bg-green-500/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300">
+                    Score: {{ session.score }}%
+                  </span>
+                } @else {
+                  <span class="inline-block rounded bg-yellow-500/20 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300">
+                    Pending
+                  </span>
+                }
+              </div>
+
+              <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
+                <button (click)="takeQuiz(session.id)" class="text-sm text-accent transition-colors hover:text-accentHover">
+                  {{ session.score !== null ? 'Review Quiz' : 'Take Quiz' }} &rarr;
+                </button>
+              </div>
+            </mc-glass-card>
+          }
+        </div>
+
+        @if ((sessions$ | async)?.length === 0) {
+          <mc-glass-card class="mt-5">
+            <h2 class="text-xl font-semibold">No quizzes found</h2>
+            <p class="mt-2 text-sm text-ink/70">Generate your first quiz above.</p>
           </mc-glass-card>
         }
-      </div>
-
-      @if ((sessions$ | async)?.length === 0) {
-        <mc-glass-card class="mt-5">
-          <h2 class="text-xl font-semibold">No quizzes found</h2>
-          <p class="mt-2 text-sm text-ink/70">Generate your first quiz above.</p>
-        </mc-glass-card>
       }
     </div>
   }
@@ -74,7 +89,7 @@
           <span class="text-ink/60">Question {{ currentQuestionIndex() + 1 }} of {{ quiz.questions.length }}</span>
           <span class="rounded-full bg-ink/5 px-3 py-1 text-ink/70">Timer: {{ getElapsedTime() }}</span>
           @if (quizSubmitted()) {
-            <span class="font-bold text-primary">Score: {{ quiz.score }}%</span>
+            <span class="font-bold text-accent">Score: {{ quiz.score }}%</span>
           }
         </div>
       </div>
@@ -91,8 +106,8 @@
                   <button
                     (click)="selectOption(i)"
                     [disabled]="quizSubmitted()"
-                    [class.border-primary]="!quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i"
-                    [class.bg-primary/5]="!quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i"
+                    [class.border-accent]="!quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i"
+                    [class.bg-accent/5]="!quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i"
                     [class.border-success]="quizSubmitted() && i === currentQuestion.correct"
                     [class.bg-success/10]="quizSubmitted() && i === currentQuestion.correct"
                     [class.border-warning]="quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i && i !== currentQuestion.correct"
@@ -118,7 +133,7 @@
               <button
                 (click)="prevQuestion()"
                 [disabled]="currentQuestionIndex() === 0"
-                class="rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"
+                class="rounded-[14px] px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"
                 type="button"
               >
                 Previous
@@ -129,7 +144,7 @@
                   <button
                     (click)="submitQuiz()"
                     [disabled]="!isQuizComplete() || isSubmitting()"
-                    class="rounded-md bg-primary/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50"
+                    class="rounded-[14px] bg-accent/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50"
                     type="button"
                   >
                     {{ isSubmitting() ? 'Submitting...' : 'Submit Quiz' }}
@@ -137,7 +152,7 @@
                   @if (currentQuestionIndex() < quiz.questions.length - 1) {
                     <button
                       (click)="nextQuestion()"
-                      class="rounded-md bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
+                      class="rounded-[14px] bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
                       type="button"
                     >
                       Next
@@ -146,14 +161,14 @@
                 } @else {
                   <button
                     (click)="restartQuiz()"
-                    class="rounded-md bg-primary/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary"
+                    class="rounded-[14px] bg-accent/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent"
                     type="button"
                   >
                     Retry Quiz
                   </button>
                   <button
                     (click)="closeQuiz()"
-                    class="rounded-md bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
+                    class="rounded-[14px] bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
                     type="button"
                   >
                     New Quiz
