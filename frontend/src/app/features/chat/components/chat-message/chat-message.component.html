@@ -1,63 +1,123 @@
-<article class="flex w-full py-4 sm:py-6" [class.justify-end]="message().role === 'user'">
-  @if (message().role === 'assistant') {
-    <div class="relative flex w-full max-w-3xl flex-col rounded-[18px] border border-white/[0.06] bg-[#1A1F2B] p-6 md:p-8 shadow-sm animate-fade-in">
-      
-      <div class="mb-5 flex items-center gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/20">
-          <mc-medical-orb size="compact" class="h-6 w-6" />
+<article class="flex w-full py-4 md:py-6 transition-colors group/message relative">
+  <div class="flex w-full gap-4 md:gap-6 px-4">
+    
+    <!-- User Message -->
+    @if (message().role === 'user') {
+      <div class="flex w-full justify-end group/userMsg">
+        <div class="relative flex flex-col items-end">
+          <div class="text-[15px] leading-relaxed text-ink/90 font-medium bg-gradient-to-br from-surface to-surface/40 border border-line/[0.08] px-5 py-3 rounded-[22px] rounded-tr-[4px] max-w-[85%] sm:max-w-[70%] shadow-sm backdrop-blur-md">
+            <p class="whitespace-pre-line">{{ message().content }}</p>
+          </div>
+          
+          <!-- Actions & Timestamp (visible on hover) -->
+          <div class="flex items-center gap-2 mt-1.5 opacity-0 group-hover/userMsg:opacity-100 transition-opacity duration-200 text-[11px] text-ink/40 font-medium px-1">
+            <span>Just now</span>
+            <div class="w-1 h-1 rounded-full bg-line/[0.2]"></div>
+            <button class="hover:text-ink transition flex items-center gap-1" title="Edit message">
+              <svg [lucideIcon]="icons.SquarePen" class="h-3 w-3"></svg>
+              <span>Edit</span>
+            </button>
+            <button class="hover:text-ink transition flex items-center gap-1" title="Copy message" (click)="copy()">
+              <svg [lucideIcon]="icons.Copy" class="h-3 w-3"></svg>
+              <span>Copy</span>
+            </button>
+            <button class="hover:text-warning transition flex items-center gap-1" title="Delete message" (click)="deleteMessage()">
+              <svg [lucideIcon]="icons.Trash2" class="h-3 w-3"></svg>
+            </button>
+          </div>
         </div>
-        <span class="font-semibold text-ink">MediChat</span>
+      </div>
+    } 
+    <!-- Assistant Message -->
+    @else {
+      <!-- Avatar -->
+      <div class="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-accent/15 border border-accent/20">
+        <svg [lucideIcon]="icons.Bot" class="h-3.5 w-3.5 text-accent"></svg>
       </div>
 
-      @if (message().content) {
-        <markdown class="prose prose-sm prose-invert max-w-none mc-assistant-prose" [data]="message().content" />
-      } @else {
-        <div class="flex items-center gap-3 text-muted">
-          <p class="text-sm animate-pulse">Thinking...</p>
-        </div>
-      }
+      <!-- Content Area -->
+      <div class="flex flex-1 flex-col min-w-0 pb-2">
+        <div class="flex flex-col text-[15px] leading-relaxed text-ink/90">
+          
+          @if (message().content) {
+            <!-- The markdown prose will be styled in styles.scss to resemble light cards and tables -->
+            <markdown class="prose prose-sm prose-invert max-w-none mc-assistant-prose" [data]="message().content" />
+          } @else {
+            <div class="flex items-center gap-2 text-ink/60 h-6">
+              <span class="h-1.5 w-1.5 rounded-full bg-accent/60 animate-bounce" style="animation-delay: 0ms"></span>
+              <span class="h-1.5 w-1.5 rounded-full bg-accent/60 animate-bounce" style="animation-delay: 150ms"></span>
+              <span class="h-1.5 w-1.5 rounded-full bg-accent/60 animate-bounce" style="animation-delay: 300ms"></span>
+            </div>
+          }
 
-      @if (message().content && (!isStreaming() || !isLast())) {
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <div class="flex flex-wrap gap-2">
-            @for (citation of message().citations; track citation.title) {
-              <div class="rounded-xl border border-white/10 bg-surface/50 px-3 py-2 text-xs text-muted">
-                <span class="font-semibold text-ink">{{ citation.title }}</span>
-                <span class="ml-1 opacity-70">{{ citation.source }} · {{ citation.chapter }}</span>
+          <!-- Citations & Actions -->
+          @if (message().content && (!isStreaming() || !isLast())) {
+            <div class="mt-4 flex flex-col gap-3">
+              
+              <!-- Citations Bar -->
+              @if (message().citations?.length) {
+                <div class="flex flex-wrap gap-2">
+                  @for (citation of message().citations; track citation.title) {
+                    <div class="flex items-center gap-2 rounded-lg border border-line/[0.06] bg-surface/30 px-2 py-1 text-xs text-ink/60 hover:bg-ink/5 hover:text-ink transition cursor-pointer">
+                      <svg [lucideIcon]="icons.BookOpen" class="h-3 w-3 opacity-70"></svg>
+                      <span class="font-medium">{{ citation.title }}</span>
+                      <span class="opacity-50 text-[10px] uppercase">{{ citation.chapter }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Action Toolbar (Visible on Hover of Message) -->
+              <div class="flex items-center gap-1 mt-2 opacity-0 group-hover/message:opacity-100 transition-opacity duration-200">
+                <button class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink/45 hover:bg-ink/5 hover:text-ink transition text-xs font-medium" title="Copy message" (click)="copy()">
+                  <svg [lucideIcon]="icons.Copy" class="h-3.5 w-3.5"></svg>
+                  <span>Copy</span>
+                </button>
+                <button class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink/45 hover:bg-ink/5 hover:text-ink transition text-xs font-medium" title="Generate Flashcards">
+                  <svg [lucideIcon]="icons.BookOpen" class="h-3.5 w-3.5"></svg>
+                  <span>Flashcards</span>
+                </button>
+                <button class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink/45 hover:bg-ink/5 hover:text-ink transition text-xs font-medium" title="Create Quiz">
+                  <svg [lucideIcon]="icons.ClipboardList" class="h-3.5 w-3.5"></svg>
+                  <span>Quiz</span>
+                </button>
+                <button class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink/45 hover:bg-ink/5 hover:text-ink transition text-xs font-medium" title="Create Notes">
+                  <svg [lucideIcon]="icons.NotebookPen" class="h-3.5 w-3.5"></svg>
+                  <span>Notes</span>
+                </button>
+                
+                <div class="w-px h-3 bg-line/[0.1] mx-1"></div>
+                
+                <!-- More Menu -->
+                <div class="relative group/more">
+                  <button class="rounded-lg p-1.5 text-ink/45 hover:bg-ink/5 hover:text-ink transition flex items-center" title="More Actions">
+                    <svg [lucideIcon]="icons.MoreHorizontal" class="h-4 w-4"></svg>
+                  </button>
+                  
+                  <div class="absolute bottom-full left-0 mb-1 hidden group-hover/more:block z-50 min-w-[140px] rounded-xl border border-line/[0.08] bg-surface/95 backdrop-blur-xl p-1 shadow-glassHover animate-fade-in">
+                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-ink/70 hover:bg-ink/5 hover:text-ink transition">
+                      <svg [lucideIcon]="icons.Mic" class="h-3.5 w-3.5"></svg>
+                      Read Aloud
+                    </button>
+                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-ink/70 hover:bg-ink/5 hover:text-ink transition" (click)="regenerate()">
+                      <svg [lucideIcon]="icons.RefreshCcw" class="h-3.5 w-3.5"></svg>
+                      Regenerate
+                    </button>
+                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-ink/70 hover:bg-ink/5 hover:text-ink transition">
+                      <svg [lucideIcon]="icons.Bookmark" class="h-3.5 w-3.5"></svg>
+                      Bookmark
+                    </button>
+                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-ink/70 hover:bg-ink/5 hover:text-ink transition">
+                      <svg [lucideIcon]="icons.Share2" class="h-3.5 w-3.5"></svg>
+                      Share
+                    </button>
+                  </div>
+                </div>
               </div>
-            }
-          </div>
-
-          <div class="flex items-center gap-1 border-t border-white/5 pt-4 w-full sm:w-auto sm:border-0 sm:pt-0">
-            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Copy message" type="button" (click)="copy()">
-              <svg [lucideIcon]="icons.Copy" class="h-4 w-4"></svg>
-            </button>
-            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Mark as helpful" type="button" (click)="react(true)">
-              <svg [lucideIcon]="icons.ThumbsUp" class="h-4 w-4"></svg>
-            </button>
-            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Mark as not helpful" type="button" (click)="react(false)">
-              <svg [lucideIcon]="icons.ThumbsDown" class="h-4 w-4"></svg>
-            </button>
-            <button class="rounded-md p-2 text-muted hover:bg-white/5 hover:text-ink transition" title="Regenerate" type="button" (click)="regenerate()">
-              <svg [lucideIcon]="icons.RefreshCcw" class="h-4 w-4"></svg>
-            </button>
-          </div>
+            </div>
+          }
         </div>
-      }
-    </div>
-  } @else {
-    <div class="flex max-w-3xl flex-col items-end gap-2">
-      <div class="group relative rounded-[18px] bg-success px-5 py-3 text-white animate-fade-in shadow-sm">
-        <p class="whitespace-pre-line">{{ message().content }}</p>
-        <button class="absolute -right-8 top-0 hidden rounded-md p-1.5 text-muted hover:bg-white/5 hover:text-error group-hover:block transition" title="Delete message" aria-label="Delete message" type="button" (click)="deleteMessage()">
-          <svg [lucideIcon]="icons.Square" class="h-4 w-4"></svg>
-        </button>
       </div>
-      @if (message().timestamp) {
-        <p class="text-[11px] text-muted text-right">
-          {{ message().timestamp }}
-        </p>
-      }
-    </div>
-  }
+    }
+  </div>
 </article>

@@ -11,7 +11,7 @@ import { MedicalOrbComponent } from '../../../../shared/components/medical-orb/m
 @Component({
   selector: 'mc-chat-message',
   standalone: true,
-  imports: [MarkdownComponent, MedicalOrbComponent, LucideDynamicIcon],
+  imports: [MarkdownComponent, LucideDynamicIcon],
   templateUrl: './chat-message.component.html',
   styleUrl: './chat-message.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

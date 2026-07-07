@@ -19,6 +19,7 @@ export class ChatComposerComponent {
   readonly stopped = output<void>();
   readonly focusStateChange = output<boolean>();
   readonly isStreaming = input(false);
+  readonly showQuickActions = input(true);
   protected readonly icons = appIcons;
   protected readonly prompt = signal('');
   protected readonly isUploading = signal(false);
@@ -33,6 +34,10 @@ export class ChatComposerComponent {
     if (!value) return;
     this.submitted.emit(value);
     this.prompt.set('');
+  }
+
+  public setPrompt(text: string): void {
+    this.prompt.set(text);
   }
 
   protected onKeyDown(event: KeyboardEvent, textarea: HTMLTextAreaElement): void {

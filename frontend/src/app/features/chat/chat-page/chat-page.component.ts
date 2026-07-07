@@ -3,10 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 import { ChatService } from '../../../core/services/chat.service';
+import { BackendApiService, UserProfile } from '../../../core/services/backend-api.service';
 import { appIcons } from '../../../shared/icons/lucide-icons';
 import { ChatComposerComponent } from '../components/chat-composer/chat-composer.component';
 import { ChatMessageComponent } from '../components/chat-message/chat-message.component';
 import { MemoryPanelComponent } from '../components/memory-panel/memory-panel.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'mc-chat-page',
@@ -18,11 +20,27 @@ import { MemoryPanelComponent } from '../components/memory-panel/memory-panel.co
 })
 export class ChatPageComponent {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild(ChatComposerComponent) private composer!: ChatComposerComponent;
+  
   protected readonly icons = appIcons;
   protected readonly chatService = inject(ChatService);
+  protected readonly backendApi = inject(BackendApiService);
+  
   protected readonly isNearBottom = signal(true);
   protected readonly composerFocused = signal(false);
   protected readonly showShortcuts = signal(false);
+  protected readonly userProfile = signal<UserProfile | null>(null);
+
+  protected readonly greeting = computed(() => {
+    const hour = new Date().getHours();
+    let timeGreeting = 'Good Evening';
+    if (hour < 12) timeGreeting = 'Good Morning';
+    else if (hour < 18) timeGreeting = 'Good Afternoon';
+
+    const name = this.userProfile()?.display_name || 'Medical Student';
+    return `${timeGreeting}, ${name}`;
+  });
+
   protected readonly starterPrompts = computed(() => {
     const topicMemory = this.chatService.topicMemory();
     const topic = topicMemory.current_topic?.trim();
@@ -47,8 +65,21 @@ export class ChatPageComponent {
   });
 
   constructor() {
+    this.backendApi.getProfile().subscribe({
+      next: (profile) => this.userProfile.set(profile),
+      error: (err: HttpErrorResponse) => {
+        // Silently handle 401
+      }
+    });
+
     effect(() => {
-      this.chatService.messages();
+      const messages = this.chatService.messages();
+      
+      // Auto-clear composer when starting a new chat (messages reset to 0)
+      if (messages.length === 0 && this.composer) {
+        this.composer.setPrompt('');
+      }
+
       this.chatService.isStreaming();
       setTimeout(() => {
         if (this.isNearBottom() && !this.chatService.isStreaming()) {
@@ -88,6 +119,12 @@ export class ChatPageComponent {
     setTimeout(() => this.scrollToBottom(), 50);
   }
 
+  protected insertPrompt(prompt: string): void {
+    if (this.composer) {
+      this.composer.setPrompt(prompt);
+    }
+  }
+
   protected regenerate(): void {
     this.chatService.regenerateLastResponse();
     setTimeout(() => this.scrollToBottom(), 50);
@@ -99,6 +136,22 @@ export class ChatPageComponent {
 
   protected removeMessage(messageId: string): void {
     this.chatService.removeMessage(messageId);
+  }
+
+  protected resumeLastChat(): void {
+    console.log('Resuming last chat...');
+  }
+
+  protected startRevision(): void {
+    console.log('Starting revision...');
+  }
+
+  protected openFlashcards(): void {
+    console.log('Opening flashcards...');
+  }
+
+  protected openQuiz(): void {
+    console.log('Opening quiz...');
   }
 
   protected stopGeneration(): void {
