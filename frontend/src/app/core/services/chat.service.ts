@@ -17,6 +17,9 @@ export class ChatService {
   private readonly sessionSummarySignal = signal<string | null>(null);
   private readonly activeConversationIdSignal = signal<string | null>(null);
   private abortController: AbortController | null = null;
+  // Tracks the optimistic placeholder conversation ID inserted into the sidebar
+  // before the backend confirms the real ID. Reset once the real ID arrives.
+  private pendingConversationId: string | null = null;
 
   readonly messages = this.messagesSignal.asReadonly();
   readonly conversationHistory = this.conversationsSignal.asReadonly();
@@ -40,13 +43,21 @@ export class ChatService {
   }
 
   createConversation(prompt: string): void {
+    // Guard: if a stream is already in flight, abort it cleanly before starting
+    // a new one. Without this, a double-fire (IME enter, fast retry, future UI
+    // entry points) would orphan the first AbortController, making it impossible
+    // to cancel and causing finalize() races on shared signals.
+    if (this.isStreamingSignal()) {
+      this.stopGeneration();
+    }
+
     const trimmedPrompt = prompt.trim();
     if (!trimmedPrompt) {
       return;
     }
 
     const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
+      id: crypto.randomUUID(),
       role: 'user',
       content: trimmedPrompt,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -54,9 +65,13 @@ export class ChatService {
 
     const pendingMessage = this.pendingMessage();
     this.messagesSignal.update((messages) => [...messages, userMessage, pendingMessage]);
+
+    // Insert an optimistic sidebar entry; record its ID so refreshConversationHistory
+    // can swap it for the real backend ID without relying on string-prefix guessing.
+    this.pendingConversationId = crypto.randomUUID();
     this.conversationsSignal.update((conversations) => [
       {
-        id: `session-${Date.now()}`,
+        id: this.pendingConversationId!,
         title: this.trimPrompt(trimmedPrompt),
         topic: 'Current session',
         updatedAt: 'Just now'
@@ -67,6 +82,7 @@ export class ChatService {
     this.isStreamingSignal.set(true);
     this.abortController = new AbortController();
     let currentAnswer = '';
+    let currentCitations: ChatCitation[] = [];
 
     this.backendApi
       .streamChatMessage(trimmedPrompt, this.activeConversationId(), this.abortController.signal)
@@ -83,9 +99,12 @@ export class ChatService {
           if (chunk.conversation_id && !this.activeConversationId()) {
             this.activeConversationIdSignal.set(chunk.conversation_id);
           }
+          if (chunk.sources) {
+            currentCitations = chunk.sources;
+          }
           if (chunk.token) {
             currentAnswer += chunk.token;
-            this.replacePendingMessage(pendingMessage.id, currentAnswer, trimmedPrompt);
+            this.replacePendingMessage(pendingMessage.id, currentAnswer, trimmedPrompt, currentCitations);
           }
           if (chunk.error) {
             this.replacePendingMessage(
@@ -123,6 +142,11 @@ export class ChatService {
   }
 
   regenerateLastResponse(): void {
+    // Guard: same orphaned-AbortController protection as createConversation.
+    if (this.isStreamingSignal()) {
+      this.stopGeneration();
+    }
+
     const messages = this.messagesSignal();
     const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user');
     const lastAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant');
@@ -134,6 +158,7 @@ export class ChatService {
     this.abortController = new AbortController();
     const trimmedPrompt = lastUserMessage.content;
     let currentAnswer = '';
+    let currentCitations: ChatCitation[] = [];
 
     this.replacePendingMessage(
       lastAssistantMessage.id,
@@ -152,9 +177,12 @@ export class ChatService {
       )
       .subscribe({
         next: (chunk) => {
+          if (chunk.sources) {
+            currentCitations = chunk.sources;
+          }
           if (chunk.token) {
             currentAnswer += chunk.token;
-            this.replacePendingMessage(lastAssistantMessage.id, currentAnswer, trimmedPrompt);
+            this.replacePendingMessage(lastAssistantMessage.id, currentAnswer, trimmedPrompt, currentCitations);
           }
           if (chunk.error) {
             this.replacePendingMessage(lastAssistantMessage.id, chunk.error, trimmedPrompt);
@@ -211,17 +239,17 @@ export class ChatService {
       tap((conversationHistory) => {
         const currentId = this.activeConversationId();
         let finalHistory = [...conversationHistory];
-        
+
         if (currentId) {
-          const exists = finalHistory.find(c => c.id === currentId);
-          if (!exists) {
-            const currentInSignal = this.conversationsSignal().find(c => c.id === currentId || c.id.startsWith('session-'));
-            if (currentInSignal) {
-              finalHistory.unshift({
-                ...currentInSignal,
-                id: currentId
-              });
+          const existsInBackend = finalHistory.find(c => c.id === currentId);
+          if (!existsInBackend && this.pendingConversationId) {
+            // Swap the optimistic placeholder for the confirmed backend entry,
+            // matched by the explicit pendingConversationId we set in createConversation.
+            const placeholder = this.conversationsSignal().find(c => c.id === this.pendingConversationId);
+            if (placeholder) {
+              finalHistory.unshift({ ...placeholder, id: currentId });
             }
+            this.pendingConversationId = null;
           }
         }
         this.conversationsSignal.set(finalHistory);
@@ -242,20 +270,20 @@ export class ChatService {
 
   private pendingMessage(): ChatMessage {
     return {
-      id: `assistant-${Date.now()}`,
+      id: crypto.randomUUID(),
       role: 'assistant',
       content: '',
       timestamp: 'Thinking...'
     };
   }
 
-  private replacePendingMessage(messageId: string, content: string, prompt: string): void {
+  private replacePendingMessage(messageId: string, content: string, prompt: string, citations?: ChatCitation[]): void {
     const assistantMessage: ChatMessage = {
       id: messageId,
       role: 'assistant',
       content,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      citations: this.buildCitations(content, prompt)
+      citations: citations ?? []
     };
 
     this.messagesSignal.update((messages) =>
@@ -263,9 +291,6 @@ export class ChatService {
     );
   }
 
-  private buildCitations(_content: string, _prompt: string): ChatCitation[] {
-    return [];
-  }
 
   private toConversationSummary(conversation: Conversation): ConversationSummary {
     return {

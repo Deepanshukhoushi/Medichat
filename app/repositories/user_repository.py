@@ -15,29 +15,24 @@ class UserRepository:
 
     def sign_up(self, email: str, password: str, display_name: str | None = None):
         try:
-            response = self.supabase.auth.sign_up({"email": email, "password": password})
+            sign_up_args = {"email": email, "password": password}
+            if display_name:
+                sign_up_args["options"] = {"data": {"display_name": display_name.strip()}}
+                
+            response = self.supabase.auth.sign_up(sign_up_args)
             user_id = getattr(getattr(response, "user", None), "id", None)
+            
             if user_id and display_name:
-                # Use the new user's session token so the insert satisfies RLS.
-                # If email confirmation is required, session may be None — skip silently.
-                session = getattr(response, "session", None)
-                access_token = getattr(session, "access_token", None) if session else None
-                if access_token:
-                    from supabase import create_client
-                    authed_client = create_client(self.settings.supabase_url, self.settings.supabase_key)
-                    authed_client.auth.set_session(
-                        access_token=access_token,
-                        refresh_token=getattr(session, "refresh_token", ""),
-                    )
-                    authed_client.table("user_profiles").upsert({
+                try:
+                    self.supabase.table("user_profiles").upsert({
                         "user_id": user_id,
                         "display_name": display_name.strip(),
                         "medical_year": None,
                         "specialty": "",
                         "university": ""
                     }).execute()
-                else:
-                    logger.info("Signup: no session returned (email confirmation required?); skipping profile insert for user %s", user_id)
+                except Exception as e:
+                    logger.warning("Signup: Failed to insert profile for user %s: %s", user_id, e)
             return response
         except Exception as exc:
             logger.exception("Failed to sign up user")

@@ -1,26 +1,6 @@
-# Flask==3.0.3
-# gunicorn==21.2.0
-# langchain
-# langchain-core
-# langchain-community
-# langchain-pinecone
-# langchain-cohere
-# langchain-huggingface
-# pypdf
-# python-dotenv
-# pinecone
-# supabase
-# cohere
-# streamlit
-
-
-
-
-
 # Core web framework
 Flask>=3.0.3,<3.1
 gunicorn>=21.2.0,<22.0
-streamlit>=1.28.0,<2.0
 
 # LangChain ecosystem
 langchain>=0.2.0,<0.3

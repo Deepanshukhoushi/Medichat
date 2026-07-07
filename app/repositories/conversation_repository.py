@@ -52,9 +52,22 @@ class ConversationRepository:
             logger.exception("Failed to list conversations")
             raise RepositoryError("Failed to list conversations") from exc
 
-    def delete_conversation(self, conversation_id: str, user_id: str) -> None:
+    def delete_conversation(self, conversation_id: str, user_id: str) -> int:
+        """Soft-delete a conversation row owned by *user_id*.
+
+        Returns the number of rows that were actually deleted so callers can
+        distinguish a successful delete from a no-op (foreign or nonexistent ID).
+        """
         try:
-            self.supabase.table("conversations").update({"deleted_at": "now()"}).eq("id", conversation_id).eq("user_id", user_id).execute()
+            result = (
+                self.supabase.table("conversations")
+                .update({"deleted_at": "now()"})
+                .eq("id", conversation_id)
+                .eq("user_id", user_id)
+                .is_("deleted_at", "null")
+                .execute()
+            )
+            return len(result.data or [])
         except Exception as exc:
             logger.exception("Failed to delete conversation")
             raise RepositoryError("Failed to delete conversation") from exc
@@ -62,6 +75,9 @@ class ConversationRepository:
     def user_owns_conversation(self, conversation_id: str, user_id: str) -> bool:
         if user_id.startswith(self.settings.guest_session_prefix):
             return conversation_id == user_id
+
+        if conversation_id.startswith(self.settings.guest_session_prefix):
+            return False
 
         try:
             result = (

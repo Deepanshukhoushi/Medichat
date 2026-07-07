@@ -7,34 +7,34 @@ import { NavItem } from '../../shared/models/navigation.model';
 export class NavigationService {
   readonly navItems: NavItem[] = [
     {
-      label: 'Dashboard',
-      hint: 'Progress snapshot',
+      label: 'Continue Learning',
+      hint: 'Your study dashboard',
       route: '/app/dashboard',
       icon: appIcons.LayoutDashboard
     },
     {
-      label: 'Chat',
-      hint: 'Textbook grounded AI',
-      route: '/app/chat',
-      icon: appIcons.MessagesSquare
-    },
-    {
-      label: 'Study Tools',
-      hint: 'Summaries and notes',
-      route: '/app/study-tools',
-      icon: appIcons.WandSparkles
+      label: 'Collections',
+      hint: 'Saved topics and bookmarks',
+      route: '/app/collections',
+      icon: appIcons.LibraryBig
     },
     {
       label: 'Flashcards',
-      hint: 'Active recall',
+      hint: 'Active recall decks',
       route: '/app/flashcards',
       icon: appIcons.BookOpen
     },
     {
       label: 'Quizzes',
-      hint: 'Test mode',
+      hint: 'Test your knowledge',
       route: '/app/quizzes',
       icon: appIcons.ClipboardList
+    },
+    {
+      label: 'Notes',
+      hint: 'Your generated summaries',
+      route: '/app/notes',
+      icon: appIcons.FileText
     }
   ];
 

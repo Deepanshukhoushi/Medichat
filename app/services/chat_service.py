@@ -156,8 +156,8 @@ class ChatService:
                     "this reply may not be saved."
                 )
 
-            # Persist to the new chat_messages table as well
-            if False and self.memory_service and not resolved_conversation_id.startswith(
+            # ── 5. Persist messages + fire background tasks ──────────────
+            if self.memory_service and not resolved_conversation_id.startswith(
                 self.settings.guest_session_prefix
             ):
                 self.memory_service.save_message(
@@ -198,6 +198,7 @@ class ChatService:
         # Pre-initialize so the finally block never hits UnboundLocalError
         full_answer = ""
         stream_completed = False
+        already_persisted = False  # guard: skip finally-block if try already persisted
         resolved_conversation_id = None
         is_new_conversation = False
         recent_messages: list[dict] = []
@@ -281,7 +282,7 @@ class ChatService:
                         # For regeneration, delete the last pair of messages before persisting the new ones
                         if hasattr(self.memory_service.chat_history_repository, "delete_latest_exchange"):
                             self.memory_service.chat_history_repository.delete_latest_exchange(resolved_conversation_id)
-                    
+
                     self.memory_service.save_message(
                         resolved_conversation_id, user_id, "user", user_input
                     )
@@ -296,17 +297,42 @@ class ChatService:
                     self._run_background_memory_tasks(
                         resolved_conversation_id, all_messages, message_count
                     )
+                    already_persisted = True  # prevent finally from duplicating
                 except Exception as exc:
                     logger.warning("Persistence degraded: %s", exc)
                     yield f"data: {{\"warning\": \"Persistence degraded — your messages may not be saved.\"}}\n\n"
+
+            # ── 6. Emit structured citation sources ──────────────────────────────
+            if relevant_documents:
+                import json as _json
+                sources = []
+                seen: set[str] = set()
+                for doc in relevant_documents:
+                    meta = getattr(doc, "metadata", {}) or {}
+                    source_name = meta.get("source", "Medical Reference")
+                    page = meta.get("page")
+                    # Derive a human-readable title from the filename (strip path + ext)
+                    title = source_name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+                    title = title.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
+                    chapter = f"Page {page}" if page is not None else "Reference"
+                    key = f"{source_name}:{page}"
+                    if key not in seen:
+                        seen.add(key)
+                        sources.append({"title": title, "source": source_name, "chapter": chapter})
+                yield f"data: {_json.dumps({'sources': sources})}\n\n"
+
             yield "data: [DONE]\n\n"
 
         except Exception as exc:
             logger.exception("Failed to stream answer")
             yield f"data: {{\"error\": \"Unable to generate an answer right now\"}}\n\n"
         finally:
+            # Only run the persistence logic below as a disconnect-recovery path:
+            # if the try block already persisted successfully, skip to avoid
+            # writing duplicate rows and firing Celery tasks twice.
             if (
-                not full_answer
+                already_persisted
+                or not full_answer
                 or not self.memory_service
                 or not resolved_conversation_id
                 or resolved_conversation_id.startswith(self.settings.guest_session_prefix)

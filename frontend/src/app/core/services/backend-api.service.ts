@@ -82,8 +82,8 @@ export class BackendApiService {
     return this.health$;
   }
 
-  streamChatMessage(prompt: string, conversationId: string | null = null, abortSignal?: AbortSignal, isRegenerate: boolean = false): Observable<{token?: string, error?: string, conversation_id?: string}> {
-    return new Observable<{token?: string, error?: string, conversation_id?: string}>((observer) => {
+  streamChatMessage(prompt: string, conversationId: string | null = null, abortSignal?: AbortSignal, isRegenerate: boolean = false): Observable<{token?: string, error?: string, conversation_id?: string, sources?: {title: string, source: string, chapter: string}[]}> {
+    return new Observable<{token?: string, error?: string, conversation_id?: string, sources?: {title: string, source: string, chapter: string}[]}>(observer => {
       let body = new HttpParams().set('msg', prompt);
       if (conversationId) {
         body = body.set('conversation_id', conversationId);
@@ -105,6 +105,11 @@ export class BackendApiService {
         credentials: 'include',
         signal: abortSignal
       }).then(async response => {
+        if (!response.ok) {
+          observer.error(`Server error: ${response.status} ${response.statusText}`);
+          return;
+        }
+
         if (!response.body) {
           observer.error('ReadableStream not supported in this browser.');
           return;

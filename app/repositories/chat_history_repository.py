@@ -48,7 +48,14 @@ class ChatHistoryRepository:
     # ------------------------------------------------------------------
 
     def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> None:
-        """Persist a message to the new chat_messages table."""
+        """Persist a message to the new chat_messages table.
+
+        Defense-in-depth: the INSERT explicitly sets *user_id*, so even if a
+        caller supplies a *session_id* belonging to a different user the row
+        will always be stamped with the *true* caller's user_id and RLS /
+        application-level queries filtered by user_id will not return it under
+        the wrong account.
+        """
         if user_id.startswith(self.settings.guest_session_prefix):
             return
 
@@ -88,13 +95,23 @@ class ChatHistoryRepository:
             logger.exception("Failed to delete latest exchange for session %s", session_id)
             raise RepositoryError("Failed to delete latest exchange") from exc
 
-    def get_recent_messages(self, session_id: str, limit: int = 10) -> list[dict]:
-        """Return the most recent *limit* messages for the session, oldest-first."""
+    def get_recent_messages(self, session_id: str, limit: int = 10, user_id: str | None = None) -> list[dict]:
+        """Return the most recent *limit* messages for the session, oldest-first.
+
+        Defense-in-depth: when *user_id* is provided the query also filters on
+        ``user_id``, ensuring a caller that somehow supplies a foreign
+        *session_id* receives an empty list rather than leaking history.
+        """
         try:
-            result = (
+            query = (
                 self.supabase.table("chat_messages")
                 .select("role, content, created_at")
                 .eq("session_id", session_id)
+            )
+            if user_id:
+                query = query.eq("user_id", user_id)
+            result = (
+                query
                 .order("created_at", desc=True)
                 .limit(limit)
                 .execute()

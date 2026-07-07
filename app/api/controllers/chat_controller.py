@@ -139,6 +139,13 @@ class ChatController:
             raise ValidationError("Please enter a valid question.")
 
         user_id = self._get_user_id_from_cookie()
+
+        # IDOR guard — verify the caller owns the conversation before reading
+        # its history into the prompt or writing new messages to it.
+        if conversation_id and self.conversation_repository:
+            if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
+                raise AppError("Not found", status_code=404, error_type="not_found")
+
         answer = self.chat_service.get_answer(message, user_id, conversation_id)
         response = make_response(answer)
         return response
@@ -161,7 +168,14 @@ class ChatController:
             raise ValidationError("Please enter a valid question.")
 
         user_id = self._get_user_id_from_cookie()
-        
+
+        # IDOR guard — verify the caller owns the conversation before reading
+        # its history into the prompt or writing new messages to it.
+        if conversation_id and self.conversation_repository:
+            if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
+                logger.info("User %s attempted to use unowned conversation %s; starting a new one.", user_id, conversation_id)
+                conversation_id = None
+
         def generate():
             yield from self.chat_service.get_answer_stream(message, user_id, conversation_id, is_regenerate)
             
@@ -494,7 +508,9 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         if not self.conversation_repository:
             return jsonify({"error": "Persistence disabled"}), 503
-        self.conversation_repository.delete_conversation(conversation_id, user_id)
+        deleted_count = self.conversation_repository.delete_conversation(conversation_id, user_id)
+        if not deleted_count:
+            raise AppError("Not found", status_code=404, error_type="not_found")
         return jsonify({"message": "Conversation deleted"})
 
     def get_conversation_messages(self, conversation_id: str):
