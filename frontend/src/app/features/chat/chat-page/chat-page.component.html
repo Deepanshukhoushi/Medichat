@@ -1,7 +1,13 @@
 <div class="relative flex h-full flex-col overflow-hidden bg-canvas">
   <div #scrollContainer class="relative flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:px-8 lg:py-6 transition-all flex flex-col" (scroll)="onScroll()" style="overflow-anchor: none;">
-    <div class="mx-auto w-full max-w-[1250px] space-y-6 flex-1 flex flex-col">
+    <div class="mx-auto w-full max-w-[860px] space-y-4 flex-1 flex flex-col">
       
+      @if (userProfile()?.user_id?.startsWith('guest_')) {
+        <div class="flex items-center gap-2 rounded-2xl bg-accent/10 px-4 py-3 text-sm text-accent">
+          <svg [lucideIcon]="icons.Info" class="h-4 w-4 shrink-0"></svg>
+          <p>You're browsing as a guest &mdash; <a routerLink="/auth/login" class="font-semibold underline hover:text-accent/80 transition-colors">sign up</a> to unlock flashcards, quizzes &amp; analytics.</p>
+        </div>
+      }
       @if (chatService.isHistoryLoading()) {
         <div class="space-y-6">
           <div class="flex animate-pulse gap-4 opacity-60">
@@ -29,9 +35,13 @@
           </div>
         </div>
       } @else if (chatService.messages().length === 0) {
-        <div class="flex-1 flex flex-col justify-center w-full animate-fade-in max-w-[850px] mx-auto pb-20">
+        <div class="flex-1 flex flex-col justify-center w-full animate-fade-in max-w-[860px] mx-auto pb-20">
           
-          <div class="mb-8 text-center">
+          <div class="mb-8 text-center flex flex-col items-center">
+            <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-[24px] bg-accent/10 border border-accent/20 shadow-glow relative">
+              <div class="absolute inset-0 rounded-[24px] bg-accent/20 animate-ping opacity-20"></div>
+              <svg [lucideIcon]="icons.HeartPulse" class="h-10 w-10 text-accent relative z-10"></svg>
+            </div>
             <h2 class="text-3xl font-semibold text-ink tracking-tight">{{ greeting() }}</h2>
             <p class="text-[15px] text-ink/60 mt-2 font-medium">What would you like to learn today?</p>
           </div>
@@ -51,26 +61,29 @@
             }
           </div>
 
-          <!-- Single Elegant Study Progress Widget -->
-          <div class="mt-16 w-full max-w-[600px] mx-auto rounded-[24px] border border-line/[0.05] bg-surface/30 p-6 flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-5">
-              <div class="relative flex h-14 w-14 items-center justify-center rounded-full bg-accent/10">
-                <svg [lucideIcon]="icons.Flame" class="h-6 w-6 text-accent"></svg>
-                <!-- Pseudo Progress Ring -->
-                <svg class="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="46" fill="none" class="stroke-line/[0.1]" stroke-width="8"></circle>
-                  <circle cx="50" cy="50" r="46" fill="none" class="stroke-accent" stroke-width="8" stroke-dasharray="289" stroke-dashoffset="72" stroke-linecap="round"></circle>
-                </svg>
+          <!-- Study Progress Widget (only shown when real data is available) -->
+          @if (dashboardStats()?.recent_conversations?.length) {
+            <div class="mt-16 w-full max-w-[600px] mx-auto rounded-[24px] border border-line/[0.05] bg-surface/30 p-6 flex items-center justify-between shadow-sm">
+              <div class="flex items-center gap-5">
+                <div class="flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 shrink-0">
+                  <svg [lucideIcon]="icons.Flame" class="h-6 w-6 text-accent"></svg>
+                </div>
+                <div class="flex flex-col">
+                  <h3 class="text-[15px] font-semibold text-ink">Continue where you left off</h3>
+                  <p class="text-[13px] font-medium text-ink/50 mt-0.5">
+                    {{ dashboardStats()!.stats.total_sessions }} session{{ dashboardStats()!.stats.total_sessions === 1 ? '' : 's' }} &bull;
+                    {{ dashboardStats()!.stats.unique_topics }} topic{{ dashboardStats()!.stats.unique_topics === 1 ? '' : 's' }} explored
+                  </p>
+                  @if (dashboardStats()?.recent_conversations?.[0]?.title) {
+                    <p class="text-[12px] text-ink/35 mt-1 truncate max-w-[260px]">Last: {{ dashboardStats()!.recent_conversations[0].title }}</p>
+                  }
+                </div>
               </div>
-              <div class="flex flex-col">
-                <h3 class="text-[15px] font-semibold text-ink">Today's Goal</h3>
-                <p class="text-[13px] font-medium text-ink/50 mt-0.5">3/4 topics studied &bull; 12 flashcards due</p>
-              </div>
+              <button class="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-canvas transition-transform hover:scale-105 shadow-sm shrink-0" type="button" (click)="resumeLastChat()">
+                Resume
+              </button>
             </div>
-            <button class="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-canvas transition-transform hover:scale-105 shadow-sm" type="button" (click)="resumeLastChat()">
-              Continue Learning
-            </button>
-          </div>
+          }
         </div>
       } @else {
         <div class="space-y-6">
@@ -82,6 +95,7 @@
               (deleted)="removeMessage($event)"
               (reacted)="react(message.id, $event)"
               (regenerated)="regenerate()"
+              (editRequested)="editMessage($event)"
             />
           }
         </div>
@@ -100,7 +114,7 @@
   }
 
   @if (chatService.messages().length > 0) {
-    <div class="mx-auto w-full max-w-[850px] p-4 sm:px-6 sm:pb-6 relative z-10">
+    <div class="mx-auto w-full max-w-[860px] p-4 sm:px-6 sm:pb-6 relative z-10">
       <mc-memory-panel class="mb-3 block" />
       <div class="relative">
         <mc-chat-composer [showQuickActions]="true" [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
@@ -159,6 +173,10 @@
           <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
             <span>Close composer / modal</span>
             <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Esc</kbd>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+            <span>Focus composer</span>
+            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">/</kbd>
           </div>
           <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
             <span>Open this help panel</span>

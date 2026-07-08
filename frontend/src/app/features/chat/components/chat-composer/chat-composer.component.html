@@ -6,28 +6,35 @@
     </div>
   }
 
+  @if (voiceToast()) {
+    <div class="rounded-xl border border-accent/20 bg-accent/10 px-4 py-2 text-center text-xs text-accent font-medium transition-all" aria-live="polite" role="status">
+      🎤 Voice input is coming soon
+    </div>
+  }
+
   <!-- Main Composer -->
-  <div class="flex flex-col rounded-3xl bg-surface/80 border border-line/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.08)] backdrop-blur-[24px] transition-all focus-within:border-line/[0.15] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.12)] relative">
+  <div class="flex flex-col rounded-[24px] bg-surface/80 border border-line/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.08)] backdrop-blur-[24px] transition-all focus-within:border-line/[0.15] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.12)] relative">
     
     <!-- Integrated Quick Actions -->
     @if (showQuickActions()) {
-      <div class="flex items-center gap-2 overflow-x-auto pt-3 px-4 pb-0 scrollbar-hide text-[11px] font-semibold animate-fade-in">
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/explain ')">
+      <div class="flex items-center gap-2 overflow-x-auto pt-2 px-3 pb-1 scrollbar-hide text-[12px] font-medium animate-fade-in">
+        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/explain ')">
           <svg [lucideIcon]="icons.Sparkles" class="h-3.5 w-3.5 text-accent"></svg>
           Explain
         </button>
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/flashcards ')">
+        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/flashcards ')">
           <svg [lucideIcon]="icons.BookOpen" class="h-3.5 w-3.5 text-blue-500"></svg>
           Flashcards
         </button>
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/quiz ')">
+        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/quiz ')">
           <svg [lucideIcon]="icons.ClipboardList" class="h-3.5 w-3.5 text-purple-500"></svg>
           Quiz
         </button>
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/drug ')">
+        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/drug ')">
           <svg [lucideIcon]="icons.FlaskConical" class="h-3.5 w-3.5 text-orange-500"></svg>
           Drug Info
         </button>
+        <div class="w-1 shrink-0"></div>
       </div>
     }
 
@@ -41,20 +48,10 @@
       (change)="onFileSelected($event)"
     />
 
-    <textarea
-      #composerTextarea
-      class="max-h-[120px] min-h-[44px] w-full resize-none border-0 bg-transparent px-4 py-3.5 text-[15px] leading-relaxed text-ink outline-none placeholder:text-ink/40 scrollbar-hide font-medium"
-      placeholder="Ask anything about medicine..."
-      [ngModel]="prompt()"
-      (ngModelChange)="prompt.set($event)"
-      (keydown)="onKeyDown($event, composerTextarea)"
-    ></textarea>
-
-    <!-- Composer Toolbar -->
-    <div class="flex items-center justify-between px-2 pb-2">
-      <div class="flex items-center gap-1">
+    <div class="flex items-end px-3 pb-2 pt-1">
+      <div class="flex items-center gap-0.5 mb-1 shrink-0">
         <button
-          class="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/5 hover:text-ink disabled:opacity-40"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/5 hover:text-ink disabled:opacity-40"
           type="button"
           aria-label="Attach file"
           [disabled]="isUploading()"
@@ -69,34 +66,28 @@
           }
         </button>
         <button
-          class="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/5 hover:text-ink"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/5 hover:text-ink"
           type="button"
-          title="Voice Input (Coming Soon)"
+          aria-label="Voice input (coming soon)"
+          (click)="showVoiceToast()"
         >
           <svg [lucideIcon]="icons.Mic" class="h-4 w-4"></svg>
         </button>
       </div>
 
-      <!-- Model Selector (Bottom Left) -->
-      <div class="flex items-center">
-        <button
-          class="flex h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold text-ink/50 transition hover:bg-ink/5 hover:text-ink"
-          type="button"
-        >
-          <span>MediChat-Core</span>
-          <svg [lucideIcon]="icons.ChevronDown" class="h-3 w-3 opacity-70"></svg>
-        </button>
-      </div>
+      <textarea
+        #composerTextarea
+        class="max-h-[150px] min-h-[44px] flex-1 resize-none border-0 bg-transparent px-2 py-3 text-[15px] leading-relaxed text-ink outline-none placeholder:text-ink/40 scrollbar-hide font-medium"
+        placeholder="Ask anything about medicine..."
+        [ngModel]="prompt()"
+        (ngModelChange)="prompt.set($event)"
+        (keydown)="onKeyDown($event, composerTextarea)"
+      ></textarea>
 
-      <!-- Action Buttons (Bottom Right) -->
-      <div class="flex items-center gap-2">
-        <div class="text-[11px] text-ink/30 mr-2 font-medium">
-          <span class="hidden sm:inline">Return to send</span>
-        </div>
-
+      <div class="flex items-center mb-1 shrink-0 ml-1">
         @if (isStreaming()) {
           <button
-            class="flex h-9 w-9 items-center justify-center rounded-full bg-error text-white transition hover:scale-105 shadow-sm"
+            class="flex h-11 w-11 items-center justify-center rounded-full bg-error text-white transition hover:scale-[1.03] shadow-sm"
             (click)="stopped.emit()"
             aria-label="Stop generating"
             type="button"
@@ -105,13 +96,13 @@
           </button>
         } @else {
           <button
-            class="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-canvas transition hover:bg-ink/90 hover:scale-105 disabled:opacity-30 disabled:hover:scale-100 shadow-sm"
+            class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-tr from-accent to-[#20d892] text-white transition hover:scale-[1.03] disabled:opacity-50 disabled:from-ink/10 disabled:to-ink/10 disabled:text-ink/40 disabled:hover:scale-100 shadow-sm"
             [disabled]="!prompt().trim() && !isUploading()"
             (click)="send()"
             aria-label="Send message"
             type="button"
           >
-            <svg [lucideIcon]="icons.ArrowUp" class="h-4 w-4 stroke-[2.5]"></svg>
+            <svg [lucideIcon]="icons.ArrowUp" class="h-5 w-5 stroke-[2.5]"></svg>
           </button>
         }
       </div>

@@ -13,12 +13,12 @@
   --color-placeholder: 107 114 128;
 
   /* Backgrounds */
-  --color-canvas: 9 11 17;
-  --color-surface: 17 21 31;
-  --color-sidebar: 9 11 17;
+  --color-canvas: 13 17 23; /* #0D1117 */
+  --color-surface: 22 27 34; /* #161B22 */
+  --color-sidebar: 17 24 39; /* #111827 */
 
   /* Borders */
-  --color-line: 255 255 255; /* Use with /6 opacity for borders */
+  --color-line: 255 255 255; /* Use with /8 opacity for borders */
 
   /* Brand/Accents */
   --color-accent: 0 208 132;
@@ -47,12 +47,12 @@
   --color-placeholder: 156 163 175;
 
   /* Backgrounds */
-  --color-canvas: 248 250 252;   /* slate-50    */
+  --color-canvas: 248 250 252;
   --color-surface: 255 255 255;
-  --color-sidebar: 241 245 249;  /* slate-100   */
+  --color-sidebar: 241 245 249;
 
   /* Borders */
-  --color-line: 0 0 0;           /* Use with /8 opacity for borders */
+  --color-line: 0 0 0;
 
   /* Brand/Accents — same green works on light */
   --color-accent: 22 163 74;
@@ -81,7 +81,8 @@ body {
 }
 
 body {
-  @apply bg-canvas text-ink font-sans antialiased transition-colors duration-500;
+  @apply bg-canvas text-ink antialiased transition-colors duration-500;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
 }
 
@@ -125,13 +126,14 @@ body {
     @apply font-display tracking-tight text-ink;
   }
   
-  h1 { font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.02em; font-weight: 700; }
-  h2 { font-size: 1.5rem; line-height: 1.25; letter-spacing: -0.02em; font-weight: 600; }
-  h3 { font-size: 1.25rem; line-height: 1.3; letter-spacing: -0.01em; font-weight: 600; }
+  h1 { font-size: 28px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 700; }
+  h2 { font-size: 22px; line-height: 1.25; letter-spacing: -0.01em; font-weight: 600; }
+  h3 { font-size: 18px; line-height: 1.3; font-weight: 600; }
   
   p {
-    @apply text-muted text-[17px];
-    line-height: 1.7;
+    @apply text-muted;
+    font-size: 16px;
+    line-height: 1.6;
   }
 
   button,
@@ -170,6 +172,11 @@ body {
     .glass-panel {
       background: rgba(14, 18, 30, 0.95);
     }
+  }
+
+  .surface-outline {
+    border: 1px solid var(--color-line);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   .glass-panel:hover {
@@ -253,65 +260,77 @@ body {
   }
 }
 
-/* Medical Markdown Prose Styles (Light Cards) */
+/* Medical Markdown Prose Styles */
 .mc-assistant-prose {
   @apply text-ink/90 font-sans;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.7;
   
   p {
-    @apply mb-5 last:mb-0;
+    @apply mb-4 last:mb-0;
   }
   
-  h1, h2 {
-    @apply text-[22px] font-bold mt-10 mb-4 pb-2 border-b border-line/[0.08] text-ink;
+  h1 {
+    @apply text-[28px] font-bold mt-8 mb-4 text-ink tracking-tight;
   }
 
-  /* Treat H3/H4 as the start of a new "card" block */
+  h2 {
+    @apply text-[22px] font-semibold mt-7 mb-3 text-ink tracking-tight;
+  }
+
   h3 {
-    @apply text-[13px] font-bold mt-8 mb-4 text-accent uppercase tracking-widest border-b border-line/[0.06] pb-2;
+    @apply text-[18px] font-semibold mt-6 mb-2 text-ink;
   }
 
   h4 {
-    @apply text-[16px] font-bold mt-6 mb-3 text-ink/90;
+    @apply text-[16px] font-semibold mt-5 mb-2 text-ink/90;
   }
 
   ul, ol {
-    @apply mb-4 pl-5;
+    @apply mb-4 pl-4 space-y-1.5;
   }
   
   li {
-    @apply mb-1.5 marker:text-accent/60;
+    @apply marker:text-ink/50 text-[16px];
   }
 
   strong {
     @apply font-bold text-ink;
   }
 
+  /* Elegant Callouts for Blockquotes */
   blockquote {
-    @apply border-l-2 border-accent pl-4 italic text-ink/70 my-4 bg-accent/5 py-2 rounded-r-lg;
+    @apply relative border-l-4 border-accent bg-accent/5 px-4 py-3 my-5 rounded-r-[12px] text-ink/80 text-[15px];
+    
+    p {
+      @apply mb-2 last:mb-0;
+    }
+    
+    strong {
+      @apply text-accent font-semibold block mb-1 uppercase tracking-wider text-[12px];
+    }
   }
 
   code {
-    @apply bg-line/[0.05] text-ink/80 px-1.5 py-0.5 rounded-md text-sm font-mono border border-line/[0.05];
+    @apply bg-line/[0.06] text-ink/80 px-[6px] py-[2px] rounded-md text-[14px] font-mono border border-line/[0.04];
   }
 
   pre {
-    @apply bg-[#0D1117] text-ink/80 p-4 rounded-xl overflow-x-auto border border-line/[0.08] my-4 shadow-sm;
+    @apply bg-[#0D1117] text-ink/80 p-4 rounded-[16px] overflow-x-auto border border-line/[0.06] my-5 shadow-sm;
     code {
-      @apply bg-transparent p-0 border-0 text-sm;
+      @apply bg-transparent p-0 border-0 text-[14px] font-mono;
     }
   }
 
   table {
-    @apply w-full text-left border-collapse my-6 rounded-xl overflow-hidden border border-line/[0.08] shadow-sm;
+    @apply w-full text-left border-collapse my-6 rounded-[12px] overflow-hidden border border-line/[0.08] shadow-sm bg-surface/30;
     
     th {
-      @apply bg-surface/80 p-3 font-semibold text-sm border-b border-line/[0.08] text-ink/90;
+      @apply bg-surface/80 px-4 py-3 font-semibold text-[14px] border-b border-line/[0.08] text-ink/90;
     }
     
     td {
-      @apply p-3 border-b border-line/[0.05] text-sm text-ink/80;
+      @apply px-4 py-3 border-b border-line/[0.05] text-[15px] text-ink/80;
     }
     
     tr:last-child td {

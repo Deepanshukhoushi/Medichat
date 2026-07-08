@@ -5,6 +5,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
 
 import { BackendApiService } from '../../../../core/services/backend-api.service';
 import { appIcons } from '../../../../shared/icons/lucide-icons';
+import { extractErrorMessage } from '../../../../core/utils/extract-error-message';
 
 @Component({
   selector: 'mc-chat-composer',
@@ -26,6 +27,7 @@ export class ChatComposerComponent {
   protected readonly uploadProgress = signal(0);
   protected readonly uploadFileName = signal<string | null>(null);
   protected readonly uploadToast = signal<string | null>(null);
+  protected readonly voiceToast = signal(false);
 
   private readonly api = inject(BackendApiService);
 
@@ -34,6 +36,11 @@ export class ChatComposerComponent {
     if (!value) return;
     this.submitted.emit(value);
     this.prompt.set('');
+  }
+
+  protected showVoiceToast(): void {
+    this.voiceToast.set(true);
+    setTimeout(() => this.voiceToast.set(false), 3000);
   }
 
   public setPrompt(text: string): void {
@@ -109,7 +116,7 @@ export class ChatComposerComponent {
         this.isUploading.set(false);
         this.uploadProgress.set(0);
         this.uploadFileName.set(null);
-        this.uploadToast.set(err?.error?.error || 'Failed to upload file');
+        this.uploadToast.set(extractErrorMessage(err, 'Failed to upload file'));
         setTimeout(() => this.uploadToast.set(null), 4000);
         input.value = '';
       }

@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 import { ChatService } from '../../../core/services/chat.service';
-import { BackendApiService, UserProfile } from '../../../core/services/backend-api.service';
+import { BackendApiService, DashboardStats } from '../../../core/services/backend-api.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { appIcons } from '../../../shared/icons/lucide-icons';
 import { ChatComposerComponent } from '../components/chat-composer/chat-composer.component';
 import { ChatMessageComponent } from '../components/chat-message/chat-message.component';
 import { MemoryPanelComponent } from '../components/memory-panel/memory-panel.component';
-import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'mc-chat-page',
@@ -25,11 +26,15 @@ export class ChatPageComponent {
   protected readonly icons = appIcons;
   protected readonly chatService = inject(ChatService);
   protected readonly backendApi = inject(BackendApiService);
+  private readonly profileService = inject(ProfileService);
+  private readonly router = inject(Router);
   
   protected readonly isNearBottom = signal(true);
   protected readonly composerFocused = signal(false);
   protected readonly showShortcuts = signal(false);
-  protected readonly userProfile = signal<UserProfile | null>(null);
+  /** Read from shared ProfileService cache — no extra network call. */
+  protected readonly userProfile = this.profileService.profile;
+  protected readonly dashboardStats = signal<DashboardStats | null>(null);
 
   protected readonly greeting = computed(() => {
     const hour = new Date().getHours();
@@ -65,12 +70,6 @@ export class ChatPageComponent {
   });
 
   constructor() {
-    this.backendApi.getProfile().subscribe({
-      next: (profile) => this.userProfile.set(profile),
-      error: (err: HttpErrorResponse) => {
-        // Silently handle 401
-      }
-    });
 
     effect(() => {
       const messages = this.chatService.messages();
@@ -138,20 +137,20 @@ export class ChatPageComponent {
     this.chatService.removeMessage(messageId);
   }
 
+  protected editMessage(messageId: string): void {
+    const msg = this.chatService.messages().find((m) => m.id === messageId);
+    if (msg && msg.role === 'user') {
+      this.insertPrompt(msg.content);
+      this.chatService.removeMessage(messageId);
+    }
+  }
+
   protected resumeLastChat(): void {
-    console.log('Resuming last chat...');
-  }
-
-  protected startRevision(): void {
-    console.log('Starting revision...');
-  }
-
-  protected openFlashcards(): void {
-    console.log('Opening flashcards...');
-  }
-
-  protected openQuiz(): void {
-    console.log('Opening quiz...');
+    const stats = this.dashboardStats();
+    const lastConversation = stats?.recent_conversations?.[0];
+    if (lastConversation?.id) {
+      this.chatService.loadHistory(lastConversation.id);
+    }
   }
 
   protected stopGeneration(): void {
@@ -162,6 +161,22 @@ export class ChatPageComponent {
   onDocumentEscape(): void {
     if (this.showShortcuts()) {
       this.closeShortcuts();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key === '/' && !this.composerFocused() && !this.showShortcuts()) {
+      // Don't focus if user is already typing in an input somewhere else
+      const target = event.target as HTMLElement;
+      if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        event.preventDefault();
+        // Since we have two composers (hero vs footer), we focus the visible one
+        const composer = document.querySelector('textarea') as HTMLTextAreaElement;
+        if (composer) {
+          composer.focus();
+        }
+      }
     }
   }
 

@@ -1,19 +1,19 @@
-<article class="flex w-full py-4 md:py-6 transition-colors group/message relative">
-  <div class="flex w-full gap-4 md:gap-6 px-4">
+<article class="flex w-full py-3 md:py-4 transition-colors group/message relative">
+  <div class="flex w-full gap-4 px-4 max-w-[860px] mx-auto">
     
     <!-- User Message -->
     @if (message().role === 'user') {
       <div class="flex w-full justify-end group/userMsg">
         <div class="relative flex flex-col items-end">
-          <div class="text-[15px] leading-relaxed text-ink/90 font-medium bg-gradient-to-br from-surface to-surface/40 border border-line/[0.08] px-5 py-3 rounded-[22px] rounded-tr-[4px] max-w-[85%] sm:max-w-[70%] shadow-sm backdrop-blur-md">
+          <div class="text-[16px] leading-relaxed text-ink/90 font-medium bg-surface/60 border border-line/[0.04] px-5 py-3 rounded-[22px] rounded-tr-[6px] max-w-[90%] sm:max-w-[70%] shadow-sm">
             <p class="whitespace-pre-line">{{ message().content }}</p>
           </div>
           
           <!-- Actions & Timestamp (visible on hover) -->
           <div class="flex items-center gap-2 mt-1.5 opacity-0 group-hover/userMsg:opacity-100 transition-opacity duration-200 text-[11px] text-ink/40 font-medium px-1">
-            <span>Just now</span>
+            <span>{{ message().timestamp | date:'shortTime' }}</span>
             <div class="w-1 h-1 rounded-full bg-line/[0.2]"></div>
-            <button class="hover:text-ink transition flex items-center gap-1" title="Edit message">
+            <button class="hover:text-ink transition flex items-center gap-1" title="Edit message" (click)="editMessage()">
               <svg [lucideIcon]="icons.SquarePen" class="h-3 w-3"></svg>
               <span>Edit</span>
             </button>
@@ -31,13 +31,13 @@
     <!-- Assistant Message -->
     @else {
       <!-- Avatar -->
-      <div class="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-accent/15 border border-accent/20">
-        <svg [lucideIcon]="icons.Bot" class="h-3.5 w-3.5 text-accent"></svg>
+      <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface/80 border border-line/[0.08] shadow-sm">
+        <svg [lucideIcon]="icons.Bot" class="h-5 w-5 text-accent"></svg>
       </div>
 
       <!-- Content Area -->
       <div class="flex flex-1 flex-col min-w-0 pb-2">
-        <div class="flex flex-col text-[15px] leading-relaxed text-ink/90">
+        <div class="flex flex-col text-[16px] leading-relaxed text-ink/90">
           
           @if (message().content) {
             <!-- The markdown prose will be styled in styles.scss to resemble light cards and tables -->

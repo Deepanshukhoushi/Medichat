@@ -3,7 +3,9 @@
 }
 
 .memory-panel {
+  background: var(--color-surface);
   background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  border: 1px solid var(--color-ink);
   border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
   border-radius: 12px;
   padding: 12px 14px;
@@ -35,6 +37,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
+  background: var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 15%, transparent);
   border-radius: 6px;
   color: var(--color-accent);
@@ -58,6 +61,7 @@
 .memory-divider {
   margin-top: 10px;
   padding-top: 10px;
+  border-top: 1px solid var(--color-ink);
   border-top: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
 }
 
@@ -76,7 +80,9 @@
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
+  background: var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border: 1px solid var(--color-accent);
   border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
   border-radius: 20px;
   color: var(--color-accent);
@@ -94,7 +100,9 @@
 
 .related-chip {
   padding: 2px 8px;
+  background: var(--color-ink);
   background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  border: 1px solid var(--color-ink);
   border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
   border-radius: 12px;
   font-size: 0.7rem;

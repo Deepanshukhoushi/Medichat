@@ -4,14 +4,14 @@ import { LucideDynamicIcon } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
 import { ToastrService } from 'ngx-toastr';
 
+import { DatePipe } from '@angular/common';
 import { ChatMessage } from '../../../../shared/models/chat.model';
 import { appIcons } from '../../../../shared/icons/lucide-icons';
-import { MedicalOrbComponent } from '../../../../shared/components/medical-orb/medical-orb.component';
 
 @Component({
   selector: 'mc-chat-message',
   standalone: true,
-  imports: [MarkdownComponent, LucideDynamicIcon],
+  imports: [MarkdownComponent, LucideDynamicIcon, DatePipe],
   templateUrl: './chat-message.component.html',
   styleUrl: './chat-message.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -24,6 +24,7 @@ export class ChatMessageComponent {
   readonly deleted = output<string>();
   readonly reacted = output<boolean>();
   readonly regenerated = output<void>();
+  readonly editRequested = output<string>();
   
   protected readonly icons = appIcons;
 
@@ -47,5 +48,9 @@ export class ChatMessageComponent {
 
   protected regenerate(): void {
     this.regenerated.emit();
+  }
+
+  protected editMessage(): void {
+    this.editRequested.emit(this.message().id);
   }
 }
