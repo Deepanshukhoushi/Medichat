@@ -3,33 +3,21 @@ import { inject } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { SKIP_GLOBAL_ERROR } from './skip-global-error.token';
+import { extractErrorMessage } from '../utils/extract-error-message';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastr = inject(ToastrService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      let errorMessage = 'An unexpected error occurred.';
-      
-      if (error.error instanceof ErrorEvent) {
-        // Client-side error
-        errorMessage = error.error.message;
-      } else {
-        // Server-side error
-        if (error.error && error.error.error) {
-          errorMessage = error.error.error;
-        } else if (error.error && error.error.message) {
-          errorMessage = error.error.message;
-        } else if (error.status === 429) {
-          errorMessage = 'Too many requests. Please try again later.';
-        } else if (error.status === 0) {
-          errorMessage = 'Unable to connect to the server. Check your network connection.';
-        }
-      }
+      const message = extractErrorMessage(error, 'An unexpected error occurred.');
 
-      // Ignore 401s for guest logic / auth polling
-      if (error.status !== 401 && error.status !== 404) {
-        toastr.error(errorMessage, 'Error');
+      // Ignore 401s (guest auth polling) and 404s.
+      // Also skip if the caller opted out with SKIP_GLOBAL_ERROR (they show their own inline banner).
+      const skipGlobal = req.context.get(SKIP_GLOBAL_ERROR);
+      if (error.status !== 401 && error.status !== 404 && !skipGlobal) {
+        toastr.error(message, 'Error');
       }
 
       return throwError(() => error);

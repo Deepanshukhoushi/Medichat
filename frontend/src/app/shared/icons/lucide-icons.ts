@@ -55,6 +55,7 @@ import {
   LucideZap,
   LucideBookmark,
   LucideImage,
+  LucideInfo,
   LucideCheckCircle2,
   LucideMail,
   LucideLock,
@@ -67,8 +68,10 @@ import {
   LucideEyeOff,
   LucideCheck,
   LucideAlertCircle,
+  LucideAlertTriangle,
   LucideShieldCheck,
-  LucideShare2
+  LucideShare2,
+  LucideLoader2
 } from '@lucide/angular';
 
 export const appIcons = {
@@ -128,6 +131,7 @@ export const appIcons = {
   Zap: LucideZap,
   Bookmark: LucideBookmark,
   Image: LucideImage,
+  Info: LucideInfo,
   CheckCircle2: LucideCheckCircle2,
   Mail: LucideMail,
   Lock: LucideLock,
@@ -140,6 +144,8 @@ export const appIcons = {
   EyeOff: LucideEyeOff,
   Check: LucideCheck,
   AlertCircle: LucideAlertCircle,
+  AlertTriangle: LucideAlertTriangle,
   ShieldCheck: LucideShieldCheck,
-  Share2: LucideShare2
+  Share2: LucideShare2,
+  Loader2: LucideLoader2
 };

@@ -7,16 +7,10 @@ import { NavItem } from '../../shared/models/navigation.model';
 export class NavigationService {
   readonly navItems: NavItem[] = [
     {
-      label: 'Continue Learning',
+      label: 'Dashboard',
       hint: 'Your study dashboard',
       route: '/app/dashboard',
       icon: appIcons.LayoutDashboard
-    },
-    {
-      label: 'Collections',
-      hint: 'Saved topics and bookmarks',
-      route: '/app/collections',
-      icon: appIcons.LibraryBig
     },
     {
       label: 'Flashcards',
@@ -29,12 +23,6 @@ export class NavigationService {
       hint: 'Test your knowledge',
       route: '/app/quizzes',
       icon: appIcons.ClipboardList
-    },
-    {
-      label: 'Notes',
-      hint: 'Your generated summaries',
-      route: '/app/notes',
-      icon: appIcons.FileText
     }
   ];
 

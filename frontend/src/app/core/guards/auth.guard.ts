@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
-import { Router, CanActivateFn, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Router, CanActivateFn, CanActivateChildFn, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
-import { BackendApiService } from '../services/backend-api.service';
+import { ProfileService } from '../services/profile.service';
 
 /**
  * Routes that guests (unauthenticated users) are permitted to access.
@@ -9,18 +9,17 @@ import { BackendApiService } from '../services/backend-api.service';
  * rather than by substring-matching the URL, so future routes cannot
  * accidentally inherit guest access.
  */
-export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, _state: RouterStateSnapshot) => {
-  const backendApi = inject(BackendApiService);
+export const authGuard: CanActivateChildFn = (route: ActivatedRouteSnapshot, _state: RouterStateSnapshot) => {
+  const profileService = inject(ProfileService);
   const router = inject(Router);
   const allowGuest: boolean = route.data?.['allowGuest'] === true;
 
-  return backendApi.getProfile().pipe(
+  return profileService.profile$.pipe(
     map((profile) => {
       const isGuest = profile?.user_id?.startsWith('guest_');
 
       if (isGuest && !allowGuest) {
-        router.navigateByUrl('/auth/login');
-        return false;
+        return router.createUrlTree(['/auth/login']);
       }
       return true;
     }),
@@ -29,8 +28,7 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, _state: 
       if (allowGuest) {
         return of(true);
       }
-      router.navigateByUrl('/auth/login');
-      return of(false);
+      return of(router.createUrlTree(['/auth/login']));
     })
   );
 };

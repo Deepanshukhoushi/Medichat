@@ -1,9 +1,10 @@
-import { HttpClient, HttpEvent, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpEvent, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import type { FlashcardDeck } from '../../shared/models/dashboard.model';
 import { RuntimeConfigService } from './runtime-config.service';
+import { SKIP_GLOBAL_ERROR } from '../interceptors/skip-global-error.token';
 
 export interface BackendHealthResponse {
   status: 'healthy' | 'degraded';
@@ -82,8 +83,8 @@ export class BackendApiService {
     return this.health$;
   }
 
-  streamChatMessage(prompt: string, conversationId: string | null = null, abortSignal?: AbortSignal, isRegenerate: boolean = false): Observable<{token?: string, error?: string, conversation_id?: string, sources?: {title: string, source: string, chapter: string}[]}> {
-    return new Observable<{token?: string, error?: string, conversation_id?: string, sources?: {title: string, source: string, chapter: string}[]}>(observer => {
+  streamChatMessage(prompt: string, conversationId: string | null = null, abortSignal?: AbortSignal, isRegenerate: boolean = false): Observable<{token?: string, error?: string, conversation_id?: string, message_id?: string, sources?: {title: string, source: string, chapter: string}[]}> {
+    return new Observable<{token?: string, error?: string, conversation_id?: string, message_id?: string, sources?: {title: string, source: string, chapter: string}[]}>(observer => {
       let body = new HttpParams().set('msg', prompt);
       if (conversationId) {
         body = body.set('conversation_id', conversationId);
@@ -142,7 +143,8 @@ export class BackendApiService {
                 }
                 observer.next(parsed);
               } catch (e) {
-                console.warn('Failed to parse SSE JSON:', data);
+                // Silently swallow parse errors. Streaming chunks can be cut mid-JSON
+                // over the wire; we just wait for the rest of the buffer.
               }
             }
           }
@@ -195,21 +197,39 @@ export class BackendApiService {
   }
 
   // --- Conversations ---
-  getConversations(): Observable<Conversation[]> {
-    return this.http.get<Conversation[]>(this.url('/api/conversations'), { withCredentials: true });
+  getConversations(limit = 30, offset = 0): Observable<Conversation[]> {
+    let params = new HttpParams().set('limit', limit.toString());
+    if (offset > 0) {
+      params = params.set('offset', offset.toString());
+    }
+    return this.http.get<Conversation[]>(this.url('/api/conversations'), {
+      withCredentials: true,
+      params
+    });
   }
 
   deleteConversation(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.url(`/api/conversations/${id}`), { withCredentials: true });
   }
 
-  getConversationMessages(id: string): Observable<{ role: string, content: string }[]> {
-    return this.http.get<{ role: string, content: string }[]>(this.url(`/api/conversations/${id}/messages`), { withCredentials: true });
+  getConversationMessages(id: string): Observable<{ id?: string, role: string, content: string, liked?: boolean }[]> {
+    return this.http.get<{ id?: string, role: string, content: string, liked?: boolean }[]>(this.url(`/api/conversations/${id}/messages`), { withCredentials: true });
+  }
+
+  deleteMessage(conversationId: string, messageId: string): Observable<{ status: string }> {
+    return this.http.delete<{ status: string }>(this.url(`/api/conversations/${conversationId}/messages/${messageId}`), { withCredentials: true });
+  }
+
+  rateMessage(conversationId: string, messageId: string, liked: boolean): Observable<{ status: string }> {
+    return this.http.post<{ status: string }>(this.url(`/api/conversations/${conversationId}/messages/${messageId}/feedback`), { liked }, { withCredentials: true });
   }
 
   // --- Flashcards ---
   getFlashcardDecks(): Observable<FlashcardDeck[]> {
-    return this.http.get<FlashcardDeck[]>(this.url('/api/flashcards'), { withCredentials: true });
+    return this.http.get<FlashcardDeck[]>(this.url('/api/flashcards'), {
+      withCredentials: true,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true)
+    });
   }
 
   getFlashcardDeck(id: string): Observable<FlashcardDeck> {
@@ -217,7 +237,14 @@ export class BackendApiService {
   }
 
   generateFlashcardDeck(topic: string, count: number = 5): Observable<{ message: string; deck_id: string }> {
-    return this.http.post<{ message: string; deck_id: string }>(this.url('/api/flashcards/generate'), { topic, count }, { withCredentials: true });
+    return this.http.post<{ message: string; deck_id: string }>(this.url('/api/flashcards/generate'), { topic, count }, {
+      withCredentials: true,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true)
+    });
+  }
+
+  rateFlashcard(deckId: string, cardId: string, rating: 'known' | 'unknown'): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(this.url(`/api/flashcards/${deckId}/cards/${cardId}/rating`), { rating }, { withCredentials: true });
   }
 
   // --- Quizzes ---
@@ -260,11 +287,17 @@ export class BackendApiService {
   }
 
   getStudyStats(): Observable<StudyStats> {
-    return this.http.get<StudyStats>(this.url('/api/analytics/study-stats'), { withCredentials: true });
+    return this.http.get<StudyStats>(this.url('/api/analytics/study-stats'), {
+      withCredentials: true,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true)
+    });
   }
 
   getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(this.url('/api/dashboard/stats'), { withCredentials: true });
+    return this.http.get<DashboardStats>(this.url('/api/dashboard/stats'), {
+      withCredentials: true,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true)
+    });
   }
 
   // --- Document Upload ---

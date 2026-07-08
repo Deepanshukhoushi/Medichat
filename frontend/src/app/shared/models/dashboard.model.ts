@@ -11,6 +11,7 @@ export interface StudyMetric {
 }
 
 export interface FlashcardCard {
+  id: string;
   front: string;
   back: string;
   difficulty: number;

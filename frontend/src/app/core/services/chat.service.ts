@@ -3,6 +3,7 @@ import { finalize, map, Observable, tap } from 'rxjs';
 
 import { BackendApiService, Conversation, TopicMemoryResponse } from './backend-api.service';
 import { ChatCitation, ChatMessage, ConversationSummary } from '../../shared/models/chat.model';
+import { extractErrorMessage } from '../utils/extract-error-message';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -16,6 +17,8 @@ export class ChatService {
   private readonly topicMemorySignal = signal<TopicMemoryResponse>({ current_topic: null, related_topics: [] });
   private readonly sessionSummarySignal = signal<string | null>(null);
   private readonly activeConversationIdSignal = signal<string | null>(null);
+  /** True when /health reports supabase: 'disabled' — database is not connected. */
+  private readonly persistenceDisabledSignal = signal(false);
   private abortController: AbortController | null = null;
   // Tracks the optimistic placeholder conversation ID inserted into the sidebar
   // before the backend confirms the real ID. Reset once the real ID arrives.
@@ -30,11 +33,16 @@ export class ChatService {
   readonly topicMemory = this.topicMemorySignal.asReadonly();
   readonly sessionSummary = this.sessionSummarySignal.asReadonly();
   readonly activeConversationId = this.activeConversationIdSignal.asReadonly();
+  /** Exposed so layouts can render a persistence-disabled warning banner. */
+  readonly persistenceDisabled = this.persistenceDisabledSignal.asReadonly();
 
   bootstrap(): void {
     this.backendApi.getHealth().subscribe({
       next: (response) => {
         this.backendReadySignal.set(response.status === 'healthy' || response.status === 'degraded');
+        // Surface persistence-disabled state so the UI can warn users.
+        const supabaseCheck = (response as any).checks?.supabase;
+        this.persistenceDisabledSignal.set(supabaseCheck === 'disabled');
       },
       error: () => {
         this.backendReadySignal.set(false);
@@ -106,6 +114,10 @@ export class ChatService {
             currentAnswer += chunk.token;
             this.replacePendingMessage(pendingMessage.id, currentAnswer, trimmedPrompt, currentCitations);
           }
+          if (chunk.message_id) {
+            this.replacePendingMessage(pendingMessage.id, currentAnswer, trimmedPrompt, currentCitations, chunk.message_id);
+            pendingMessage.id = chunk.message_id;
+          }
           if (chunk.error) {
             this.replacePendingMessage(
               pendingMessage.id,
@@ -132,12 +144,20 @@ export class ChatService {
   }
 
   rateMessage(messageId: string, liked: boolean): void {
+    const cid = this.activeConversationId();
+    if (cid && !messageId.startsWith('msg-')) {
+      this.backendApi.rateMessage(cid, messageId, liked).subscribe({ error: () => undefined });
+    }
     this.messagesSignal.update((messages) =>
       messages.map((message) => (message.id === messageId ? { ...message, liked } : message))
     );
   }
 
   removeMessage(messageId: string): void {
+    const cid = this.activeConversationId();
+    if (cid && !messageId.startsWith('msg-')) {
+      this.backendApi.deleteMessage(cid, messageId).subscribe({ error: () => undefined });
+    }
     this.messagesSignal.update((messages) => messages.filter((message) => message.id !== messageId));
   }
 
@@ -184,6 +204,10 @@ export class ChatService {
             currentAnswer += chunk.token;
             this.replacePendingMessage(lastAssistantMessage.id, currentAnswer, trimmedPrompt, currentCitations);
           }
+          if (chunk.message_id) {
+            this.replacePendingMessage(lastAssistantMessage.id, currentAnswer, trimmedPrompt, currentCitations, chunk.message_id);
+            lastAssistantMessage.id = chunk.message_id;
+          }
           if (chunk.error) {
             this.replacePendingMessage(lastAssistantMessage.id, chunk.error, trimmedPrompt);
           }
@@ -215,10 +239,11 @@ export class ChatService {
     ).subscribe({
       next: (data) => {
         const messages: ChatMessage[] = data.map((msg, i) => ({
-          id: `msg-${conversationId}-${i}`,
+          id: msg.id || `msg-${conversationId}-${i}`,
           role: msg.role as 'user' | 'assistant',
           content: msg.content,
-          timestamp: ''
+          timestamp: '',
+          liked: msg.liked
         }));
         this.messagesSignal.set(messages);
         this.refreshMemory();
@@ -227,7 +252,7 @@ export class ChatService {
       error: (err) => {
         this.messagesSignal.set([]);
         this.historyLoadErrorSignal.set(
-          err?.error?.error || 'Failed to load the conversation history. Please try again.'
+          extractErrorMessage(err, 'Failed to load the conversation history. Please try again.')
         );
       }
     });
@@ -257,6 +282,35 @@ export class ChatService {
     );
   }
 
+  readonly isLoadingMoreHistorySignal = signal(false);
+  readonly hasMoreHistorySignal = signal(true);
+
+  loadMoreHistory(): void {
+    if (this.isLoadingMoreHistorySignal() || !this.hasMoreHistorySignal()) {
+      return;
+    }
+    
+    this.isLoadingMoreHistorySignal.set(true);
+    const currentHistory = this.conversationsSignal();
+    const currentOffset = currentHistory.length;
+    
+    this.backendApi.getConversations(30, currentOffset).subscribe({
+      next: (conversations) => {
+        if (conversations.length < 30) {
+          this.hasMoreHistorySignal.set(false);
+        }
+        
+        const summaries = conversations.map(c => this.toConversationSummary(c));
+        this.conversationsSignal.set([...currentHistory, ...summaries]);
+        this.isLoadingMoreHistorySignal.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load more history', err);
+        this.isLoadingMoreHistorySignal.set(false);
+      }
+    });
+  }
+
   private refreshMemory(): void {
     this.backendApi.getTopicMemory().subscribe({
       next: (data) => this.topicMemorySignal.set(data),
@@ -277,17 +331,20 @@ export class ChatService {
     };
   }
 
-  private replacePendingMessage(messageId: string, content: string, prompt: string, citations?: ChatCitation[]): void {
-    const assistantMessage: ChatMessage = {
-      id: messageId,
-      role: 'assistant',
-      content,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      citations: citations ?? []
-    };
-
+  private replacePendingMessage(id: string, content: string, originalPrompt: string, citations?: ChatCitation[], newId?: string): void {
     this.messagesSignal.update((messages) =>
-      messages.map((message) => (message.id === messageId ? assistantMessage : message))
+      messages.map((message) => {
+        if (message.id === id) {
+          return {
+            ...message,
+            content,
+            citations: citations || message.citations || [],
+            id: newId || message.id,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+        }
+        return message;
+      })
     );
   }
 

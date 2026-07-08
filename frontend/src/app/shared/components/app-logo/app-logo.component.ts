@@ -14,7 +14,7 @@ import { appIcons } from '../../icons/lucide-icons';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppLogoComponent {
-  @Input() variant: 'auto' | 'light' = 'auto';
+  @Input() variant: 'auto' | 'light' | 'icon' = 'auto';
   
   protected readonly icons = appIcons;
 }

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { alreadyAuthGuard } from './core/guards/already-auth.guard';
+import { quizGuard } from './core/guards/quiz.guard';
 
 export const routes: Routes = [
   {
@@ -55,7 +56,7 @@ export const routes: Routes = [
   },
   {
     path: 'app',
-    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     loadComponent: () => import('./layouts/app-shell-layout/app-shell-layout.component').then((m) => m.AppShellLayoutComponent),
     children: [
       {
@@ -83,7 +84,8 @@ export const routes: Routes = [
       {
         path: 'quizzes',
         title: 'Quizzes | MediChat',
-        loadComponent: () => import('./features/quizzes/quizzes-page/quizzes-page.component').then((m) => m.QuizzesPageComponent)
+        loadComponent: () => import('./features/quizzes/quizzes-page/quizzes-page.component').then((m) => m.QuizzesPageComponent),
+        canDeactivate: [quizGuard]
       },
       {
         path: 'profile',
