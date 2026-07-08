@@ -30,14 +30,15 @@ class MemoryService:
     # Write
     # ------------------------------------------------------------------
 
-    def save_message(self, session_id: str, user_id: str, role: str, content: str) -> None:
+    def save_message(self, session_id: str, user_id: str, role: str, content: str) -> str | None:
         """Persist a single message to the chat_messages table (no-op for guests)."""
         if not session_id or not content:
-            return
+            return None
         try:
-            self._repo.save_chat_message(session_id, user_id, role, content)
+            return self._repo.save_chat_message(session_id, user_id, role, content)
         except RepositoryError:
             logger.error("MemoryService: could not save message for session %s", session_id, exc_info=True)
+            return None
 
     # ------------------------------------------------------------------
     # Read

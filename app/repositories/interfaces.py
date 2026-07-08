@@ -25,7 +25,16 @@ class IChatHistoryRepository(ABC):
         pass
 
     @abstractmethod
-    def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> None:
+    def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> str | None:
+        """Persist a message and return its unique ID (if supported)."""
+        pass
+
+    @abstractmethod
+    def delete_message(self, session_id: str, user_id: str, message_id: str) -> None:
+        pass
+
+    @abstractmethod
+    def rate_message(self, session_id: str, user_id: str, message_id: str, liked: bool) -> None:
         pass
 
     @abstractmethod
@@ -68,7 +77,7 @@ class IMemoryRepository(ABC):
 
 class IFlashcardRepository(ABC):
     @abstractmethod
-    def list_decks(self, user_id: str) -> list[dict]:
+    def list_decks(self, user_id: str, limit: int = 30) -> list[dict]:
         pass
 
     @abstractmethod
@@ -77,7 +86,7 @@ class IFlashcardRepository(ABC):
 
 class IQuizRepository(ABC):
     @abstractmethod
-    def list_sessions(self, user_id: str) -> list[dict]:
+    def list_sessions(self, user_id: str, limit: int = 30) -> list[dict]:
         pass
 
     @abstractmethod

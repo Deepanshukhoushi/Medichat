@@ -24,9 +24,16 @@ class FlashcardRepository:
             logger.exception("Failed to save flashcard deck")
             raise RepositoryError("Failed to save flashcard deck") from exc
 
-    def list_decks(self, user_id: str) -> list[dict]:
+    def list_decks(self, user_id: str, limit: int = 30) -> list[dict]:
         try:
-            res = self.supabase.table("flashcard_decks").select("id, topic, created_at").eq("user_id", user_id).order("created_at", desc=True).execute()
+            res = (
+                self.supabase.table("flashcard_decks")
+                .select("id, topic, created_at")
+                .eq("user_id", user_id)
+                .order("created_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
             return res.data
         except Exception as exc:
             logger.exception("Failed to list flashcard decks")
@@ -45,3 +52,20 @@ class FlashcardRepository:
         except Exception as exc:
             logger.exception("Failed to get flashcard deck")
             raise RepositoryError("Failed to get flashcard deck") from exc
+
+    def rate_card(self, deck_id: str, card_id: str, rating: str) -> None:
+        try:
+            card_res = self.supabase.table("flashcards").select("difficulty").eq("id", card_id).eq("deck_id", deck_id).execute()
+            if not card_res.data:
+                raise RepositoryError("Card not found")
+            
+            difficulty = card_res.data[0].get("difficulty", 3)
+            if rating == "known":
+                difficulty = max(1, difficulty - 1)
+            elif rating == "unknown":
+                difficulty = min(5, difficulty + 1)
+                
+            self.supabase.table("flashcards").update({"difficulty": difficulty}).eq("id", card_id).execute()
+        except Exception as exc:
+            logger.exception("Failed to rate flashcard")
+            raise RepositoryError("Failed to rate flashcard") from exc

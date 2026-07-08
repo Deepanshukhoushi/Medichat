@@ -22,10 +22,13 @@ def register_web_routes(application, controller: ChatController) -> None:
     application.add_url_rule("/api/conversations", view_func=controller.list_conversations, methods=["GET"])
     application.add_url_rule("/api/conversations/<conversation_id>", view_func=controller.delete_conversation, methods=["DELETE"])
     application.add_url_rule("/api/conversations/<conversation_id>/messages", view_func=controller.get_conversation_messages, methods=["GET"])
+    application.add_url_rule("/api/conversations/<conversation_id>/messages/<message_id>", view_func=controller.delete_message, methods=["DELETE"])
+    application.add_url_rule("/api/conversations/<conversation_id>/messages/<message_id>/feedback", view_func=controller.rate_message, methods=["POST"])
     # Flashcards
     application.add_url_rule("/api/flashcards", view_func=controller.list_flashcard_decks, methods=["GET"])
     application.add_url_rule("/api/flashcards/<deck_id>", view_func=controller.get_flashcard_deck, methods=["GET"])
     application.add_url_rule("/api/flashcards/generate", view_func=controller.generate_flashcard_deck, methods=["POST"])
+    application.add_url_rule("/api/flashcards/<deck_id>/cards/<card_id>/rating", view_func=controller.rate_flashcard, methods=["POST"])
     # Quizzes
     application.add_url_rule("/api/quiz/sessions", view_func=controller.list_quiz_sessions, methods=["GET"])
     application.add_url_rule("/api/quiz/<session_id>", view_func=controller.get_quiz_session, methods=["GET"])

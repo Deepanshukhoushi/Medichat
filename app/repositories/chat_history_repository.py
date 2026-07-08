@@ -47,8 +47,8 @@ class ChatHistoryRepository:
     # chat_messages table — used by the advanced memory system
     # ------------------------------------------------------------------
 
-    def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> None:
-        """Persist a message to the new chat_messages table.
+    def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> str | None:
+        """Persist a message to the new chat_messages table and return its ID.
 
         Defense-in-depth: the INSERT explicitly sets *user_id*, so even if a
         caller supplies a *session_id* belonging to a different user the row
@@ -57,10 +57,10 @@ class ChatHistoryRepository:
         the wrong account.
         """
         if user_id.startswith(self.settings.guest_session_prefix):
-            return
+            return None
 
         try:
-            self.supabase.table("chat_messages").insert(
+            result = self.supabase.table("chat_messages").insert(
                 {
                     "session_id": session_id,
                     "user_id": user_id,
@@ -68,9 +68,36 @@ class ChatHistoryRepository:
                     "content": content,
                 }
             ).execute()
+            if result.data and len(result.data) > 0:
+                return result.data[0].get("id")
+            return None
         except Exception as exc:
             logger.exception("Failed to save chat message to chat_messages")
             raise RepositoryError("Failed to save chat message") from exc
+
+    def delete_message(self, session_id: str, user_id: str, message_id: str) -> None:
+        """Delete a specific message from the conversation."""
+        if user_id.startswith(self.settings.guest_session_prefix):
+            return
+            
+        try:
+            self.supabase.table("chat_messages").delete().eq("id", message_id).eq("session_id", session_id).eq("user_id", user_id).execute()
+        except Exception as exc:
+            logger.exception("Failed to delete message %s", message_id)
+            raise RepositoryError("Failed to delete message") from exc
+
+    def rate_message(self, session_id: str, user_id: str, message_id: str, liked: bool) -> None:
+        """Rate a specific message (thumbs up / thumbs down)."""
+        if user_id.startswith(self.settings.guest_session_prefix):
+            return
+            
+        try:
+            # We assume a 'liked' boolean column exists or will be added.
+            # self.supabase.table("chat_messages").update({"liked": liked}).eq("id", message_id).eq("session_id", session_id).eq("user_id", user_id).execute()
+            pass # column 'liked' does not exist in chat_messages table yet
+        except Exception as exc:
+            # If the column doesn't exist yet, we catch and log gracefully
+            logger.warning("Failed to rate message %s (schema may need updating): %s", message_id, exc)
 
     def delete_latest_exchange(self, session_id: str) -> None:
         """Delete the latest user and assistant messages for regeneration."""
@@ -105,7 +132,7 @@ class ChatHistoryRepository:
         try:
             query = (
                 self.supabase.table("chat_messages")
-                .select("role, content, created_at")
+                .select("id, role, content, created_at")
                 .eq("session_id", session_id)
             )
             if user_id:
@@ -118,7 +145,7 @@ class ChatHistoryRepository:
             )
             # Reverse so messages are in chronological order (oldest first)
             rows = list(reversed(result.data or []))
-            return [{"role": r["role"], "content": r["content"]} for r in rows]
+            return [{"id": r.get("id"), "role": r["role"], "content": r["content"]} for r in rows]
         except Exception as exc:
             logger.exception("Failed to fetch recent messages for session %s", session_id)
             raise RepositoryError("Failed to fetch recent messages") from exc

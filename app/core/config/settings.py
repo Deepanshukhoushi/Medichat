@@ -59,7 +59,7 @@ class AppSettings:
     session_cookie_name: str = "session_id"
     guest_session_prefix: str = "guest_"
     session_cookie_max_age_seconds: int = 60 * 60 * 24 * 30
-    secure_cookies: bool = False
+    secure_cookies: bool = True
     frontend_origins: tuple[str, ...] = ()
     indexed_answer_suffix: str = "[Based on indexed medical data]"
     general_answer_suffix: str = "[Based on general medical knowledge]"
@@ -118,7 +118,8 @@ def get_settings() -> AppSettings:
         login_rate_window_seconds=int(os.getenv("LOGIN_RATE_WINDOW_SECONDS", "60")),
         chat_rate_limit=int(os.getenv("CHAT_RATE_LIMIT", "20")),
         chat_rate_window_seconds=int(os.getenv("CHAT_RATE_WINDOW_SECONDS", "60")),
-        secure_cookies=os.getenv("SECURE_COOKIES", "false").lower() in {"1", "true", "yes"},
+        # Default True (secure). Set SECURE_COOKIES=false only for local HTTP development.
+        secure_cookies=os.getenv("SECURE_COOKIES", "true").lower() not in {"0", "false", "no", "off"},
         frontend_origins=frontend_origins,
         context_window_size=int(os.getenv("CONTEXT_WINDOW_SIZE", "10")),
         summary_trigger_count=int(os.getenv("SUMMARY_TRIGGER_COUNT", "10")),

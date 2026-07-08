@@ -48,10 +48,10 @@ class FlashcardService:
             logger.exception("Failed to generate flashcard deck")
             raise ServiceError("Failed to generate flashcards from AI") from exc
 
-    def list_decks(self, user_id: str) -> list[dict]:
+    def list_decks(self, user_id: str, limit: int = 30) -> list[dict]:
         if not self.repository:
             return []
-        return self.repository.list_decks(user_id)
+        return self.repository.list_decks(user_id, limit=limit)
 
     def get_deck(self, deck_id: str, user_id: str) -> dict:
         if not self.repository:

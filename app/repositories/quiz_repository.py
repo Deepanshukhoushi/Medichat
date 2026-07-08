@@ -25,9 +25,16 @@ class QuizRepository:
             logger.exception("Failed to save quiz session")
             raise RepositoryError("Failed to save quiz session") from exc
 
-    def list_sessions(self, user_id: str) -> list[dict]:
+    def list_sessions(self, user_id: str, limit: int = 30) -> list[dict]:
         try:
-            res = self.supabase.table("quiz_sessions").select("id, topic, score, completed_at, created_at").eq("user_id", user_id).order("created_at", desc=True).execute()
+            res = (
+                self.supabase.table("quiz_sessions")
+                .select("id, topic, score, completed_at, created_at")
+                .eq("user_id", user_id)
+                .order("created_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
             return res.data
         except Exception as exc:
             logger.exception("Failed to list quiz sessions")

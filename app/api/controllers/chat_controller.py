@@ -501,7 +501,9 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         if not self.conversation_repository:
             return jsonify({"error": "Persistence disabled"}), 503
-        data = self.conversation_repository.list_conversations(user_id)
+        limit = min(int(request.args.get("limit", 30)), 100)
+        offset = int(request.args.get("offset", 0))
+        data = self.conversation_repository.list_conversations(user_id, limit=limit, offset=offset)
         return jsonify(data)
 
     def delete_conversation(self, conversation_id: str):
@@ -523,6 +525,49 @@ class ChatController:
         messages = self.memory_service.get_recent_messages(conversation_id, limit=50)
         return jsonify(messages)
 
+    def delete_message(self, conversation_id: str, message_id: str):
+        user_id = self._get_user_id_from_cookie()
+        if not self.conversation_repository or not self.memory_service:
+            return jsonify({"error": "Persistence disabled"}), 503
+        if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
+            raise AppError("Not found", status_code=404, error_type="not_found")
+        
+        try:
+            self.memory_service.chat_history_repository.delete_message(conversation_id, user_id, message_id)
+            if self.audit_service:
+                self.audit_service.log(
+                    "message_deleted", user_id=user_id, remote_addr=request.remote_addr,
+                    details={"conversation_id": conversation_id, "message_id": message_id}
+                )
+            return jsonify({"status": "success"})
+        except Exception:
+            logger.exception("Failed to delete message %s", message_id)
+            return jsonify({"error": "Failed to delete message"}), 500
+
+    def rate_message(self, conversation_id: str, message_id: str):
+        user_id = self._get_user_id_from_cookie()
+        if not self.conversation_repository or not self.memory_service:
+            return jsonify({"error": "Persistence disabled"}), 503
+        if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
+            raise AppError("Not found", status_code=404, error_type="not_found")
+            
+        payload = request.get_json(silent=True) or {}
+        liked = payload.get("liked")
+        if liked is None:
+            return jsonify({"error": "Missing 'liked' boolean"}), 400
+            
+        try:
+            self.memory_service.chat_history_repository.rate_message(conversation_id, user_id, message_id, bool(liked))
+            if self.audit_service:
+                self.audit_service.log(
+                    "message_rated", user_id=user_id, remote_addr=request.remote_addr,
+                    details={"conversation_id": conversation_id, "message_id": message_id, "liked": liked}
+                )
+            return jsonify({"status": "success"})
+        except Exception:
+            logger.exception("Failed to rate message %s", message_id)
+            return jsonify({"error": "Failed to rate message"}), 500
+
     # ------------------------------------------------------------------
     # Flashcards API
     # ------------------------------------------------------------------
@@ -532,7 +577,8 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         if not self.flashcard_service:
             return jsonify({"error": "Service unavailable"}), 503
-        return jsonify(self.flashcard_service.list_decks(user_id))
+        limit = min(int(request.args.get("limit", 30)), 100)
+        return jsonify(self.flashcard_service.list_decks(user_id, limit=limit))
 
     def generate_flashcard_deck(self):
         self._require_auth()
@@ -563,6 +609,22 @@ class ChatController:
         except Exception as exc:
             return jsonify({"error": str(exc)}), 500
 
+    def rate_flashcard(self, deck_id: str, card_id: str):
+        user_id = self._get_user_id_from_cookie()
+        if not self.flashcard_repository:
+            return jsonify({"error": "Persistence disabled"}), 503
+        
+        # Verify deck ownership implicitly by attempting to fetch it
+        self.flashcard_repository.get_deck(deck_id, user_id)
+        
+        data = request.get_json() or {}
+        rating = data.get("rating")
+        if rating not in ["known", "unknown"]:
+            return jsonify({"error": "Invalid rating"}), 400
+            
+        self.flashcard_repository.rate_card(deck_id, card_id, rating)
+        return jsonify({"success": True})
+
     # ------------------------------------------------------------------
     # Quizzes API
     # ------------------------------------------------------------------
@@ -572,7 +634,8 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         if not self.quiz_service:
             return jsonify({"error": "Service unavailable"}), 503
-        return jsonify(self.quiz_service.list_sessions(user_id))
+        limit = min(int(request.args.get("limit", 30)), 100)
+        return jsonify(self.quiz_service.list_sessions(user_id, limit=limit))
 
     def generate_quiz(self):
         self._require_auth()

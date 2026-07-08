@@ -286,7 +286,7 @@ class ChatService:
                     self.memory_service.save_message(
                         resolved_conversation_id, user_id, "user", user_input
                     )
-                    self.memory_service.save_message(
+                    assistant_msg_id = self.memory_service.save_message(
                         resolved_conversation_id, user_id, "assistant", full_answer
                     )
                     message_count = self.memory_service.get_message_count(resolved_conversation_id)
@@ -321,7 +321,10 @@ class ChatService:
                         sources.append({"title": title, "source": source_name, "chapter": chapter})
                 yield f"data: {_json.dumps({'sources': sources})}\n\n"
 
-            yield "data: [DONE]\n\n"
+            if already_persisted and 'assistant_msg_id' in locals() and assistant_msg_id:
+                yield f"data: {{\"token\": \"[DONE]\", \"message_id\": \"{assistant_msg_id}\"}}\n\n"
+            else:
+                yield "data: [DONE]\n\n"
 
         except Exception as exc:
             logger.exception("Failed to stream answer")

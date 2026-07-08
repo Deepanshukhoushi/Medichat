@@ -51,10 +51,10 @@ class QuizService:
             logger.exception("Failed to generate quiz")
             raise ServiceError("Failed to generate quiz from AI") from exc
 
-    def list_sessions(self, user_id: str) -> list[dict]:
+    def list_sessions(self, user_id: str, limit: int = 30) -> list[dict]:
         if not self.repository:
             return []
-        return self.repository.list_sessions(user_id)
+        return self.repository.list_sessions(user_id, limit=limit)
 
     def get_session(self, session_id: str, user_id: str) -> dict:
         if not self.repository:

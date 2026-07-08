@@ -36,17 +36,22 @@ class ConversationRepository:
         except Exception as exc:
             logger.warning("Failed to update conversation title: %s", exc)
 
-    def list_conversations(self, user_id: str, limit: int = 50) -> list[dict]:
+    def list_conversations(self, user_id: str, limit: int = 50, offset: int = 0) -> list[dict]:
         try:
-            result = (
+            query = (
                 self.supabase.table("conversations")
                 .select("id, title, created_at")
                 .eq("user_id", user_id)
                 .is_("deleted_at", "null")
                 .order("created_at", desc=True)
-                .limit(limit)
-                .execute()
             )
+            
+            if offset > 0:
+                query = query.range(offset, offset + limit - 1)
+            else:
+                query = query.limit(limit)
+                
+            result = query.execute()
             return result.data
         except Exception as exc:
             logger.exception("Failed to list conversations")
