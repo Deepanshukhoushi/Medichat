@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, HostListener, inject, signal, OnInit } from '@angular/core';
 import { RouterLink, RouterOutlet, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 import { ChatService } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
-import { BackendApiService, UserProfile } from '../../core/services/backend-api.service';
+import { BackendApiService } from '../../core/services/backend-api.service';
+import { ProfileService } from '../../core/services/profile.service';
 import { NavigationService } from '../../core/services/navigation.service';
 import { AppLogoComponent } from '../../shared/components/app-logo/app-logo.component';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
@@ -25,6 +25,7 @@ export class AppShellLayoutComponent implements OnInit {
   protected readonly chatService = inject(ChatService);
   protected readonly authService = inject(AuthService);
   protected readonly backendApi = inject(BackendApiService);
+  protected readonly profileService = inject(ProfileService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly router = inject(Router);
 
@@ -33,7 +34,8 @@ export class AppShellLayoutComponent implements OnInit {
   protected readonly isContextPanelOpen = signal(false);
   protected readonly sidebarLabel = computed(() => (this.isSidebarOpen() ? 'Collapse sidebar' : 'Expand sidebar'));
   protected readonly isUserMenuOpen = signal(false);
-  protected readonly userProfile = signal<UserProfile | null>(null);
+  /** Alias to the shared ProfileService signal — no extra network call needed. */
+  protected readonly userProfile = this.profileService.profile;
   protected readonly isHistoryLoading = signal(false);
   protected readonly searchTerm = signal('');
   protected readonly isGuestUser = computed(() => {
@@ -52,7 +54,7 @@ export class AppShellLayoutComponent implements OnInit {
   protected readonly navItems = this.navigationService.navItems;
   protected readonly userNavItems = this.navigationService.userNavItems;
   protected readonly historyPreview = computed(() =>
-    this.filteredHistory().slice(0, this.isSidebarOpen() ? 8 : 3)
+    this.isSidebarOpen() ? this.filteredHistory() : this.filteredHistory().slice(0, 3)
   );
 
   @HostListener('document:click', ['$event'])
@@ -132,22 +134,21 @@ export class AppShellLayoutComponent implements OnInit {
   protected logout(): void {
     this.isUserMenuOpen.set(false);
     this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/auth/login']),
-      error: () => this.router.navigate(['/auth/login'])
+      next: () => {
+        this.profileService.invalidate();
+        this.router.navigate(['/auth/login']);
+      },
+      error: () => {
+        this.profileService.invalidate();
+        this.router.navigate(['/auth/login']);
+      }
     });
   }
 
   ngOnInit() {
-    // Load user profile — suppress 401 silently (guest/unauthenticated user)
-    this.backendApi.getProfile().subscribe({
-      next: (profile) => this.userProfile.set(profile),
-      error: (err: HttpErrorResponse) => {
-        if (err.status !== 401) {
-          console.error('Failed to load profile for sidebar', err);
-        }
-        // 401 = guest / not logged in — stay silent, leave userProfile as null
-      }
-    });
+    // Profile is populated by ProfileService (cached — no extra network call here).
+    // Fire the observable so the signal gets set if it hasn't been yet.
+    this.profileService.profile$.subscribe({ error: () => undefined });
 
     // Load conversation history from backend once and keep the chat service as the shared source of truth.
     this.isHistoryLoading.set(true);

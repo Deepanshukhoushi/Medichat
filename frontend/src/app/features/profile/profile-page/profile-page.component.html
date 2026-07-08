@@ -1,4 +1,4 @@
-<div class="space-y-5 p-6">
+<div class="h-full overflow-y-auto space-y-5 p-6">
   <mc-section-heading
     eyebrow="Profile"
     title="Your account."
@@ -12,6 +12,15 @@
       <div class="h-10 w-full rounded-[14px] bg-ink/10"></div>
       <div class="h-5 w-32 rounded bg-ink/10"></div>
       <div class="h-10 w-full rounded-[14px] bg-ink/10"></div>
+    </mc-glass-card>
+  } @else if (initialLoadFailed()) {
+    <mc-glass-card class="flex flex-col items-center justify-center py-10 text-center">
+      <div class="h-12 w-12 rounded-full bg-warning/10 flex items-center justify-center mb-4 text-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-ink">Failed to load profile</h3>
+      <p class="text-sm text-ink/60 mt-1 mb-5">There was a problem retrieving your account details.</p>
+      <button type="button" class="primary-button px-6 py-2" (click)="retryLoad()">Try Again</button>
     </mc-glass-card>
   } @else {
     <form [formGroup]="form" (ngSubmit)="saveProfile()">

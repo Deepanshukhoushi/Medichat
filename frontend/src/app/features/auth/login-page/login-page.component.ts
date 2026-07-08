@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LucideDynamicIcon } from '@lucide/angular';
 
@@ -17,9 +17,10 @@ import { appIcons } from '../../../shared/icons/lucide-icons';
   styleUrls: ['./login-page.component.scss', '../auth-page.shared.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoginPageComponent {
+export class LoginPageComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly backendApi = inject(BackendApiService);
   private readonly toastr = inject(ToastrService);
 
@@ -34,6 +35,14 @@ export class LoginPageComponent {
   protected readonly submitted = signal(false);
   protected readonly showPassword = signal(false);
   protected readonly googleOAuthUrl = this.backendApi.googleLoginUrl();
+
+  ngOnInit() {
+    const errorParam = this.route.snapshot.queryParamMap.get('error');
+    if (errorParam === 'oauth_failed') {
+      this.statusMessage.set('Google sign-in failed. Please try again or use email/password.');
+      this.statusType.set('error');
+    }
+  }
 
   protected submit(): void {
     this.submitted.set(true);

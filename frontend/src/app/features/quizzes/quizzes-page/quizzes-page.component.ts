@@ -6,6 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService, QuizSession } from '../../../core/services/backend-api.service';
+import { extractErrorMessage } from '../../../core/utils/extract-error-message';
 
 interface QuizQuestion {
   question: string;
@@ -85,7 +86,7 @@ export class QuizzesPageComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Failed to generate quiz', err);
-        this.generateError.set(err?.error?.error || 'Failed to generate quiz. Please try again.');
+        this.generateError.set(extractErrorMessage(err, 'Failed to generate quiz. Please try again.'));
         this.isGenerating.set(false);
       }
     });
@@ -177,6 +178,19 @@ export class QuizzesPageComponent implements OnInit, OnDestroy {
   onKeyboardShortcut(event: KeyboardEvent): void {
     const quiz = this.activeQuiz();
     if (!quiz || this.quizSubmitted()) return;
+
+    // Do not intercept keystrokes typed into form fields (e.g. a future
+    // session-rename input). This prevents 'a' in a text field from
+    // selecting answer option A.
+    const target = event.target as Element;
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement ||
+      (target instanceof HTMLElement && target.isContentEditable)
+    ) {
+      return;
+    }
 
     const key = event.key.toLowerCase();
     if (['a', 'b', 'c', 'd'].includes(key)) {

@@ -1,8 +1,8 @@
 <div class="flex h-screen w-full overflow-hidden bg-canvas">
-  <!-- Floating Sidebar Toggle -->
+  <!-- Floating Sidebar Toggle: hidden whenever sidebar is open to avoid overlapping controls -->
   <div class="absolute top-4 left-4 z-50 flex items-center transition-opacity duration-300"
-       [class.opacity-0]="isSidebarOpen() && !isMobile()"
-       [class.pointer-events-none]="isSidebarOpen() && !isMobile()">
+       [class.opacity-0]="isSidebarOpen()"
+       [class.pointer-events-none]="isSidebarOpen()">
     <button class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line/[0.08] shadow-sm text-ink/70 hover:text-ink hover:bg-ink/5" (click)="toggleSidebar()" title="Open sidebar">
       <svg [lucideIcon]="isMobile() ? icons.Menu : icons.PanelLeftOpen" class="h-5 w-5"></svg>
     </button>
@@ -13,17 +13,48 @@
     <div class="absolute left-0 top-0 bottom-0 w-4 z-40 cursor-e-resize" (mouseenter)="toggleSidebar()"></div>
   }
 
+  <!-- Mobile backdrop scrim: tap to close sidebar -->
+  @if (isSidebarOpen() && isMobile()) {
+    <div
+      class="fixed inset-0 bg-black/40 z-30 backdrop-blur-[1px] animate-fade-in"
+      (click)="toggleSidebar()"
+      aria-hidden="true"
+    ></div>
+  }
+
   <!-- Left Sidebar (The Notebook) -->
   <aside
-    class="flex flex-col shrink-0 h-full border-r border-line/[0.06] bg-surface/40 transition-all duration-300 z-40 overflow-hidden"
-    [class.w-[220px]]="isSidebarOpen()"
+    class="flex flex-col shrink-0 h-full border-r border-line/[0.06] bg-sidebar transition-all duration-300 z-40 overflow-hidden"
+    [class.w-[240px]]="isSidebarOpen()"
     [class.w-0]="!isSidebarOpen()"
     [class.absolute]="isMobile()"
     [class.opacity-0]="!isSidebarOpen() && isMobile()"
     [class.pointer-events-none]="!isSidebarOpen() && isMobile()"
   >
+    <!-- Mobile Header -->
+    <header class="flex h-14 shrink-0 items-center justify-between border-b border-line/[0.05] bg-canvas/80 px-4 backdrop-blur-xl md:hidden sticky top-0 z-40">
+      <div class="flex items-center gap-3">
+        <button class="rounded-lg p-1.5 text-ink/60 hover:bg-ink/10 hover:text-ink transition-colors" (click)="toggleSidebar()">
+          <svg [lucideIcon]="icons.Menu" class="h-5 w-5"></svg>
+        </button>
+        <mc-app-logo variant="icon" />
+      </div>
+      
+      <div class="flex items-center gap-2">
+        @if (chatService.isStreaming()) {
+          <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1">
+            <div class="h-1.5 w-1.5 animate-pulse rounded-full bg-accent"></div>
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-accent">Generating</span>
+          </div>
+        }
+        <button class="rounded-lg p-1.5 text-ink/60 hover:bg-ink/10 hover:text-ink transition-colors" (click)="startNewChat()" title="New Chat">
+          <svg [lucideIcon]="icons.Plus" class="h-5 w-5"></svg>
+        </button>
+      </div>
+    </header>
+
     <!-- Header -->
-    <div class="flex items-center justify-between gap-3 p-3 shrink-0 overflow-hidden w-[220px]">
+    <div class="flex items-center justify-between gap-3 p-3 shrink-0 overflow-hidden w-[240px]">
       <mc-app-logo />
       <button class="rounded-lg p-1.5 text-ink/50 hover:bg-ink/10 hover:text-ink transition-colors" type="button" [attr.aria-label]="sidebarLabel()" (click)="toggleSidebar()">
         <svg [lucideIcon]="icons.PanelLeftClose" class="h-4 w-4"></svg>
@@ -31,8 +62,8 @@
     </div>
 
     <!-- New Chat / Action Button -->
-    <div class="px-3 pb-3 shrink-0 overflow-hidden w-[220px]">
-      <button class="flex w-full items-center justify-between gap-2 rounded-xl bg-ink px-3 py-2 text-[13px] font-semibold text-canvas transition hover:opacity-90 shadow-sm" type="button" (click)="startNewChat()">
+    <div class="px-3 pb-3 shrink-0 overflow-hidden w-[240px]">
+      <button class="flex w-full items-center justify-between gap-2 rounded-xl bg-ink px-3 py-2 text-[14px] font-semibold text-canvas transition hover:opacity-90 shadow-sm" type="button" (click)="startNewChat()">
         <div class="flex items-center gap-2">
           <svg [lucideIcon]="icons.Plus" class="h-[18px] w-[18px]"></svg>
           <span>New Chat</span>
@@ -42,16 +73,22 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="px-3 pb-2 shrink-0 overflow-hidden w-[220px]">
+    <nav class="px-3 pb-2 shrink-0 overflow-hidden w-[240px]">
       <div class="space-y-0.5">
         @for (item of navItems; track item.route) {
           <a
             [routerLink]="item.route"
             class="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-ink/70 no-underline transition-colors hover:bg-ink/5 hover:text-ink"
             [class.nav-active]="isActiveRoute(item.route)"
+            [title]="isGuestUser() ? 'Sign up to unlock' : item.hint"
           >
-            <svg [lucideIcon]="item.icon" class="h-[18px] w-[18px] shrink-0 transition-transform group-hover:scale-110"></svg>
-            <span>{{ item.label }}</span>
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+              <svg [lucideIcon]="item.icon" class="h-[18px] w-[18px] shrink-0" [class.text-accent]="isActiveRoute(item.route)"></svg>
+              <span class="truncate">{{ item.label }}</span>
+            </div>
+            @if (isGuestUser()) {
+              <svg [lucideIcon]="icons.Lock" class="h-3.5 w-3.5 shrink-0 opacity-40"></svg>
+            }
           </a>
         }
       </div>
@@ -60,23 +97,29 @@
     <div class="my-2 border-t border-line/[0.05] mx-4 shrink-0 overflow-hidden w-[208px]"></div>
 
     <!-- Smart History (Recent) -->
-    <div class="min-h-0 flex-1 overflow-y-auto px-2 w-[220px]">
-      <p class="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink/40">Recent</p>
-      <div class="mt-1 flex flex-col gap-0.5">
+    <div class="min-h-0 flex-1 overflow-y-auto px-2 w-[240px] flex flex-col">
+      <div class="px-2 mb-2 mt-1 shrink-0">
+        <div class="relative flex items-center">
+          <svg [lucideIcon]="icons.Search" class="absolute left-2.5 h-3.5 w-3.5 text-ink/40"></svg>
+          <input 
+            type="text" 
+            placeholder="Search sessions..." 
+            class="w-full rounded-lg border border-line/[0.08] bg-surface/50 py-1.5 pl-8 pr-3 text-xs text-ink placeholder:text-ink/40 outline-none transition focus:border-line/[0.15] focus:bg-surface"
+            [ngModel]="searchTerm()" 
+            (ngModelChange)="searchTerm.set($event)"
+          />
+        </div>
+      </div>
+      <p class="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink/40 shrink-0">Recent</p>
+      <div class="flex flex-col gap-[6px] overflow-y-auto flex-1">
         @for (conversation of historyPreview(); track conversation.id) {
-          <div class="group relative flex items-center rounded-[10px] px-1 hover:bg-ink/5 h-9">
-            <button class="flex flex-1 items-center gap-2 px-2 h-full text-left overflow-hidden" type="button" (click)="loadConversation(conversation.id)">
+          <div class="group relative flex items-center rounded-[12px] px-3 py-[10px] hover:bg-ink/5 h-9">
+            <button class="flex flex-1 items-center gap-2.5 px-0 h-full text-left overflow-hidden" type="button" (click)="loadConversation(conversation.id)">
               <div class="flex-1 min-w-0 pr-16">
-                <span class="block truncate text-[13px] font-medium text-ink/70 group-hover:text-ink/100">{{ conversation.title }}</span>
+                <span class="block truncate text-[14px] font-medium text-ink/70 group-hover:text-ink/100">{{ conversation.title }}</span>
               </div>
             </button>
             <div class="absolute right-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 bg-canvas/80 backdrop-blur-sm rounded-md px-1">
-              <button class="rounded-md p-1 text-ink/35 hover:bg-ink/10 hover:text-ink transition" type="button" title="Rename">
-                <svg [lucideIcon]="icons.SquarePen" class="h-3 w-3"></svg>
-              </button>
-              <button class="rounded-md p-1 text-ink/35 hover:bg-ink/10 hover:text-ink transition" type="button" title="Bookmark">
-                <svg [lucideIcon]="icons.Bookmark" class="h-3 w-3"></svg>
-              </button>
               <button class="rounded-md p-1 text-ink/35 hover:bg-warning/10 hover:text-warning transition" type="button" title="Delete session" (click)="deleteConversation(conversation.id, $event)">
                 <svg [lucideIcon]="icons.Trash2" class="h-3 w-3"></svg>
               </button>
@@ -89,8 +132,27 @@
             <div class="h-3 w-1/2 rounded bg-ink/10 animate-pulse"></div>
           </div>
         }
-        @if (!isHistoryLoading() && historyPreview().length === 0) {
+
+        @if (filteredHistory().length >= 3 && chatService.hasMoreHistorySignal()) {
+          <div class="px-2 pb-2">
+            <button class="flex w-full items-center justify-center gap-2 rounded-xl border border-line/[0.08] bg-canvas py-2 text-xs font-semibold text-ink/70 transition-all hover:bg-ink/[0.02] hover:text-ink disabled:opacity-50"
+                    (click)="chatService.loadMoreHistory()"
+                    [disabled]="chatService.isLoadingMoreHistorySignal()">
+              @if (chatService.isLoadingMoreHistorySignal()) {
+                <svg [lucideIcon]="icons.Loader2" class="h-3 w-3 animate-spin"></svg>
+                Loading...
+              } @else {
+                Load More
+              }
+            </button>
+          </div>
+        }
+
+        @if (!isHistoryLoading() && filteredHistory().length === 0) {
           <p class="px-4 py-2 text-xs text-ink/45">No recent study sessions.</p>
+        }
+        @if (!isHistoryLoading() && chatService.conversationHistory().length >= 30) {
+          <p class="px-3 py-1.5 text-[10px] text-ink/35 text-center">Showing the 30 most recent sessions.</p>
         }
       </div>
     </div>
@@ -107,7 +169,7 @@
         </div>
         <div class="flex-1 truncate text-left flex flex-col">
           <span class="text-[13px] font-medium text-ink">{{ userProfile()?.display_name || 'Medical Student' }}</span>
-          <span class="text-[10px] text-ink/40 uppercase tracking-wide">Free Plan</span>
+          <span class="mt-0.5 inline-flex w-fit items-center rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent">Free Plan</span>
         </div>
         <svg [lucideIcon]="icons.MoreHorizontal" class="h-4 w-4 shrink-0 text-ink/30"></svg>
       </button>
@@ -119,10 +181,14 @@
               <a
                 [routerLink]="item.route"
                 (click)="closeUserMenu()"
+                [title]="isGuestUser() ? 'Sign up to unlock' : item.hint"
                 class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-ink no-underline transition hover:bg-ink/5"
               >
-                <svg [lucideIcon]="item.icon" class="h-4 w-4 text-ink/50"></svg>
-                <span>{{ item.label }}</span>
+                <svg [lucideIcon]="item.icon" class="h-4 w-4 shrink-0 text-ink/50"></svg>
+                <span class="flex-1 truncate">{{ item.label }}</span>
+                @if (isGuestUser()) {
+                  <svg [lucideIcon]="icons.Lock" class="h-3.5 w-3.5 shrink-0 opacity-40"></svg>
+                }
               </a>
             }
           </nav>
@@ -138,8 +204,16 @@
 
   <!-- Center Chat Area -->
   <main class="flex-1 flex flex-col min-w-0 h-full relative">
+    @if (chatService.persistenceDisabled()) {
+      <div class="absolute top-0 inset-x-0 z-20 flex justify-center p-2 pointer-events-none">
+        <div class="flex items-center gap-3 rounded-full border border-warning/40 bg-warning/15 px-4 py-1.5 text-xs text-warning backdrop-blur-md shadow-sm pointer-events-auto">
+          <svg [lucideIcon]="icons.AlertTriangle" class="h-3.5 w-3.5 shrink-0"></svg>
+          <span class="font-semibold">Database not connected — your data is not being saved.</span>
+        </div>
+      </div>
+    }
     @if (isGuestUser()) {
-      <div class="absolute top-0 inset-x-0 z-20 flex justify-center p-2">
+      <div class="absolute top-0 inset-x-0 z-20 flex justify-center p-2" [class.pt-8]="chatService.persistenceDisabled()">
         <div class="flex items-center gap-3 rounded-full border border-accent/20 bg-accent/10 px-4 py-1.5 text-xs text-ink/80 backdrop-blur-md">
           <span class="font-medium">Guest Mode</span>
           <a class="font-bold text-accent hover:underline" routerLink="/auth/signup">Sign up to save sessions &rarr;</a>
@@ -155,25 +229,4 @@
       <router-outlet />
     </div>
   </main>
-
-  <!-- Right Context Panel (Optional/Hidden Boilerplate) -->
-  <aside 
-    class="flex flex-col shrink-0 h-full border-l border-line/[0.08] bg-surface/30 transition-all duration-300 z-30"
-    [class.w-[320px]]="isContextPanelOpen()"
-    [class.w-0]="!isContextPanelOpen()"
-  >
-    <div class="w-[320px] h-full flex flex-col overflow-hidden">
-      <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-line/[0.05] shrink-0">
-        <h3 class="text-sm font-semibold text-ink">Study Context</h3>
-        <button class="rounded-lg p-1.5 text-ink/50 hover:bg-ink/10 hover:text-ink transition-colors" (click)="toggleContextPanel()">
-          <svg [lucideIcon]="icons.PanelRightClose" class="h-4 w-4"></svg>
-        </button>
-      </div>
-      <!-- Content -->
-      <div class="flex-1 overflow-y-auto p-4">
-        <p class="text-xs text-ink/40 text-center mt-10">Context tools will appear here during your study session.</p>
-      </div>
-    </div>
-  </aside>
 </div>

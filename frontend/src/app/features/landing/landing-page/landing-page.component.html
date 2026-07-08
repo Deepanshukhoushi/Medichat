@@ -70,10 +70,11 @@
               </div>
               <div class="space-y-4 rounded-2xl rounded-bl-sm border border-line/[0.04] bg-ink/[0.02] p-4 text-sm text-ink/80 w-full">
                 <p>Parkinson's disease is characterized by the progressive loss of dopaminergic neurons in the substantia nigra pars compacta.</p>
-                <div class="space-y-2">
-                  <div class="h-2 w-3/4 rounded bg-ink/10 animate-pulse"></div>
-                  <div class="h-2 w-full rounded bg-ink/10 animate-pulse"></div>
-                  <div class="h-2 w-5/6 rounded bg-ink/10 animate-pulse"></div>
+                <!-- Typing Indicator -->
+                <div class="flex items-center gap-1.5 py-1">
+                  <div class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce" style="animation-delay: 0ms"></div>
+                  <div class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce" style="animation-delay: 150ms"></div>
+                  <div class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce" style="animation-delay: 300ms"></div>
                 </div>
                 <div class="mt-4 flex items-center gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3">
                   <svg [lucideIcon]="icons.Layers" class="h-5 w-5 text-accent"></svg>
@@ -99,7 +100,7 @@
 
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         @for (feature of features; track feature.title) {
-          <div class="group relative flex flex-col gap-4 rounded-[24px] border border-line/[0.08] bg-ink/[0.02] p-6 transition-all hover:bg-ink/[0.04] hover:shadow-glassHover">
+          <div class="group relative flex flex-col gap-4 rounded-[24px] border border-line/[0.08] bg-ink/[0.02] p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-ink/[0.04] hover:shadow-glassHover">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-ink/[0.04] border border-line/[0.08] transition-colors group-hover:border-accent/30 group-hover:bg-accent/10 group-hover:text-accent">
               <svg [lucideIcon]="feature.icon" class="h-5 w-5 text-ink/70 group-hover:text-accent transition-colors"></svg>
             </div>
@@ -144,19 +145,19 @@
     <section class="py-24 sm:py-32 border-t border-line/[0.04]" mcReveal>
       <div class="grid gap-8 grid-cols-2 lg:grid-cols-4 rounded-3xl border border-line/[0.08] bg-ink/[0.02] p-8 md:p-12">
         <div class="flex flex-col items-center text-center gap-2">
-          <p class="font-display text-4xl font-bold text-ink sm:text-5xl">10k+</p>
+          <p class="font-display text-4xl font-bold text-ink sm:text-5xl" [mcCountUp]="10000" label="10k" suffix="+">10k+</p>
           <p class="text-sm font-medium text-muted uppercase tracking-wider">Medical Topics</p>
         </div>
         <div class="flex flex-col items-center text-center gap-2">
-          <p class="font-display text-4xl font-bold text-ink sm:text-5xl">24/7</p>
+          <p class="font-display text-4xl font-bold text-ink sm:text-5xl" [mcCountUp]="24" label="24/7" suffix="">24/7</p>
           <p class="text-sm font-medium text-muted uppercase tracking-wider">AI Tutor Access</p>
         </div>
         <div class="flex flex-col items-center text-center gap-2">
-          <p class="font-display text-4xl font-bold text-ink sm:text-5xl">1M+</p>
+          <p class="font-display text-4xl font-bold text-ink sm:text-5xl" [mcCountUp]="1000000" label="1M" suffix="+">1M+</p>
           <p class="text-sm font-medium text-muted uppercase tracking-wider">Flashcards</p>
         </div>
         <div class="flex flex-col items-center text-center gap-2">
-          <p class="font-display text-4xl font-bold text-accent sm:text-5xl">99%</p>
+          <p class="font-display text-4xl font-bold text-accent sm:text-5xl" [mcCountUp]="99" label="99" suffix="%">99%</p>
           <p class="text-sm font-medium text-muted uppercase tracking-wider">Syllabus Match</p>
         </div>
       </div>
@@ -168,8 +169,8 @@
         <h2 class="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">Loved by medical students</h2>
       </div>
 
-      <div class="relative flex overflow-x-hidden">
-        <div class="flex animate-marquee space-x-6 min-w-full hover:[animation-play-state:paused] whitespace-nowrap px-6">
+      <div class="relative flex overflow-x-hidden group">
+        <div class="flex animate-marquee space-x-6 min-w-full group-hover:[animation-play-state:paused] whitespace-nowrap px-6">
           @for (testimonial of testimonials; track testimonial.author) {
             <div class="inline-flex w-[350px] sm:w-[400px] flex-col justify-between gap-6 whitespace-normal rounded-[24px] border border-line/[0.08] bg-ink/[0.02] p-8 transition-colors hover:bg-ink/[0.04]">
               <div class="flex gap-1 text-accent">
@@ -183,7 +184,7 @@
             </div>
           }
         </div>
-        <div class="flex animate-marquee space-x-6 min-w-full hover:[animation-play-state:paused] whitespace-nowrap pl-6" aria-hidden="true">
+        <div class="flex animate-marquee space-x-6 min-w-full group-hover:[animation-play-state:paused] whitespace-nowrap pl-6" aria-hidden="true">
           @for (testimonial of testimonials; track testimonial.author) {
             <div class="inline-flex w-[350px] sm:w-[400px] flex-col justify-between gap-6 whitespace-normal rounded-[24px] border border-line/[0.08] bg-ink/[0.02] p-8 transition-colors hover:bg-ink/[0.04]">
               <div class="flex gap-1 text-accent">

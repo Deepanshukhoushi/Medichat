@@ -1,4 +1,4 @@
-<div class="space-y-5 p-6">
+<div class="h-full overflow-y-auto space-y-5 p-6">
   <mc-section-heading
     eyebrow="Analytics"
     title="Study analytics."
@@ -30,10 +30,10 @@
           <svg [lucideIcon]="icons.CalendarClock" class="h-5 w-5 text-success"></svg>
         </div>
         <div>
-          <p class="text-3xl font-bold text-ink">{{ stats.total_sessions }}</p>
+          <p class="text-3xl font-bold text-ink">{{ stats.total_sessions }} <span class="text-base font-normal text-ink/40">/ {{ normalizationTargets.total_sessions }}</span></p>
           <p class="text-sm font-medium text-ink/60 mt-0.5">Study Sessions</p>
         </div>
-        <p class="text-xs text-ink/40">Total completed learning sessions.</p>
+        <p class="text-xs text-ink/40">Total completed learning sessions this month.</p>
       </mc-glass-card>
 
       <mc-glass-card class="flex flex-col gap-3">
@@ -112,7 +112,7 @@
 
     <mc-chart-panel
       title="Engagement Mix"
-      subtitle="A quick visual summary of your current activity profile."
+      [subtitle]="chartSubtitle"
       mode="donut"
       [donutSeries]="chartSeries()"
       [donutLabels]="chartLabels"
@@ -153,16 +153,34 @@
       </div>
     </mc-glass-card>
   } @else {
-    @if (!errorMessage()) {
+    @if (isLoading()) {
       <!-- Loading skeleton -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         @for (_ of [1,2,3,4]; track $index) {
-          <div class="glass-panel surface-outline rounded-[30px] p-5 space-y-3 animate-pulse">
+          <div class="glass-panel surface-outline rounded-2xl p-5 space-y-3 animate-pulse">
             <div class="h-10 w-10 rounded-xl bg-ink/10"></div>
             <div class="h-8 w-16 rounded bg-ink/10"></div>
             <div class="h-4 w-24 rounded bg-ink/10"></div>
           </div>
         }
+      </div>
+      <div class="mt-4 glass-panel surface-outline rounded-2xl p-6 space-y-5 animate-pulse">
+        <div class="h-6 w-48 rounded bg-ink/10"></div>
+        <div class="space-y-6">
+          @for (_ of [1,2,3]; track $index) {
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="h-4 w-24 rounded bg-ink/10"></div>
+                <div class="h-4 w-16 rounded bg-ink/10"></div>
+              </div>
+              <div class="h-2 rounded-full bg-ink/10"></div>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="mt-4 glass-panel surface-outline rounded-2xl p-6 animate-pulse flex flex-col items-center justify-center min-h-[300px]">
+        <div class="h-6 w-40 rounded bg-ink/10 mb-8 self-start"></div>
+        <div class="h-48 w-48 rounded-full border-[16px] border-ink/10"></div>
       </div>
     }
   }

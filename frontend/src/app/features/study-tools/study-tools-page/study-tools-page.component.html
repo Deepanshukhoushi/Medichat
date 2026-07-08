@@ -12,11 +12,11 @@
     <p class="mb-4 mt-2 text-sm text-ink/60">Upload clinical guidelines, research papers, or lecture notes as PDF files to securely index them into your vector search.</p>
 
     <div class="flex flex-wrap items-center gap-4">
-      <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" accept=".pdf">
+      <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" accept=".pdf,.docx,.txt">
       <button type="button" (click)="fileInput.click()" [disabled]="isUploading()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
         {{ isUploading() ? 'Uploading...' : 'Select File' }}
       </button>
-      <p class="text-xs text-ink/40">Accepted: PDF only. Max 20MB.</p>
+      <p class="text-xs text-ink/40">Accepted: PDF, DOCX, TXT &bull; Max 10 MB</p>
     </div>
 
     @if (isUploading()) {

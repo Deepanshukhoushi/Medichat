@@ -6,6 +6,8 @@ import { finalize } from 'rxjs';
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService, UserProfile } from '../../../core/services/backend-api.service';
+import { ProfileService } from '../../../core/services/profile.service';
+import { extractErrorMessage } from '../../../core/utils/extract-error-message';
 
 @Component({
   selector: 'mc-profile-page',
@@ -17,12 +19,14 @@ import { BackendApiService, UserProfile } from '../../../core/services/backend-a
 })
 export class ProfilePageComponent {
   private readonly backendApi = inject(BackendApiService);
+  private readonly profileService = inject(ProfileService);
   private readonly fb = inject(FormBuilder);
 
   readonly isLoading = signal(true);
   readonly isSaving = signal(false);
   readonly successMessage = signal<string | null>(null);
   readonly errorMsg = signal<string | null>(null);
+  readonly initialLoadFailed = signal(false);
 
   form: FormGroup = this.fb.group({
     display_name: ['', Validators.required],
@@ -36,6 +40,19 @@ export class ProfilePageComponent {
   }
 
   loadProfile(): void {
+    // Use cached profile if already available to avoid a redundant API call.
+    const cached = this.profileService.profile();
+    if (cached) {
+      this.form.patchValue({
+        display_name: cached.display_name || '',
+        medical_year: cached.medical_year || null,
+        specialty: cached.specialty || '',
+        university: cached.university || ''
+      });
+      this.isLoading.set(false);
+      return;
+    }
+
     this.backendApi.getProfile().pipe(
       finalize(() => this.isLoading.set(false))
     ).subscribe({
@@ -48,10 +65,17 @@ export class ProfilePageComponent {
         });
       },
       error: () => {
-        this.errorMsg.set('Failed to load profile. Please refresh the page.');
-        setTimeout(() => this.errorMsg.set(null), 5000);
+        this.errorMsg.set('Failed to load profile.');
+        this.initialLoadFailed.set(true);
       }
     });
+  }
+
+  retryLoad(): void {
+    this.initialLoadFailed.set(false);
+    this.isLoading.set(true);
+    this.errorMsg.set(null);
+    this.loadProfile();
   }
 
   saveProfile(): void {
@@ -67,11 +91,13 @@ export class ProfilePageComponent {
       finalize(() => this.isSaving.set(false))
     ).subscribe({
       next: () => {
+        // Reload so the sidebar and chat greeting refresh on next navigation.
+        this.profileService.reload();
         this.successMessage.set('Profile updated successfully!');
         setTimeout(() => this.successMessage.set(null), 3000);
       },
       error: (err) => {
-        this.errorMsg.set(err?.error?.error || 'Failed to save profile. Please try again.');
+        this.errorMsg.set(extractErrorMessage(err, 'Failed to save profile. Please try again.'));
         setTimeout(() => this.errorMsg.set(null), 5000);
       }
     });

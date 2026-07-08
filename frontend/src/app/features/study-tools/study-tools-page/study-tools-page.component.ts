@@ -7,6 +7,7 @@ import { MarkdownModule } from 'ngx-markdown';
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService } from '../../../core/services/backend-api.service';
+import { extractErrorMessage } from '../../../core/utils/extract-error-message';
 
 @Component({
   selector: 'mc-study-tools-page',
@@ -39,6 +40,9 @@ export class StudyToolsPageComponent {
   readonly uploadError = signal<string | null>(null);
   readonly uploadPulse = signal(0);
 
+  /** Must match backend max_upload_size_bytes (10 MB). */
+  private readonly MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
   explainTopic() {
     if (this.explainForm.invalid) return;
     this.explainLoading.set(true);
@@ -49,7 +53,7 @@ export class StudyToolsPageComponent {
         this.explainLoading.set(false);
       },
       error: (err) => {
-        this.explainError.set(err?.error?.error || 'Failed to explain topic. Please try again.');
+        this.explainError.set(extractErrorMessage(err, 'Failed to explain topic. Please try again.'));
         this.explainLoading.set(false);
       }
     });
@@ -65,7 +69,7 @@ export class StudyToolsPageComponent {
         this.summarizeLoading.set(false);
       },
       error: (err) => {
-        this.summarizeError.set(err?.error?.error || 'Failed to summarize text. Please try again.');
+        this.summarizeError.set(extractErrorMessage(err, 'Failed to summarize text. Please try again.'));
         this.summarizeLoading.set(false);
       }
     });
@@ -81,7 +85,7 @@ export class StudyToolsPageComponent {
         this.mnemonicsLoading.set(false);
       },
       error: (err) => {
-        this.mnemonicsError.set(err?.error?.error || 'Failed to generate mnemonics. Please try again.');
+        this.mnemonicsError.set(extractErrorMessage(err, 'Failed to generate mnemonics. Please try again.'));
         this.mnemonicsLoading.set(false);
       }
     });
@@ -92,6 +96,22 @@ export class StudyToolsPageComponent {
     if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
+
+    // --- Pre-flight validation (avoids burning bandwidth on a certain reject) ---
+    const allowedExtensions = ['.pdf', '.docx', '.txt'];
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      this.uploadError.set(`Unsupported file type "${fileExtension}". Please upload a PDF, DOCX, or TXT file.`);
+      input.value = '';
+      return;
+    }
+    if (file.size > this.MAX_UPLOAD_BYTES) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      this.uploadError.set(`File is too large (${sizeMB} MB). Maximum allowed size is 10 MB.`);
+      input.value = '';
+      return;
+    }
+
     this.isUploading.set(true);
     this.uploadResult.set(null);
     this.uploadError.set(null);
@@ -116,7 +136,7 @@ export class StudyToolsPageComponent {
       error: (err) => {
         this.isUploading.set(false);
         this.uploadPulse.set(0);
-        this.uploadError.set(err?.error?.error || 'Failed to upload document');
+        this.uploadError.set(extractErrorMessage(err, 'Failed to upload document'));
         input.value = '';
       }
     });

@@ -6,6 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService, FlashcardDeck } from '../../../core/services/backend-api.service';
+import { extractErrorMessage } from '../../../core/utils/extract-error-message';
 
 @Component({
   selector: 'mc-flashcards-page',
@@ -24,7 +25,7 @@ export class FlashcardsPageComponent implements OnInit {
   readonly isGenerating = signal(false);
   readonly isLoadingDeck = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly cardRatings = signal<Record<number, 'known' | 'unknown'>>({});
+  readonly cardRatings = signal<Record<string, 'known' | 'unknown'>>({});
 
   form = this.fb.nonNullable.group({
     topic: ['', Validators.required],
@@ -65,7 +66,7 @@ export class FlashcardsPageComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to generate deck', err);
-        this.errorMessage.set(err?.error?.error || 'Failed to generate deck. Please try again.');
+        this.errorMessage.set(extractErrorMessage(err, 'Failed to generate deck. Please try again.'));
         this.isGenerating.set(false);
       }
     });
@@ -126,7 +127,9 @@ export class FlashcardsPageComponent implements OnInit {
       return;
     }
 
-    this.cardRatings.update((current) => ({ ...current, [currentIndex]: rating }));
+    // Key by card.front (stable card identity) so ratings survive array reshuffling.
+    const cardKey = currentCard.front;
+    this.cardRatings.update((current) => ({ ...current, [cardKey]: rating }));
 
     const remainingCards = cards.filter((_, index) => index !== currentIndex);
     const nextCards = [...remainingCards];
@@ -139,6 +142,12 @@ export class FlashcardsPageComponent implements OnInit {
     });
     this.currentCardIndex.set(Math.min(currentIndex, Math.max(nextCards.length - 1, 0)));
     this.isFlipped.set(false);
+
+    if (currentCard.id) {
+      this.api.rateFlashcard(deck.id, currentCard.id, rating).subscribe({
+        error: (err) => console.error('Failed to save flashcard rating', err)
+      });
+    }
   }
 
   nextCard() {

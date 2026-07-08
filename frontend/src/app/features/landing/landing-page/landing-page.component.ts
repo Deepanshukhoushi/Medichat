@@ -1,35 +1,34 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 import { RevealDirective } from '../../../shared/directives/reveal.directive';
+import { CountUpDirective } from '../../../shared/directives/count-up.directive';
 import { appIcons } from '../../../shared/icons/lucide-icons';
-import { BackendApiService } from '../../../core/services/backend-api.service';
+import { ProfileService } from '../../../core/services/profile.service';
 
 @Component({
   selector: 'mc-landing-page',
   standalone: true,
-  imports: [RouterLink, LucideDynamicIcon, RevealDirective],
+  imports: [RouterLink, LucideDynamicIcon, CommonModule, RevealDirective, CountUpDirective],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LandingPageComponent implements OnInit {
-  private readonly backendApi = inject(BackendApiService);
+  private readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
 
-  protected readonly isLoggedIn = signal(false);
+  protected readonly isLoggedIn = computed(() => {
+    const profile = this.profileService.profile();
+    return profile?.user_id != null && !profile.user_id.startsWith('guest_');
+  });
   protected readonly activeFaq = signal<number | null>(null);
 
   ngOnInit(): void {
-    this.backendApi.getProfile().subscribe({
-      next: (profile) => {
-        if (profile?.user_id && !profile.user_id.startsWith('guest_')) {
-          this.isLoggedIn.set(true);
-        }
-      },
-      error: () => { }
-    });
+    // Warm up the shared cache (guard likely already did this).
+    this.profileService.profile$.subscribe({ error: () => {} });
   }
 
   protected toggleFaq(index: number) {
