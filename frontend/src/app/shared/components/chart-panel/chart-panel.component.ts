@@ -40,7 +40,8 @@ export class ChartPanelComponent {
   };
   protected readonly donutChart: ApexChart = {
     type: 'donut',
-    background: 'transparent'
+    background: 'transparent',
+    height: 350
   };
   protected readonly donutResponsive: ApexResponsive[] = [
     {

@@ -18,7 +18,8 @@ import { BackendApiService } from '../../../core/services/backend-api.service';
   imports: [CommonModule, RouterLink, LucideDynamicIcon, GlassCardComponent, SectionHeadingComponent],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'block h-full min-h-0' }
 })
 export class SettingsPageComponent {
   readonly themeService = inject(ThemeService);
