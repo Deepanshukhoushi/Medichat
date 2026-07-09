@@ -8,14 +8,14 @@ import { AuthService } from '../../core/services/auth.service';
 import { BackendApiService } from '../../core/services/backend-api.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NavigationService } from '../../core/services/navigation.service';
-import { AppLogoComponent } from '../../shared/components/app-logo/app-logo.component';
+import { LogoComponent } from '../../shared/components/logo/logo.component';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { appIcons } from '../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-app-shell-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, FormsModule, LucideDynamicIcon, AppLogoComponent],
+  imports: [RouterLink, RouterOutlet, FormsModule, LucideDynamicIcon, LogoComponent],
   templateUrl: './app-shell-layout.component.html',
   styleUrl: './app-shell-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -37,7 +37,9 @@
         <button class="rounded-lg p-1.5 text-ink/60 hover:bg-ink/10 hover:text-ink transition-colors" (click)="toggleSidebar()">
           <svg [lucideIcon]="icons.Menu" class="h-5 w-5"></svg>
         </button>
-        <mc-app-logo variant="icon" />
+        <a routerLink="/" class="flex items-center gap-2 no-underline">
+          <app-logo size="28"></app-logo>
+        </a>
       </div>
       
       <div class="flex items-center gap-2">
@@ -55,7 +57,10 @@
 
     <!-- Header -->
     <div class="flex items-center justify-between gap-3 p-3 shrink-0 overflow-hidden w-[240px]">
-      <mc-app-logo />
+      <a routerLink="/" class="flex items-center gap-2.5 no-underline">
+        <app-logo size="32"></app-logo>
+        <span class="font-display text-[17px] font-bold tracking-tight text-ink leading-none mt-0.5">MediChat</span>
+      </a>
       <button class="rounded-lg p-1.5 text-ink/50 hover:bg-ink/10 hover:text-ink transition-colors" type="button" [attr.aria-label]="sidebarLabel()" (click)="toggleSidebar()">
         <svg [lucideIcon]="icons.PanelLeftClose" class="h-4 w-4"></svg>
       </button>
@@ -63,12 +68,10 @@
 
     <!-- New Chat / Action Button -->
     <div class="px-3 pb-3 shrink-0 overflow-hidden w-[240px]">
-      <button class="flex w-full items-center justify-between gap-2 rounded-xl bg-ink px-3 py-2 text-[14px] font-semibold text-canvas transition hover:opacity-90 shadow-sm" type="button" (click)="startNewChat()">
-        <div class="flex items-center gap-2">
-          <svg [lucideIcon]="icons.Plus" class="h-[18px] w-[18px]"></svg>
-          <span>New Chat</span>
-        </div>
-        <svg [lucideIcon]="icons.SquarePen" class="h-4 w-4 opacity-50"></svg>
+      <button class="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/[0.04]" type="button" (click)="startNewChat()">
+        <svg [lucideIcon]="icons.Plus" class="h-4 w-4 shrink-0 transition-transform group-hover:scale-110"></svg>
+        <span class="flex-1 text-left">New Chat</span>
+        <svg [lucideIcon]="icons.SquarePen" class="h-3.5 w-3.5 opacity-40 transition-opacity group-hover:opacity-70"></svg>
       </button>
     </div>
 
@@ -78,12 +81,12 @@
         @for (item of navItems; track item.route) {
           <a
             [routerLink]="item.route"
-            class="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-ink/70 no-underline transition-colors hover:bg-ink/5 hover:text-ink"
+            class="group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink/70 no-underline transition-colors hover:bg-ink/[0.04] hover:text-ink"
             [class.nav-active]="isActiveRoute(item.route)"
             [title]="isGuestUser() ? 'Sign up to unlock' : item.hint"
           >
-            <div class="flex items-center gap-2.5 flex-1 min-w-0">
-              <svg [lucideIcon]="item.icon" class="h-[18px] w-[18px] shrink-0" [class.text-accent]="isActiveRoute(item.route)"></svg>
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <svg [lucideIcon]="item.icon" class="h-4 w-4 shrink-0 transition-colors group-hover:text-ink"></svg>
               <span class="truncate">{{ item.label }}</span>
             </div>
             @if (isGuestUser()) {
@@ -104,7 +107,7 @@
           <input 
             type="text" 
             placeholder="Search sessions..." 
-            class="w-full rounded-lg border border-line/[0.08] bg-surface/50 py-1.5 pl-8 pr-3 text-xs text-ink placeholder:text-ink/40 outline-none transition focus:border-line/[0.15] focus:bg-surface"
+            class="w-full rounded-lg border-none bg-ink/[0.04] py-1.5 pl-8 pr-3 text-xs text-ink placeholder:text-ink/40 outline-none transition focus:bg-ink/[0.06]"
             [ngModel]="searchTerm()" 
             (ngModelChange)="searchTerm.set($event)"
           />
@@ -113,10 +116,10 @@
       <p class="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink/40 shrink-0">Recent</p>
       <div class="flex flex-col gap-[6px] overflow-y-auto flex-1">
         @for (conversation of historyPreview(); track conversation.id) {
-          <div class="group relative flex items-center rounded-[12px] px-3 py-[10px] hover:bg-ink/5 h-9">
+          <div class="group relative flex items-center rounded-lg px-3 py-2 hover:bg-ink/[0.04] transition-colors h-9">
             <button class="flex flex-1 items-center gap-2.5 px-0 h-full text-left overflow-hidden" type="button" (click)="loadConversation(conversation.id)">
-              <div class="flex-1 min-w-0 pr-16">
-                <span class="block truncate text-[14px] font-medium text-ink/70 group-hover:text-ink/100">{{ conversation.title }}</span>
+              <div class="flex-1 min-w-0 pr-8">
+                <span class="block truncate text-sm font-medium text-ink/75 group-hover:text-ink">{{ conversation.title }}</span>
               </div>
             </button>
             <div class="absolute right-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 bg-canvas/80 backdrop-blur-sm rounded-md px-1">
@@ -160,18 +163,18 @@
     <!-- User Profile Footer -->
     <div class="relative shrink-0 border-t border-line/[0.05] p-2 w-[220px] user-menu-container">
       <button
-        class="flex w-full items-center gap-2.5 rounded-[12px] px-2 py-1.5 transition hover:bg-ink/5"
+        class="flex w-full items-center gap-2.5 rounded-[10px] px-2 py-1.5 transition hover:bg-ink/5"
         type="button"
         (click)="toggleUserMenu()"
       >
-        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-accent/10 font-bold text-accent text-xs">
+        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink/10 font-bold text-ink text-xs">
           {{ userProfile()?.display_name?.charAt(0)?.toUpperCase() || 'U' }}
         </div>
         <div class="flex-1 truncate text-left flex flex-col">
-          <span class="text-[13px] font-medium text-ink">{{ userProfile()?.display_name || 'Medical Student' }}</span>
-          <span class="mt-0.5 inline-flex w-fit items-center rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent">Free Plan</span>
+          <span class="text-[13px] font-semibold text-ink">{{ userProfile()?.display_name || 'Medical Student' }}</span>
+          <span class="mt-0.5 inline-flex w-fit items-center rounded-md bg-ink/[0.04] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink/60">Free Plan</span>
         </div>
-        <svg [lucideIcon]="icons.MoreHorizontal" class="h-4 w-4 shrink-0 text-ink/30"></svg>
+        <svg [lucideIcon]="icons.MoreHorizontal" class="h-4 w-4 shrink-0 text-ink/30 transition-colors group-hover:text-ink/60"></svg>
       </button>
 
       @if (isUserMenuOpen()) {

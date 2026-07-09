@@ -43,10 +43,10 @@ MediChat is a highly optimized, AI-powered medical learning assistant designed t
 
 ## 🚀 Live Demo
 
-- **Live URL**: [Placeholder URL](#)
-- **Backend URL**: [Placeholder URL](#)
-- **API Documentation**: [Placeholder URL](#)
-- **Demo Video**: [Placeholder URL](#)
+- **Live URL**: [https://deepanshu-medichat.vercel.app](https://deepanshu-medichat.vercel.app)
+- **Backend URL**: [Pending]
+- **API Documentation**: [Pending]
+- **Demo Video**: [Pending]
 
 ---
 
@@ -269,10 +269,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Deepanshu**
-- LinkedIn: [Your LinkedIn Placeholder](#)
 - GitHub: [@Deepanshukhoushi](https://github.com/Deepanshukhoushi)
-- Portfolio: [Your Portfolio Placeholder](#)
-- Email: [Your Email Placeholder](#)
 
 ---
 <p align="center">

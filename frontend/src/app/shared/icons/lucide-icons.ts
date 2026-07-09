@@ -71,7 +71,8 @@ import {
   LucideAlertTriangle,
   LucideShieldCheck,
   LucideShare2,
-  LucideLoader2
+  LucideLoader2,
+  LucideStethoscope
 } from '@lucide/angular';
 
 export const appIcons = {
@@ -147,5 +148,6 @@ export const appIcons = {
   AlertTriangle: LucideAlertTriangle,
   ShieldCheck: LucideShieldCheck,
   Share2: LucideShare2,
-  Loader2: LucideLoader2
+  Loader2: LucideLoader2,
+  Stethoscope: LucideStethoscope
 };

@@ -36,8 +36,8 @@
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <mc-glass-card class="flex flex-col gap-2">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/15">
-            <svg [lucideIcon]="icons.MessageCircle" class="h-4 w-4 text-accent"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink/[0.04] border border-line/[0.06]">
+            <svg [lucideIcon]="icons.MessageCircle" class="h-4 w-4 text-ink/70"></svg>
           </div>
           <p class="text-sm font-medium text-ink/60">Total Sessions</p>
         </div>
@@ -47,8 +47,8 @@
 
       <mc-glass-card class="flex flex-col gap-2">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-success/15">
-            <svg [lucideIcon]="icons.MessagesSquare" class="h-4 w-4 text-success"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink/[0.04] border border-line/[0.06]">
+            <svg [lucideIcon]="icons.MessagesSquare" class="h-4 w-4 text-ink/70"></svg>
           </div>
           <p class="text-sm font-medium text-ink/60">Messages</p>
         </div>
@@ -58,8 +58,8 @@
 
       <mc-glass-card class="flex flex-col gap-2">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning/15">
-            <svg [lucideIcon]="icons.BookOpen" class="h-4 w-4 text-warning"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink/[0.04] border border-line/[0.06]">
+            <svg [lucideIcon]="icons.BookOpen" class="h-4 w-4 text-ink/70"></svg>
           </div>
           <p class="text-sm font-medium text-ink/60">Topics Covered</p>
         </div>
@@ -69,8 +69,8 @@
 
       <mc-glass-card class="flex flex-col gap-2">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/15">
-            <svg [lucideIcon]="icons.Flame" class="h-4 w-4 text-accent"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink/[0.04] border border-line/[0.06]">
+            <svg [lucideIcon]="icons.Flame" class="h-4 w-4 text-ink/70"></svg>
           </div>
           <p class="text-sm font-medium text-ink/60">Day Streak</p>
         </div>
@@ -98,8 +98,8 @@
               type="button"
               (click)="openConversation(conv.id)"
             >
-              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15">
-                <svg [lucideIcon]="icons.MessageCircle" class="h-4 w-4 text-accent"></svg>
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-ink/[0.04] border border-line/[0.05]">
+                <svg [lucideIcon]="icons.MessageCircle" class="h-4 w-4 text-ink/70"></svg>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-medium text-ink">{{ conv.title }}</p>
@@ -115,29 +115,29 @@
     <mc-glass-card>
       <h2 class="mb-5 text-xl font-semibold">Quick Actions</h2>
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <a routerLink="/app/chat" class="group flex flex-col items-center gap-2 rounded-xl bg-ink/5 p-4 no-underline transition-colors hover:bg-ink/10">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15">
-            <svg [lucideIcon]="icons.MessageCircle" class="h-5 w-5 text-accent"></svg>
+        <a routerLink="/app/chat" class="group flex flex-col items-center gap-2 rounded-2xl bg-surface p-4 transition-colors hover:bg-ink/[0.04] border border-line/[0.06] shadow-sm">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-ink/[0.04] border border-line/[0.05]">
+            <svg [lucideIcon]="icons.MessageCircle" class="h-5 w-5 text-ink/70 group-hover:text-ink transition-colors"></svg>
           </div>
-          <span class="text-center text-xs font-medium text-ink/70">New Chat</span>
+          <span class="text-center text-xs font-medium text-ink/70 group-hover:text-ink transition-colors">New Chat</span>
         </a>
-        <a routerLink="/app/flashcards" class="group flex flex-col items-center gap-2 rounded-xl bg-ink/5 p-4 no-underline transition-colors hover:bg-ink/10">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-success/15">
-            <svg [lucideIcon]="icons.Layers" class="h-5 w-5 text-success"></svg>
+        <a routerLink="/app/flashcards" class="group flex flex-col items-center gap-2 rounded-2xl bg-surface p-4 transition-colors hover:bg-ink/[0.04] border border-line/[0.06] shadow-sm">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-ink/[0.04] border border-line/[0.05]">
+            <svg [lucideIcon]="icons.Layers" class="h-5 w-5 text-ink/70 group-hover:text-ink transition-colors"></svg>
           </div>
-          <span class="text-center text-xs font-medium text-ink/70">Flashcards</span>
+          <span class="text-center text-xs font-medium text-ink/70 group-hover:text-ink transition-colors">Flashcards</span>
         </a>
-        <a routerLink="/app/quizzes" class="group flex flex-col items-center gap-2 rounded-xl bg-ink/5 p-4 no-underline transition-colors hover:bg-ink/10">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/15">
-            <svg [lucideIcon]="icons.ClipboardList" class="h-5 w-5 text-warning"></svg>
+        <a routerLink="/app/quizzes" class="group flex flex-col items-center gap-2 rounded-2xl bg-surface p-4 transition-colors hover:bg-ink/[0.04] border border-line/[0.06] shadow-sm">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-ink/[0.04] border border-line/[0.05]">
+            <svg [lucideIcon]="icons.ClipboardList" class="h-5 w-5 text-ink/70 group-hover:text-ink transition-colors"></svg>
           </div>
-          <span class="text-center text-xs font-medium text-ink/70">Quiz</span>
+          <span class="text-center text-xs font-medium text-ink/70 group-hover:text-ink transition-colors">Quiz</span>
         </a>
-        <a routerLink="/app/study-tools" class="group flex flex-col items-center gap-2 rounded-xl bg-ink/5 p-4 no-underline transition-colors hover:bg-ink/10">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15">
-            <svg [lucideIcon]="icons.BookOpen" class="h-5 w-5 text-accent"></svg>
+        <a routerLink="/app/study-tools" class="group flex flex-col items-center gap-2 rounded-2xl bg-surface p-4 transition-colors hover:bg-ink/[0.04] border border-line/[0.06] shadow-sm">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-ink/[0.04] border border-line/[0.05]">
+            <svg [lucideIcon]="icons.BookOpen" class="h-5 w-5 text-ink/70 group-hover:text-ink transition-colors"></svg>
           </div>
-          <span class="text-center text-xs font-medium text-ink/70">Study Tools</span>
+          <span class="text-center text-xs font-medium text-ink/70 group-hover:text-ink transition-colors">Study Tools</span>
         </a>
       </div>
     </mc-glass-card>

@@ -23,9 +23,9 @@ module.exports = {
         error: "rgb(var(--color-error) / <alpha-value>)"
       },
       boxShadow: {
-        glow: "0 24px 80px rgba(34, 197, 94, 0.15)",
-        glass: "0 12px 40px rgba(0, 0, 0, 0.35)",
-        glassHover: "0 20px 50px rgba(0, 0, 0, 0.45)"
+        glow: "0 0 20px rgba(34, 197, 94, 0.15)",
+        glass: "0 4px 20px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1)",
+        glassHover: "0 8px 30px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15)"
       },
       backgroundImage: {
         aurora: "radial-gradient(circle at top left, rgba(255, 188, 176, 0.42), transparent 34%), radial-gradient(circle at top right, rgba(124, 228, 255, 0.38), transparent 36%), linear-gradient(135deg, rgba(255,255,255,0.86), rgba(236,243,255,0.72))"
