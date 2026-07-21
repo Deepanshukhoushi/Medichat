@@ -9,7 +9,7 @@ import { BackendApiService } from '../../core/services/backend-api.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NavigationService } from '../../core/services/navigation.service';
 import { LogoComponent } from '../../shared/components/logo/logo.component';
-import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
+
 import { appIcons } from '../../shared/icons/lucide-icons';
 
 @Component({
@@ -109,13 +109,23 @@ export class AppShellLayoutComponent implements OnInit {
     this.router.navigate(['/app/chat']);
   }
 
-  protected deleteConversation(id: string, event?: MouseEvent): void {
-    event?.stopPropagation();
-    const confirmed = window.confirm('Delete this conversation? This cannot be undone.');
-    if (!confirmed) {
-      return;
-    }
+  protected readonly deletingConversationId = signal<string | null>(null);
+  protected readonly isDeleting = signal(false);
 
+  protected requestDelete(id: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.deletingConversationId.set(id);
+  }
+
+  protected cancelDelete(): void {
+    this.deletingConversationId.set(null);
+  }
+
+  protected confirmDelete(): void {
+    const id = this.deletingConversationId();
+    if (!id) return;
+
+    this.isDeleting.set(true);
     this.backendApi.deleteConversation(id).subscribe({
       next: () => {
         if (this.chatService.activeConversationId() === id) {
@@ -124,10 +134,21 @@ export class AppShellLayoutComponent implements OnInit {
         }
 
         this.chatService.refreshConversationHistory().subscribe({
-          error: () => undefined
+          next: () => {
+            this.isDeleting.set(false);
+            this.deletingConversationId.set(null);
+          },
+          error: () => {
+            this.isDeleting.set(false);
+            this.deletingConversationId.set(null);
+          }
         });
       },
-      error: (err) => console.error('Failed to delete conversation', err)
+      error: (err) => {
+        console.error('Failed to delete conversation', err);
+        this.isDeleting.set(false);
+        this.deletingConversationId.set(null);
+      }
     });
   }
 
