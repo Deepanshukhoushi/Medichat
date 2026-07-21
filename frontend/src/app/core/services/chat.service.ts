@@ -74,18 +74,19 @@ export class ChatService {
     const pendingMessage = this.pendingMessage();
     this.messagesSignal.update((messages) => [...messages, userMessage, pendingMessage]);
 
-    // Insert an optimistic sidebar entry; record its ID so refreshConversationHistory
-    // can swap it for the real backend ID without relying on string-prefix guessing.
-    this.pendingConversationId = crypto.randomUUID();
-    this.conversationsSignal.update((conversations) => [
-      {
-        id: this.pendingConversationId!,
-        title: this.trimPrompt(trimmedPrompt),
-        topic: 'Current session',
-        updatedAt: 'Just now'
-      },
-      ...conversations.slice(0, 4)
-    ]);
+    // Only insert an optimistic sidebar entry if this is a brand new conversation.
+    if (!this.activeConversationId()) {
+      this.pendingConversationId = crypto.randomUUID();
+      this.conversationsSignal.update((conversations) => [
+        {
+          id: this.pendingConversationId!,
+          title: this.trimPrompt(trimmedPrompt),
+          topic: 'Current session',
+          updatedAt: 'Just now'
+        },
+        ...conversations
+      ]);
+    }
 
     this.isStreamingSignal.set(true);
     this.abortController = new AbortController();
@@ -260,7 +261,14 @@ export class ChatService {
 
   refreshConversationHistory(): Observable<ConversationSummary[]> {
     return this.backendApi.getConversations().pipe(
-      map((conversations) => conversations.map((conversation) => this.toConversationSummary(conversation))),
+      map((conversations) => {
+        if (conversations.length < 30) {
+          this.hasMoreHistorySignal.set(false);
+        } else {
+          this.hasMoreHistorySignal.set(true);
+        }
+        return conversations.map((conversation) => this.toConversationSummary(conversation));
+      }),
       tap((conversationHistory) => {
         const currentId = this.activeConversationId();
         let finalHistory = [...conversationHistory];

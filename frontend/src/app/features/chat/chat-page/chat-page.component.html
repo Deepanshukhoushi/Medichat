@@ -1,91 +1,102 @@
 <div class="relative flex h-full flex-col overflow-hidden bg-canvas">
-  <div #scrollContainer class="relative flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:px-8 lg:py-6 transition-all flex flex-col" (scroll)="onScroll()" style="overflow-anchor: none;">
-    <div class="mx-auto w-full max-w-[860px] space-y-4 flex-1 flex flex-col">
+  <div #scrollContainer class="relative flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-all flex flex-col" (scroll)="onScroll()" style="overflow-anchor: none;">
+    <div class="mx-auto w-full max-w-[860px] px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
       
       @if (userProfile()?.user_id?.startsWith('guest_')) {
-        <div class="flex items-center gap-2 rounded-2xl bg-accent/10 px-4 py-3 text-sm text-accent">
+        <div class="flex items-center gap-2.5 rounded-2xl bg-accent/[0.08] border border-accent/[0.12] px-4 py-3 text-sm text-accent mb-4">
           <svg [lucideIcon]="icons.Info" class="h-4 w-4 shrink-0"></svg>
           <p>You're browsing as a guest &mdash; <a routerLink="/auth/login" class="font-semibold underline hover:text-accent/80 transition-colors">sign up</a> to unlock flashcards, quizzes &amp; analytics.</p>
         </div>
       }
+
       @if (chatService.isHistoryLoading()) {
-        <div class="space-y-6">
-          <div class="flex animate-pulse gap-4 opacity-60">
-            <div class="h-10 w-10 rounded-full bg-ink/10"></div>
-            <div class="flex-1 space-y-3 py-1">
-              <div class="h-4 w-3/4 rounded bg-ink/10"></div>
-              <div class="h-4 w-5/6 rounded bg-ink/10"></div>
+        <div class="space-y-8 pt-4">
+          <div class="flex animate-pulse gap-4 opacity-50">
+            <div class="h-8 w-8 rounded-full bg-ink/10 shrink-0 mt-0.5"></div>
+            <div class="flex-1 space-y-2.5 py-1">
+              <div class="h-3.5 w-3/4 rounded-full bg-ink/10"></div>
+              <div class="h-3.5 w-5/6 rounded-full bg-ink/10"></div>
+              <div class="h-3.5 w-2/3 rounded-full bg-ink/10"></div>
             </div>
           </div>
-          <div class="flex animate-pulse gap-4 flex-row-reverse opacity-60">
-            <div class="h-10 w-10 rounded-full bg-ink/10"></div>
-            <div class="flex-1 space-y-3 py-1 flex flex-col items-end">
-              <div class="h-4 w-1/2 rounded bg-ink/10"></div>
+          <div class="flex animate-pulse gap-4 flex-row-reverse opacity-50">
+            <div class="flex-1 space-y-2.5 py-1 flex flex-col items-end">
+              <div class="h-3.5 w-1/2 rounded-full bg-ink/10"></div>
             </div>
           </div>
         </div>
+
       } @else if (chatService.historyLoadError()) {
         <div class="flex flex-col items-center justify-center pt-20 text-center">
-          <div class="max-w-lg rounded-3xl border border-warning/15 bg-warning/10 px-6 py-5 text-left text-warning shadow-sm">
+          <div class="max-w-lg rounded-2xl border border-warning/15 bg-warning/[0.06] px-6 py-5 text-left text-warning">
             <p class="text-sm font-semibold">Conversation failed to load</p>
-            <p class="mt-2 text-sm leading-6 text-warning/90">{{ chatService.historyLoadError() }}</p>
+            <p class="mt-2 text-sm leading-6 text-warning/80">{{ chatService.historyLoadError() }}</p>
             <button class="pill-button mt-4 border-warning/20 bg-canvas text-warning hover:bg-warning/10" type="button" (click)="retryHistoryLoad()">
               Try Again
             </button>
           </div>
         </div>
+
       } @else if (chatService.messages().length === 0) {
-        <div class="flex-1 flex flex-col justify-center w-full animate-fade-in max-w-[860px] mx-auto pb-20">
-          
-          <div class="mb-8 text-center flex flex-col items-center mt-4">
-            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-[18px] bg-canvas border border-line/[0.08] shadow-sm">
-              <svg [lucideIcon]="icons.Stethoscope" class="h-6 w-6 text-accent"></svg>
+        <!-- ── Landing / Empty state ──────────────────────────────────────── -->
+        <div class="flex-1 flex flex-col items-center justify-center w-full animate-fade-in pb-8">
+
+          <!-- Greeting block -->
+          <div class="w-full max-w-[800px] mx-auto text-center mb-7">
+            <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/[0.08] border border-accent/[0.12] mx-auto shadow-sm">
+              <svg [lucideIcon]="icons.Stethoscope" class="h-5 w-5 text-accent"></svg>
             </div>
-            <h2 class="text-3xl font-semibold text-ink tracking-tight">{{ greeting() }}</h2>
-            <p class="text-[15px] text-ink/60 mt-2 font-medium">What would you like to learn today?</p>
+            <h1 class="text-[32px] font-bold text-ink tracking-tight leading-tight">{{ greeting() }}</h1>
+            <p class="text-[15px] text-ink/50 mt-2">What would you like to learn today?</p>
           </div>
 
-          <!-- Hero Composer -->
-          <div class="w-full relative z-20">
-            <mc-chat-composer [showQuickActions]="false" [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
+          <!-- Hero Composer — same max-width as greeting -->
+          <div class="w-full max-w-[800px] mx-auto relative z-20">
+            <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
           </div>
 
-          <!-- Medical Quick Actions -->
-          <div class="mt-6 flex flex-wrap justify-center gap-3">
+          <!-- Suggestion chips -->
+          <div class="mt-5 flex flex-wrap justify-center gap-2 max-w-[800px] mx-auto">
             @for (prompt of starterPrompts(); track prompt) {
-              <button class="flex items-center gap-2 rounded-full border border-line/[0.06] bg-surface/50 px-4 py-2 transition-all hover:bg-surface hover:border-line/[0.1] hover:shadow-sm hover:-translate-y-0.5 text-ink/70 hover:text-ink text-sm font-medium" type="button" (click)="insertPrompt(prompt.prompt)">
-                <svg [lucideIcon]="icons.Sparkles" class="h-4 w-4 text-accent/80"></svg>
+              <button
+                class="flex items-center gap-1.5 rounded-full border border-line/[0.08] bg-surface/40 px-4 py-2 text-[13px] font-medium text-ink/60 transition-all duration-200 hover:bg-surface hover:border-line/[0.16] hover:text-ink hover:-translate-y-px hover:shadow-sm"
+                type="button"
+                (click)="insertPrompt(prompt.prompt)"
+              >
+                <svg [lucideIcon]="icons.Sparkles" class="h-3.5 w-3.5 text-accent/60 shrink-0"></svg>
                 {{ prompt.label }}
               </button>
             }
           </div>
 
-          <!-- Study Progress Widget (only shown when real data is available) -->
+          <!-- Study progress widget -->
           @if (dashboardStats()?.recent_conversations?.length) {
-            <div class="mt-16 w-full max-w-[600px] mx-auto rounded-[24px] border border-line/[0.05] bg-surface/30 p-6 flex items-center justify-between shadow-sm">
-              <div class="flex items-center gap-5">
-                <div class="flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 shrink-0">
-                  <svg [lucideIcon]="icons.Flame" class="h-6 w-6 text-accent"></svg>
+            <div class="mt-14 w-full max-w-[600px] mx-auto rounded-2xl border border-line/[0.07] bg-surface/20 p-5 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 shrink-0">
+                  <svg [lucideIcon]="icons.Flame" class="h-5 w-5 text-accent"></svg>
                 </div>
-                <div class="flex flex-col">
-                  <h3 class="text-[15px] font-semibold text-ink">Continue where you left off</h3>
-                  <p class="text-[13px] font-medium text-ink/50 mt-0.5">
+                <div>
+                  <h3 class="text-[14px] font-semibold text-ink">Continue where you left off</h3>
+                  <p class="text-[12px] text-ink/45 mt-0.5">
                     {{ dashboardStats()!.stats.total_sessions }} session{{ dashboardStats()!.stats.total_sessions === 1 ? '' : 's' }} &bull;
-                    {{ dashboardStats()!.stats.unique_topics }} topic{{ dashboardStats()!.stats.unique_topics === 1 ? '' : 's' }} explored
+                    {{ dashboardStats()!.stats.unique_topics }} topic{{ dashboardStats()!.stats.unique_topics === 1 ? '' : 's' }}
                   </p>
                   @if (dashboardStats()?.recent_conversations?.[0]?.title) {
-                    <p class="text-[12px] text-ink/35 mt-1 truncate max-w-[260px]">Last: {{ dashboardStats()!.recent_conversations[0].title }}</p>
+                    <p class="text-[11px] text-ink/30 mt-0.5 truncate max-w-[240px]">Last: {{ dashboardStats()!.recent_conversations[0].title }}</p>
                   }
                 </div>
               </div>
-              <button class="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-canvas transition-transform hover:scale-105 shadow-sm shrink-0" type="button" (click)="resumeLastChat()">
+              <button class="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-canvas transition-all hover:bg-ink/85 hover:-translate-y-px shadow-sm shrink-0" type="button" (click)="resumeLastChat()">
                 Resume
               </button>
             </div>
           }
         </div>
+
       } @else {
-        <div class="space-y-6">
+        <!-- ── Conversation messages ───────────────────────────────────────── -->
+        <div class="space-y-1 pt-2 pb-4">
           @for (message of chatService.messages(); track message.id; let last = $last) {
             <mc-chat-message 
               [message]="message" 
@@ -104,40 +115,33 @@
 
   @if (!isNearBottom() && chatService.messages().length > 0 && !composerFocused()) {
     <button
-      class="absolute bottom-28 right-6 z-20 rounded-full bg-ink/10 px-4 py-3 text-xs font-semibold text-ink shadow-lg transition hover:bg-ink/20 backdrop-blur-xl max-sm:bottom-24 max-sm:right-4 border border-white/5"
+      class="absolute bottom-28 right-6 z-20 flex items-center gap-2 rounded-full border border-line/[0.1] bg-surface/80 backdrop-blur-xl px-4 py-2 text-xs font-medium text-ink/70 shadow-md transition hover:bg-surface hover:text-ink max-sm:bottom-24 max-sm:right-4"
       type="button"
       (click)="scrollToBottom()"
     >
-      Jump to latest
+      <svg [lucideIcon]="icons.ArrowDown" class="h-3.5 w-3.5"></svg>
+      Latest
     </button>
   }
 
   @if (chatService.messages().length > 0) {
-    <div class="mx-auto w-full max-w-[860px] p-4 sm:px-6 sm:pb-6 relative z-10">
+    <div class="mx-auto w-full max-w-[860px] px-4 sm:px-6 pb-4 sm:pb-6 pt-2 relative z-10">
       <mc-memory-panel class="mb-3 block" />
-      <div class="relative">
-        <mc-chat-composer [showQuickActions]="true" [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
-        
-        <!-- Footer Info Row -->
-        <div class="mt-2.5 flex items-center justify-between px-2 text-[11px] text-ink/45 font-medium tracking-wide">
-          <p>MediChat can make mistakes. Check important medical information.</p>
-          
-          <div class="flex items-center gap-3">
-            <div class="hidden sm:flex items-center gap-1.5 opacity-80">
-              <span>Enter to send</span>
-              <span>&bull;</span>
-              <span>Shift + Enter for new line</span>
-            </div>
-            <button 
-              class="flex h-5 w-5 items-center justify-center rounded-full border border-ink/20 bg-ink/5 text-ink/60 transition hover:bg-ink/10 hover:text-ink/90" 
-              type="button" 
-              (click)="openShortcuts()" 
-              title="Keyboard shortcuts"
-              aria-label="Open keyboard shortcuts"
-            >
-              <span class="text-[10px] font-bold">?</span>
-            </button>
-          </div>
+      <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
+      <!-- Footer hint row -->
+      <div class="mt-2.5 flex items-center justify-between text-[11px] text-ink/35 font-normal">
+        <span>MediChat can make mistakes. Always verify important medical information.</span>
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:block">Enter to send &bull; Shift+Enter for new line</span>
+          <button 
+            class="flex h-5 w-5 items-center justify-center rounded-full border border-ink/[0.12] text-ink/40 transition hover:bg-ink/[0.06] hover:text-ink/70" 
+            type="button" 
+            (click)="openShortcuts()" 
+            title="Keyboard shortcuts"
+            aria-label="Open keyboard shortcuts"
+          >
+            <svg [lucideIcon]="icons.CircleHelp" class="h-3.5 w-3.5"></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -152,7 +156,7 @@
             <h2 id="shortcuts-title" class="mt-1 text-xl font-semibold text-ink">Keyboard shortcuts</h2>
           </div>
           <button class="rounded-full p-2 text-ink/50 transition hover:bg-ink/5 hover:text-ink" type="button" (click)="closeShortcuts()" aria-label="Close keyboard shortcuts">
-            <svg [lucideIcon]="icons.Square" class="h-4 w-4"></svg>
+            <svg [lucideIcon]="icons.X" class="h-4 w-4"></svg>
           </button>
         </div>
 

@@ -4,14 +4,14 @@ import { LucideDynamicIcon } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
 import { ToastrService } from 'ngx-toastr';
 
-import { DatePipe } from '@angular/common';
+
 import { ChatMessage } from '../../../../shared/models/chat.model';
 import { appIcons } from '../../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-chat-message',
   standalone: true,
-  imports: [MarkdownComponent, LucideDynamicIcon, DatePipe],
+  imports: [MarkdownComponent, LucideDynamicIcon],
   templateUrl: './chat-message.component.html',
   styleUrl: './chat-message.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,44 +1,19 @@
-<div class="flex w-full flex-col gap-2 max-w-[760px] mx-auto relative z-10" (focusin)="focusStateChange.emit(true)" (focusout)="handleFocusOut($event)">
+<div class="flex w-full flex-col gap-2 relative z-10" (focusin)="focusStateChange.emit(true)" (focusout)="handleFocusOut($event)">
   
   @if (uploadToast()) {
-    <div class="rounded-xl border border-ink/10 bg-ink/5 px-4 py-2 text-center text-xs text-ink/70 transition-all" aria-live="polite" role="status">
+    <div class="rounded-xl border border-ink/10 bg-ink/5 px-4 py-2 text-center text-xs text-ink/60 transition-all" aria-live="polite" role="status">
       {{ uploadToast() }}
     </div>
   }
 
   @if (voiceToast()) {
-    <div class="rounded-xl border border-accent/20 bg-accent/10 px-4 py-2 text-center text-xs text-accent font-medium transition-all" aria-live="polite" role="status">
+    <div class="rounded-xl border border-accent/15 bg-accent/[0.06] px-4 py-2 text-center text-xs text-accent/90 font-medium transition-all" aria-live="polite" role="status">
       🎤 Voice input is coming soon
     </div>
   }
 
   <!-- Main Composer -->
-  <div class="flex flex-col rounded-3xl bg-canvas border border-line/[0.06] shadow-glass backdrop-blur-xl transition-all focus-within:border-line/[0.12] focus-within:shadow-glassHover relative">
-    
-    <!-- Integrated Quick Actions -->
-    @if (showQuickActions()) {
-      <div class="flex items-center gap-2 overflow-x-auto pt-2 px-3 pb-1 scrollbar-hide text-[12px] font-medium animate-fade-in">
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/explain ')">
-          <svg [lucideIcon]="icons.Sparkles" class="h-3.5 w-3.5 text-accent"></svg>
-          Explain
-        </button>
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/flashcards ')">
-          <svg [lucideIcon]="icons.BookOpen" class="h-3.5 w-3.5 text-blue-500"></svg>
-          Flashcards
-        </button>
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/quiz ')">
-          <svg [lucideIcon]="icons.ClipboardList" class="h-3.5 w-3.5 text-purple-500"></svg>
-          Quiz
-        </button>
-        <button class="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 h-8 text-ink/70 transition hover:bg-ink/10 hover:text-ink duration-200" type="button" (click)="setPrompt('/drug ')">
-          <svg [lucideIcon]="icons.FlaskConical" class="h-3.5 w-3.5 text-orange-500"></svg>
-          Drug Info
-        </button>
-        <div class="w-1 shrink-0"></div>
-      </div>
-    }
-
-
+  <div class="flex flex-col rounded-[22px] bg-surface/30 border border-line/[0.1] transition-all duration-200 hover:border-line/[0.16] focus-within:border-line/[0.2] focus-within:ring-2 focus-within:ring-accent/[0.12] relative min-h-[60px] shadow-sm">
     
     <input
       #fileInput
@@ -48,10 +23,11 @@
       (change)="onFileSelected($event)"
     />
 
-    <div class="flex items-end px-3 pb-2 pt-1">
-      <div class="flex items-center gap-0.5 mb-1 shrink-0">
+    <div class="flex items-end px-4 pb-[14px] pt-[14px] gap-2.5">
+      <!-- Left action buttons -->
+      <div class="flex items-center gap-1.5 shrink-0">
         <button
-          class="flex h-9 w-9 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/5 hover:text-ink disabled:opacity-40"
+          class="flex h-8 w-8 items-center justify-center rounded-full text-ink/35 transition-all hover:bg-ink/[0.06] hover:text-ink/70 disabled:opacity-30"
           type="button"
           aria-label="Attach file"
           [disabled]="isUploading()"
@@ -62,47 +38,49 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V2.5" />
             </svg>
           } @else {
-            <svg [lucideIcon]="icons.Paperclip" class="h-4 w-4"></svg>
+            <svg [lucideIcon]="icons.Paperclip" class="h-[17px] w-[17px]"></svg>
           }
         </button>
         <button
-          class="flex h-9 w-9 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/5 hover:text-ink"
+          class="flex h-8 w-8 items-center justify-center rounded-full text-ink/35 transition-all hover:bg-ink/[0.06] hover:text-ink/70"
           type="button"
           aria-label="Voice input (coming soon)"
           (click)="showVoiceToast()"
         >
-          <svg [lucideIcon]="icons.Mic" class="h-4 w-4"></svg>
+          <svg [lucideIcon]="icons.Mic" class="h-[17px] w-[17px]"></svg>
         </button>
       </div>
 
+      <!-- Textarea -->
       <textarea
         #composerTextarea
-        class="max-h-[150px] min-h-[44px] flex-1 resize-none border-0 bg-transparent px-2 py-3 text-[15px] leading-relaxed text-ink outline-none placeholder:text-ink/40 scrollbar-hide font-medium"
+        class="max-h-[200px] min-h-[32px] flex-1 resize-none border-0 bg-transparent py-1 text-[15px] font-normal leading-relaxed text-ink outline-none placeholder:text-ink/35 scrollbar-hide"
         placeholder="Ask anything about medicine..."
         [ngModel]="prompt()"
         (ngModelChange)="prompt.set($event)"
         (keydown)="onKeyDown($event, composerTextarea)"
       ></textarea>
 
-      <div class="flex items-center mb-1 shrink-0 ml-1">
+      <!-- Send / Stop button -->
+      <div class="flex items-center shrink-0">
         @if (isStreaming()) {
           <button
-            class="flex h-11 w-11 items-center justify-center rounded-full bg-error text-white transition hover:scale-[1.03] shadow-sm"
+            class="flex h-8 w-8 items-center justify-center rounded-full bg-error/90 text-white transition hover:bg-error shadow-sm"
             (click)="stopped.emit()"
             aria-label="Stop generating"
             type="button"
           >
-            <svg [lucideIcon]="icons.Square" class="h-4 w-4 fill-current"></svg>
+            <svg [lucideIcon]="icons.Square" class="h-3 w-3 fill-current"></svg>
           </button>
         } @else {
           <button
-            class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-tr from-accent to-[#20d892] text-white transition hover:scale-[1.03] disabled:opacity-50 disabled:from-ink/10 disabled:to-ink/10 disabled:text-ink/40 disabled:hover:scale-100 shadow-sm"
+            class="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-all duration-200 hover:bg-accent-hover hover:shadow-md disabled:opacity-35 disabled:bg-ink/10 disabled:text-ink/30 disabled:shadow-none shadow-sm"
             [disabled]="!prompt().trim() && !isUploading()"
             (click)="send()"
             aria-label="Send message"
             type="button"
           >
-            <svg [lucideIcon]="icons.ArrowUp" class="h-5 w-5 stroke-[2.5]"></svg>
+            <svg [lucideIcon]="icons.ArrowUp" class="h-[17px] w-[17px] stroke-[2.5]"></svg>
           </button>
         }
       </div>
@@ -111,8 +89,8 @@
 
   @if (isUploading()) {
     <div class="mt-1 px-1">
-      <div class="h-1 overflow-hidden rounded-full bg-ink/10">
-        <div class="h-full bg-accent transition-all duration-200" [style.width.%]="uploadProgress()"></div>
+      <div class="h-[3px] overflow-hidden rounded-full bg-ink/[0.08]">
+        <div class="h-full bg-accent rounded-full transition-all duration-200" [style.width.%]="uploadProgress()"></div>
       </div>
     </div>
   }

@@ -5,13 +5,13 @@
     @if (message().role === 'user') {
       <div class="flex w-full justify-end group/userMsg">
         <div class="relative flex flex-col items-end">
-          <div class="text-[16px] leading-relaxed text-ink bg-ink/[0.04] px-5 py-3 rounded-3xl max-w-[90%] sm:max-w-[70%]">
-            <p class="whitespace-pre-line">{{ message().content }}</p>
+          <div class="text-[16px] leading-relaxed text-ink bg-ink/[0.04] px-5 py-3 rounded-3xl w-fit max-w-[90%] sm:max-w-[85%]">
+            <p class="whitespace-pre-wrap break-words m-0">{{ message().content }}</p>
           </div>
           
           <!-- Actions & Timestamp (visible on hover) -->
           <div class="flex items-center gap-2 mt-1.5 opacity-0 group-hover/userMsg:opacity-100 transition-opacity duration-200 text-[11px] text-ink/40 font-medium px-1">
-            <span>{{ message().timestamp | date:'shortTime' }}</span>
+            <span>{{ message().timestamp }}</span>
             <div class="w-1 h-1 rounded-full bg-line/[0.2]"></div>
             <button class="hover:text-ink transition flex items-center gap-1" title="Edit message" (click)="editMessage()">
               <svg [lucideIcon]="icons.SquarePen" class="h-3 w-3"></svg>

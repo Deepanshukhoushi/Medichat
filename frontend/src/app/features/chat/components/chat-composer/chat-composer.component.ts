@@ -20,7 +20,7 @@ export class ChatComposerComponent {
   readonly stopped = output<void>();
   readonly focusStateChange = output<boolean>();
   readonly isStreaming = input(false);
-  readonly showQuickActions = input(true);
+
   protected readonly icons = appIcons;
   protected readonly prompt = signal('');
   protected readonly isUploading = signal(false);
