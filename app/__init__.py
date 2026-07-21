@@ -59,6 +59,9 @@ def create_app(settings: AppSettings | None = None) -> Flask:
         static_url_path="/static",
     )
 
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
     application.config.update(
         SECRET_KEY=app_settings.flask_secret_key,
         MAX_CONTENT_LENGTH=max(
