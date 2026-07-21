@@ -1,5 +1,6 @@
 import {
   LucideActivity,
+  LucideArrowDown,
   LucideArrowRight,
   LucideArrowUp,
   LucideBookOpen,
@@ -72,13 +73,16 @@ import {
   LucideShieldCheck,
   LucideShare2,
   LucideLoader2,
-  LucideStethoscope
+  LucideStethoscope,
+  LucideX,
+  LucideWifiOff
 } from '@lucide/angular';
 
 export const appIcons = {
   Activity: LucideActivity,
-  ArrowUp: LucideArrowUp,
+  ArrowDown: LucideArrowDown,
   ArrowRight: LucideArrowRight,
+  ArrowUp: LucideArrowUp,
   BookOpen: LucideBookOpen,
   Bot: LucideBot,
   Brain: LucideBrain,
@@ -149,5 +153,7 @@ export const appIcons = {
   ShieldCheck: LucideShieldCheck,
   Share2: LucideShare2,
   Loader2: LucideLoader2,
-  Stethoscope: LucideStethoscope
+  Stethoscope: LucideStethoscope,
+  X: LucideX,
+  WifiOff: LucideWifiOff
 };

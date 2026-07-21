@@ -26,7 +26,7 @@ export class AppComponent {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('offline', () => {
-        this.toastr.warning('You are currently offline. Some features may not be available.', 'Offline Mode', {
+        this.toastr.warning("You're offline. Some AI features are temporarily unavailable.", 'Offline', {
           timeOut: 0,
           extendedTimeOut: 0,
           closeButton: true
@@ -35,7 +35,7 @@ export class AppComponent {
 
       window.addEventListener('online', () => {
         this.toastr.clear();
-        this.toastr.success('You are back online!', 'Connection Restored');
+        this.toastr.success('Your connection has been restored.', 'Online');
       });
     }
   }

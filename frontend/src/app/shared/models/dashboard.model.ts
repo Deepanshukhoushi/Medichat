@@ -22,4 +22,10 @@ export interface FlashcardDeck {
   topic: string;
   created_at: string;
   cards?: FlashcardCard[];
+  // Mastery statistics (populated by backend list_decks query)
+  total_cards?: number;
+  known_cards?: number;
+  unknown_cards?: number;
+  mastery_percent?: number;
+  last_studied_at?: string;
 }

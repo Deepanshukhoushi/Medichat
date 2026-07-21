@@ -153,6 +153,8 @@ export class QuizzesPageComponent implements OnInit, OnDestroy {
     this.currentQuestionIndex.set(0);
     this.timerSeconds.set(0);
     this.stopTimer();
+    // Refresh list so any completed/newly generated quizzes appear immediately
+    this.loadSessions();
   }
 
   isQuizComplete(): boolean {

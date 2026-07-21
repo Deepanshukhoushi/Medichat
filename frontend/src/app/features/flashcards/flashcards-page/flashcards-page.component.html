@@ -4,8 +4,8 @@
       <mc-glass-card>
         <mc-section-heading
           eyebrow="Flashcards"
-          title="Active recall shell."
-          description="Generate flashcard decks on any medical topic using AI."
+          title="AI Flashcard Decks."
+          description="Generate active-recall flashcard decks on any medical topic using AI."
         />
 
         <form [formGroup]="form" (ngSubmit)="generateDeck()" class="mt-6 flex flex-wrap items-end gap-4">
@@ -44,6 +44,28 @@
             <mc-glass-card class="flex flex-col">
               <h3 class="text-lg font-semibold">{{ deck.topic }}</h3>
               <p class="mt-1 text-sm text-ink/50">Generated: {{ deck.created_at | date }}</p>
+
+              @if (deck.total_cards !== undefined && deck.total_cards > 0) {
+                <div class="mt-3 space-y-2">
+                  <!-- Mastery progress bar -->
+                  <div class="flex items-center justify-between text-xs text-ink/60">
+                    <span>{{ deck.known_cards ?? 0 }} / {{ deck.total_cards }} known</span>
+                    <span class="font-semibold text-accent">{{ deck.mastery_percent ?? 0 }}% mastery</span>
+                  </div>
+                  <div class="h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
+                    <div
+                      class="h-full rounded-full bg-accent transition-all duration-500"
+                      [style.width.%]="deck.mastery_percent ?? 0"
+                    ></div>
+                  </div>
+                  @if (deck.last_studied_at) {
+                    <p class="text-[11px] text-ink/40">Last studied: {{ deck.last_studied_at | date:'mediumDate' }}</p>
+                  }
+                </div>
+              } @else if (deck.total_cards !== undefined) {
+                <p class="mt-3 text-xs text-ink/40">{{ deck.total_cards }} card{{ deck.total_cards !== 1 ? 's' : '' }}</p>
+              }
+
               <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
                 <button (click)="studyDeck(deck.id)" class="text-sm text-accent transition-colors hover:text-accentHover">Study Deck &rarr;</button>
               </div>

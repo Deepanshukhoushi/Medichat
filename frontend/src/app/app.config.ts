@@ -9,6 +9,7 @@ import { provideToastr } from 'ngx-toastr';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { csrfInterceptor } from './core/interceptors/csrf.interceptor';
 import { routes } from './app.routes';
+import { PremiumToastComponent } from './shared/components/premium-toast/premium-toast.component';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,8 +27,10 @@ export const appConfig: ApplicationConfig = {
     provideMarkdown(),
     provideToastr({
       positionClass: 'toast-bottom-right',
-      timeOut: 2500,
-      preventDuplicates: true
+      timeOut: 3000,
+      preventDuplicates: true,
+      toastComponent: PremiumToastComponent,
+      toastClass: 'mc-premium-toast-host'
     }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

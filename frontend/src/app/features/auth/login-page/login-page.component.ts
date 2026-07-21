@@ -57,7 +57,7 @@ export class LoginPageComponent implements OnInit {
     this.authService.login(this.email().trim(), this.password(), this.rememberMe()).subscribe({
       next: async (message: string) => {
         this.isSubmitting.set(false);
-        this.toastr.success(message, 'Signed in');
+        this.toastr.success("You're successfully logged in.", 'Signed In');
         await this.router.navigateByUrl('/app/chat');
       },
       error: (error: { status?: number; error?: { error?: string; type?: string } }) => {
