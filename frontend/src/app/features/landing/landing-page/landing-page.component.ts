@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 import { RevealDirective } from '../../../shared/directives/reveal.directive';
 import { CountUpDirective } from '../../../shared/directives/count-up.directive';
 import { appIcons } from '../../../shared/icons/lucide-icons';
 import { ProfileService } from '../../../core/services/profile.service';
+import { BackendApiService } from '../../../core/services/backend-api.service';
 
 @Component({
   selector: 'mc-landing-page',
@@ -19,6 +20,8 @@ import { ProfileService } from '../../../core/services/profile.service';
 export class LandingPageComponent implements OnInit {
   private readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly backendApi = inject(BackendApiService);
 
   protected readonly isLoggedIn = computed(() => {
     const profile = this.profileService.profile();
@@ -27,6 +30,11 @@ export class LandingPageComponent implements OnInit {
   protected readonly activeFaq = signal<number | null>(null);
 
   ngOnInit(): void {
+    const codeParam = this.route.snapshot.queryParamMap.get('code');
+    if (codeParam) {
+      window.location.href = this.backendApi.url('/api/auth/callback?code=' + codeParam);
+      return;
+    }
     // Warm up the shared cache (guard likely already did this).
     this.profileService.profile$.subscribe({ error: () => {} });
   }

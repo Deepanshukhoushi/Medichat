@@ -329,7 +329,7 @@ export class BackendApiService {
     return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : null;
   }
 
-  private url(path: string): string {
+  url(path: string): string {
     return `${this.runtimeConfig.apiBaseUrl}${path}`;
   }
 }

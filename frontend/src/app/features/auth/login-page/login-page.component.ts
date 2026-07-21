@@ -37,6 +37,12 @@ export class LoginPageComponent implements OnInit {
   protected readonly googleOAuthUrl = this.backendApi.googleLoginUrl();
 
   ngOnInit() {
+    const codeParam = this.route.snapshot.queryParamMap.get('code');
+    if (codeParam) {
+      window.location.href = this.backendApi.url('/api/auth/callback?code=' + codeParam);
+      return;
+    }
+
     const errorParam = this.route.snapshot.queryParamMap.get('error');
     if (errorParam === 'oauth_failed') {
       this.statusMessage.set('Google sign-in failed. Please try again or use email/password.');
