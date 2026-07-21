@@ -260,7 +260,9 @@ class ChatController:
 
     def google_login(self):
         from flask import redirect
-        redirect_url = f"{request.host_url.rstrip('/')}/api/auth/callback"
+        host = request.headers.get("X-Forwarded-Host", request.headers.get("Host", request.host))
+        scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+        redirect_url = f"{scheme}://{host}/api/auth/callback"
         try:
             url = self.auth_service.get_google_oauth_url(redirect_url)
             return redirect(url)

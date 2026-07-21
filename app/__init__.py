@@ -60,7 +60,7 @@ def create_app(settings: AppSettings | None = None) -> Flask:
     )
 
     from werkzeug.middleware.proxy_fix import ProxyFix
-    application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+    application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=0, x_prefix=0)
 
     application.config.update(
         SECRET_KEY=app_settings.flask_secret_key,
