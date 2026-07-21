@@ -610,20 +610,25 @@ class ChatController:
             return jsonify({"error": str(exc)}), 500
 
     def rate_flashcard(self, deck_id: str, card_id: str):
+        self._require_auth()
         user_id = self._get_user_id_from_cookie()
-        if not self.flashcard_repository:
+
+        if not self.flashcard_service or not self.flashcard_service.repository:
             return jsonify({"error": "Persistence disabled"}), 503
-        
-        # Verify deck ownership implicitly by attempting to fetch it
-        self.flashcard_repository.get_deck(deck_id, user_id)
-        
+
         data = request.get_json() or {}
         rating = data.get("rating")
         if rating not in ["known", "unknown"]:
-            return jsonify({"error": "Invalid rating"}), 400
-            
-        self.flashcard_repository.rate_card(deck_id, card_id, rating)
-        return jsonify({"success": True})
+            return jsonify({"error": "Invalid rating. Must be 'known' or 'unknown'"}), 400
+
+        try:
+            # Verify deck ownership via the service repository
+            self.flashcard_service.repository.get_deck(deck_id, user_id)
+            self.flashcard_service.repository.rate_card(deck_id, card_id, rating)
+            return jsonify({"success": True})
+        except Exception as exc:
+            logger.exception("Failed to rate flashcard card_id=%s deck_id=%s", card_id, deck_id)
+            return jsonify({"error": "Failed to save rating"}), 500
 
     # ------------------------------------------------------------------
     # Quizzes API

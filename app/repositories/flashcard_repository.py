@@ -28,13 +28,33 @@ class FlashcardRepository:
         try:
             res = (
                 self.supabase.table("flashcard_decks")
-                .select("id, topic, created_at")
+                .select("id, topic, created_at, flashcards(id, difficulty, updated_at)")
                 .eq("user_id", user_id)
                 .order("created_at", desc=True)
                 .limit(limit)
                 .execute()
             )
-            return res.data
+            decks = []
+            for deck in (res.data or []):
+                cards = deck.pop("flashcards", []) or []
+                total_cards = len(cards)
+                known_cards = sum(1 for c in cards if (c.get("difficulty") or 3) <= 2)
+                unknown_cards = sum(1 for c in cards if (c.get("difficulty") or 3) >= 4)
+                mastery_percent = round((known_cards / total_cards) * 100) if total_cards > 0 else 0
+
+                # Last studied date: most recent updated_at across all cards in this deck
+                updated_ats = [c.get("updated_at") for c in cards if c.get("updated_at")]
+                last_studied_at = max(updated_ats) if updated_ats else None
+
+                decks.append({
+                    **deck,
+                    "total_cards": total_cards,
+                    "known_cards": known_cards,
+                    "unknown_cards": unknown_cards,
+                    "mastery_percent": mastery_percent,
+                    "last_studied_at": last_studied_at,
+                })
+            return decks
         except Exception as exc:
             logger.exception("Failed to list flashcard decks")
             raise RepositoryError("Failed to list flashcard decks") from exc

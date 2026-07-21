@@ -27,14 +27,28 @@ class AnalyticsService:
             conv_res = self.supabase.table("conversations").select("id", count="exact").eq("user_id", user_id).execute()
             total_sessions = conv_res.count if conv_res.count else 0
 
-            # Unique topics (from session_topics)
+            # Unique topics — primary: session_topics table (populated by Celery topic extraction)
+            # Fallback: count distinct conversation titles, which are set to the first user message
+            # and act as a reliable proxy for topic diversity when Celery is not running.
             conv_ids = [c["id"] for c in conv_res.data] if conv_res.data else []
             if not conv_ids:
                 unique_topics = 0
             else:
                 topic_res = self.supabase.table("session_topics").select("current_topic").in_("session_id", conv_ids).execute()
                 topics = {t["current_topic"] for t in topic_res.data if t.get("current_topic")}
-                unique_topics = len(topics)
+                if topics:
+                    unique_topics = len(topics)
+                else:
+                    # Fallback: derive topic count from conversation titles.
+                    # Each conversation title is set to the first user message, making it a
+                    # reliable proxy for unique topics studied.
+                    title_res = self.supabase.table("conversations").select("title").eq("user_id", user_id).execute()
+                    unique_titles = {
+                        row["title"].strip().lower()
+                        for row in (title_res.data or [])
+                        if row.get("title") and len(row["title"].strip()) > 3
+                    }
+                    unique_topics = len(unique_titles)
 
             # Streak days
             activity_res = self.supabase.table("chat_messages").select("created_at").eq("user_id", user_id).order("created_at", desc=True).execute()
