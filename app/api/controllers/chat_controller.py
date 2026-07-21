@@ -283,7 +283,8 @@ class ChatController:
                     user_id=auth_session.user_id,
                     remote_addr=request.remote_addr,
                 )
-            response = make_response(redirect("/app/chat"))
+            frontend_url = self.settings.frontend_origins[0] if self.settings.frontend_origins else request.host_url.rstrip('/')
+            response = make_response(redirect(f"{frontend_url}/app/chat"))
             return response
         except Exception as exc:
             logger.exception("Failed to exchange Google OAuth code")
