@@ -43,7 +43,7 @@ class AppSettings:
     pinecone_region: str = "us-east-1"
     document_chunk_size: int = 500
     document_chunk_overlap: int = 100
-    max_indexed_chunks: int = 500
+    max_indexed_chunks: int = 20000
     session_history_ttl_seconds: int = 60 * 60
     redis_url: str | None = None
     require_redis: bool = False
@@ -112,6 +112,7 @@ def get_settings() -> AppSettings:
         redis_url=os.getenv("REDIS_URL"),
         require_redis=os.getenv("REQUIRE_REDIS", "false").lower() in {"1", "true", "yes"},
         relevance_score_threshold=float(os.getenv("RELEVANCE_SCORE_THRESHOLD", "0.55")),
+        max_indexed_chunks=int(os.getenv("MAX_INDEXED_CHUNKS", "20000")),
         max_content_length_bytes=int(os.getenv("MAX_CONTENT_LENGTH_BYTES", str(10 * 1024 * 1024 + 4096))),
         max_chat_message_length=int(os.getenv("MAX_CHAT_MESSAGE_LENGTH", "4000")),
         login_rate_limit=int(os.getenv("LOGIN_RATE_LIMIT", "5")),

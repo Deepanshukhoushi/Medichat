@@ -262,16 +262,7 @@ class ChatService:
                 yield f"data: {{\"token\": \"{safe_chunk}\"}}\n\n"
             stream_completed = True
             
-            # ── 4. Suffix ────────────────────────────────────────────────────────
-            suffix = (
-                self.settings.indexed_answer_suffix
-                if relevant_documents
-                else self.settings.general_answer_suffix
-            )
-            if not full_answer.endswith(suffix):
-                full_answer = f"{full_answer}\n\n{suffix}"
-                safe_suffix = f"\\n\\n{suffix}".replace('"', '\\"')
-                yield f"data: {{\"token\": \"{safe_suffix}\"}}\n\n"
+            # ── 4. Suffix (Removed) ──────────────────────────────────────────────
 
             # ── 5. Persist to database ───────────────────────────────────────────
             if self.memory_service and not resolved_conversation_id.startswith(
@@ -302,24 +293,7 @@ class ChatService:
                     logger.warning("Persistence degraded: %s", exc)
                     yield f"data: {{\"warning\": \"Persistence degraded — your messages may not be saved.\"}}\n\n"
 
-            # ── 6. Emit structured citation sources ──────────────────────────────
-            if relevant_documents:
-                import json as _json
-                sources = []
-                seen: set[str] = set()
-                for doc in relevant_documents:
-                    meta = getattr(doc, "metadata", {}) or {}
-                    source_name = meta.get("source", "Medical Reference")
-                    page = meta.get("page")
-                    # Derive a human-readable title from the filename (strip path + ext)
-                    title = source_name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
-                    title = title.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
-                    chapter = f"Page {page}" if page is not None else "Reference"
-                    key = f"{source_name}:{page}"
-                    if key not in seen:
-                        seen.add(key)
-                        sources.append({"title": title, "source": source_name, "chapter": chapter})
-                yield f"data: {_json.dumps({'sources': sources})}\n\n"
+            # ── 6. Emit structured citation sources (Removed) ────────────────────
 
             if already_persisted and 'assistant_msg_id' in locals() and assistant_msg_id:
                 yield f"data: {{\"message_id\": \"{assistant_msg_id}\"}}\n\n"
@@ -345,14 +319,7 @@ class ChatService:
 
             try:
                 persisted_answer = full_answer
-                if stream_completed:
-                    suffix = (
-                        self.settings.indexed_answer_suffix
-                        if relevant_documents
-                        else self.settings.general_answer_suffix
-                    )
-                    if not persisted_answer.endswith(suffix):
-                        persisted_answer = f"{persisted_answer}\n\n{suffix}"
+                # Suffix removed
 
                 if is_regenerate and hasattr(self.memory_service.chat_history_repository, "delete_latest_exchange"):
                     self.memory_service.chat_history_repository.delete_latest_exchange(
@@ -444,13 +411,6 @@ class ChatService:
                 answer = (
                     response.content if hasattr(response, "content") else str(response)
                 ).strip()
-                suffix = (
-                    self.settings.indexed_answer_suffix
-                    if relevant_documents
-                    else self.settings.general_answer_suffix
-                )
-                if not answer.endswith(suffix):
-                    answer = f"{answer}\n\n{suffix}"
                 return answer
             except concurrent.futures.TimeoutError:
                 logger.warning("Memory-aware LLM call timed out after %s seconds", self.settings.llm_timeout_seconds)
@@ -488,8 +448,6 @@ class ChatService:
                 else:
                     answer = str(response).strip()
 
-                if not answer.endswith(self.settings.indexed_answer_suffix):
-                    answer = f"{answer}\n\n{self.settings.indexed_answer_suffix}"
                 return answer
             except concurrent.futures.TimeoutError:
                 logger.warning("QA chain fallback timed out after %s seconds", self.settings.llm_timeout_seconds)
@@ -503,7 +461,7 @@ class ChatService:
                     f"Context: {context_text}\n\nQuestion: {user_input}\n\n"
                     "If the context is not enough, use general medical knowledge and say so clearly."
                 )
-                answer = f"{str(response.content).strip()}\n\n{self.settings.indexed_answer_suffix}"
+                answer = str(response.content).strip()
                 return answer
 
         # ── Bare LLM (no docs retrieved) ────────────────────────────────────
@@ -512,6 +470,4 @@ class ChatService:
             f"Question: {user_input}\n\n"
             "The question was not matched in the indexed medical database."
         )
-        return (
-            f"{str(response.content).strip()}\n\n{self.settings.general_answer_suffix}"
-        )
+        return str(response.content).strip()

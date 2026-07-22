@@ -138,8 +138,21 @@ def rebuild_index(settings: AppSettings, documents, force: bool = False) -> Pine
         spec=ServerlessSpec(cloud=settings.pinecone_cloud, region=settings.pinecone_region),
     )
 
-    return PineconeVectorStore.from_documents(
-        documents=documents,
-        embedding=create_embeddings(settings),
+    import time
+    print(f"Waiting 10 seconds for Pinecone index '{settings.index_name}' to initialize...")
+    time.sleep(10)
+    
+    vector_store = PineconeVectorStore(
         index_name=settings.index_name,
+        embedding=create_embeddings(settings),
     )
+    
+    batch_size = 200
+    for i in range(0, len(documents), batch_size):
+        batch = documents[i:i + batch_size]
+        vector_store.add_documents(batch)
+        if i + batch_size < len(documents):
+            print(f"Added {i + len(batch)}/{len(documents)} chunks. Waiting 25s for Cohere API rate limits...")
+            time.sleep(25)
+            
+    return vector_store

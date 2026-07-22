@@ -4,6 +4,9 @@ import argparse
 import sys
 from pathlib import Path
 
+# Add the project root to the Python path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from app.core.config.settings import get_settings
 from app.rag.document_loader import load_pdf_documents, split_documents
 from app.rag.vector_store import rebuild_index

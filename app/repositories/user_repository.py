@@ -69,6 +69,7 @@ class UserRepository:
                     },
                 }
             )
+            logger.warning(f"SUPABASE GENERATED URL: {res.url}")
             return res.url
         except Exception as exc:
             logger.exception("Failed to get Google OAuth URL")
