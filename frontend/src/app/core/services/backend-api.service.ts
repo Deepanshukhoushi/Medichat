@@ -107,7 +107,11 @@ export class BackendApiService {
         signal: abortSignal
       }).then(async response => {
         if (!response.ok) {
-          observer.error(`Server error: ${response.status} ${response.statusText}`);
+          if (response.status === 504) {
+            observer.error('The server is waking up (this can take up to 50 seconds on the free tier). Please try again in a moment.');
+          } else {
+            observer.error(`Server error: ${response.status} ${response.statusText}`);
+          }
           return;
         }
 

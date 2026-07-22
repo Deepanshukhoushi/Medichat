@@ -322,9 +322,9 @@ class ChatService:
                 yield f"data: {_json.dumps({'sources': sources})}\n\n"
 
             if already_persisted and 'assistant_msg_id' in locals() and assistant_msg_id:
-                yield f"data: {{\"token\": \"[DONE]\", \"message_id\": \"{assistant_msg_id}\"}}\n\n"
-            else:
-                yield "data: [DONE]\n\n"
+                yield f"data: {{\"message_id\": \"{assistant_msg_id}\"}}\n\n"
+            
+            yield "data: [DONE]\n\n"
 
         except Exception as exc:
             logger.exception("Failed to stream answer")
@@ -402,9 +402,12 @@ class ChatService:
         try:
             for chunk in self.llm.stream(enriched_prompt):
                 yield chunk.content if hasattr(chunk, "content") else str(chunk)
-        except Exception:
+        except Exception as e:
             logger.exception("LLM stream failed")
-            yield "Sorry, I encountered an error while streaming the response."
+            if "429" in str(e) or "too_many_requests" in str(e).lower() or "too many requests" in str(e).lower():
+                yield "I am currently receiving too many requests. Please wait a moment and try again."
+            else:
+                yield "Sorry, I encountered an error while streaming the response."
 
     def _generate_answer(
         self,
