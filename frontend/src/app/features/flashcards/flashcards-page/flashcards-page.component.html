@@ -11,13 +11,13 @@
         <form [formGroup]="form" (ngSubmit)="generateDeck()" class="mt-6 flex flex-wrap items-end gap-4">
           <div class="flex-1">
             <label class="mb-1 block text-sm font-medium">Topic</label>
-            <input type="text" formControlName="topic" class="w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 py-2 text-[13px] outline-none transition-all duration-300 shadow-sm placeholder:text-muted/50 hover:bg-ink/[0.04] hover:border-line/[0.15] focus:border-accent focus:bg-ink/[0.02]" placeholder="e.g. Nephrotic Syndrome">
+            <input type="text" formControlName="topic" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]" placeholder="e.g. Nephrotic Syndrome">
           </div>
           <div class="w-24">
             <label class="mb-1 block text-sm font-medium">Count</label>
-            <input type="number" formControlName="count" class="w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 py-2 text-[13px] outline-none transition-all duration-300 shadow-sm placeholder:text-muted/50 hover:bg-ink/[0.04] hover:border-line/[0.15] focus:border-accent focus:bg-ink/[0.02]">
+            <input type="number" formControlName="count" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]">
           </div>
-          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="primary-button disabled:opacity-50 disabled:hover:brightness-100 disabled:active:scale-100">
             {{ isGenerating() ? 'Generating...' : 'Generate' }}
           </button>
         </form>
@@ -29,7 +29,7 @@
       @if (isLoadingDecks()) {
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           @for (_ of [1, 2, 3]; track $index) {
-            <div class="glass-panel surface-outline animate-pulse space-y-4 rounded-[30px] p-6">
+            <div class="glass-card animate-pulse space-y-4 p-6">
               <div class="h-4 w-3/4 rounded bg-ink/10"></div>
               <div class="h-3 w-1/2 rounded bg-ink/10"></div>
               <div class="mt-4 border-t border-ink/10 pt-4">
@@ -106,7 +106,7 @@
       </div>
 
       @if (isLoadingDeck()) {
-        <div class="glass-panel surface-outline flex h-[400px] items-center justify-center rounded-[30px]">
+        <div class="glass-card flex h-[400px] items-center justify-center">
           <p class="text-sm text-ink/60">Loading deck...</p>
         </div>
       } @else {
@@ -114,18 +114,15 @@
           tabindex="0"
           (click)="flipCard()"
           (keydown)="handleCardKeydown($event)"
-          class="relative w-full cursor-pointer select-none rounded-[30px] outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-          style="perspective: 1000px; aspect-ratio: 4/3;"
+          class="relative w-full cursor-pointer select-none rounded-[30px] outline-none focus-visible:ring-2 focus-visible:ring-accent/50 perspective-1000 aspect-[4/3]"
         >
           <div
-            class="relative h-full w-full transition-transform duration-500 ease-in-out"
-            style="transform-style: preserve-3d;"
+            class="relative h-full w-full transition-transform duration-500 ease-in-out preserve-3d"
             [style.transform]="isFlipped() ? 'rotateY(180deg)' : 'rotateY(0deg)'"
           >
             <div
-              class="absolute inset-0 flex flex-col items-center justify-center rounded-[30px] p-8 text-center glass-panel surface-outline shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition-all duration-500"
+              class="absolute inset-0 flex flex-col items-center justify-center rounded-[30px] p-8 text-center glass-card shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition-all duration-500 backface-hidden"
               [class.shadow-[0_20px_50px_rgba(0,0,0,0.3)]]="!isFlipped()"
-              style="backface-visibility: hidden; -webkit-backface-visibility: hidden;"
             >
               <span class="mb-4 text-xs font-semibold uppercase tracking-wider text-accent/80">Question</span>
               @if (deck.cards) {
@@ -135,9 +132,8 @@
             </div>
 
             <div
-              class="absolute inset-0 flex flex-col items-center justify-center rounded-[30px] p-8 text-center glass-panel surface-outline shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition-all duration-500"
+              class="absolute inset-0 flex flex-col items-center justify-center rounded-[30px] p-8 text-center glass-card shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition-all duration-500 backface-hidden [transform:rotateY(180deg)]"
               [class.shadow-[0_20px_50px_rgba(0,0,0,0.3)]]="isFlipped()"
-              style="backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg);"
             >
               <span class="mb-4 text-xs font-semibold uppercase tracking-wider text-success/80">Answer</span>
               @if (deck.cards) {
@@ -152,14 +148,14 @@
         <button
           (click)="prevCard()"
           [disabled]="currentCardIndex() === 0"
-          class="rounded-full border border-ink/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"
+          class="secondary-button disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white/5 disabled:active:scale-100"
         >
           Previous
         </button>
         <button
           (click)="nextCard()"
           [disabled]="deck.cards && currentCardIndex() === deck.cards.length - 1"
-          class="rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-30"
+          class="primary-button disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:brightness-100 disabled:active:scale-100"
         >
           Next
         </button>

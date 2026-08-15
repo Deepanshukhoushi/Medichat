@@ -11,13 +11,13 @@
         <form [formGroup]="form" (ngSubmit)="generateQuiz()" class="mt-6 flex flex-wrap items-end gap-4">
           <div class="flex-1">
             <label class="mb-1 block text-sm font-medium">Topic</label>
-            <input type="text" formControlName="topic" class="w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 py-2 text-[13px] outline-none transition-all duration-300 shadow-sm placeholder:text-muted/50 hover:bg-ink/[0.04] hover:border-line/[0.15] focus:border-accent focus:bg-ink/[0.02]" placeholder="e.g. Cardiac Physiology">
+            <input type="text" formControlName="topic" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]" placeholder="e.g. Cardiac Physiology">
           </div>
           <div class="w-24">
             <label class="mb-1 block text-sm font-medium">Questions</label>
-            <input type="number" formControlName="count" class="w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 py-2 text-[13px] outline-none transition-all duration-300 shadow-sm placeholder:text-muted/50 hover:bg-ink/[0.04] hover:border-line/[0.15] focus:border-accent focus:bg-ink/[0.02]">
+            <input type="number" formControlName="count" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]">
           </div>
-          <button type="submit" [disabled]="form.invalid || isGenerating()" class="rounded-[14px] bg-accent/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50">
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="primary-button disabled:opacity-50 disabled:hover:brightness-100 disabled:active:scale-100">
             {{ isGenerating() ? 'Generating...' : 'Generate' }}
           </button>
         </form>
@@ -33,7 +33,7 @@
       @if (isLoading()) {
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           @for (_ of [1, 2, 3]; track $index) {
-            <div class="glass-panel surface-outline animate-pulse space-y-4 rounded-[30px] p-6">
+            <div class="glass-card animate-pulse space-y-4 p-6">
               <div class="h-4 w-3/4 rounded bg-ink/10"></div>
               <div class="h-3 w-1/2 rounded bg-ink/10"></div>
               <div class="h-5 w-16 rounded bg-ink/10"></div>
@@ -132,11 +132,11 @@
               }
             </div>
 
-            <div class="mt-8 flex items-center justify-between gap-3 border-t border-ink/10 pt-4">
+            <div class="mt-8 flex items-center justify-between gap-3 border-t border-ink/10 pt-5">
               <button
                 (click)="prevQuestion()"
                 [disabled]="currentQuestionIndex() === 0"
-                class="rounded-[14px] px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"
+                class="secondary-button disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white/5 disabled:active:scale-100"
                 type="button"
               >
                 Previous
@@ -147,7 +147,7 @@
                   <button
                     (click)="submitQuiz()"
                     [disabled]="!isQuizComplete() || isSubmitting()"
-                    class="rounded-[14px] bg-accent/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent disabled:opacity-50"
+                    class="primary-button disabled:opacity-50 disabled:hover:brightness-100 disabled:active:scale-100"
                     type="button"
                   >
                     {{ isSubmitting() ? 'Submitting...' : 'Submit Quiz' }}
@@ -155,7 +155,7 @@
                   @if (currentQuestionIndex() < quiz.questions.length - 1) {
                     <button
                       (click)="nextQuestion()"
-                      class="rounded-[14px] bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
+                      class="secondary-button"
                       type="button"
                     >
                       Next
@@ -164,14 +164,14 @@
                 } @else {
                   <button
                     (click)="restartQuiz()"
-                    class="rounded-[14px] bg-accent/80 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent"
+                    class="primary-button"
                     type="button"
                   >
                     Retry Quiz
                   </button>
                   <button
                     (click)="closeQuiz()"
-                    class="rounded-[14px] bg-ink/5 px-5 py-2 text-sm font-medium transition-colors hover:bg-ink/10"
+                    class="secondary-button"
                     type="button"
                   >
                     New Quiz
