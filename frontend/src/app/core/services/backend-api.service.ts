@@ -7,9 +7,10 @@ import { RuntimeConfigService } from './runtime-config.service';
 import { SKIP_GLOBAL_ERROR } from '../interceptors/skip-global-error.token';
 
 export interface BackendHealthResponse {
-  status: 'healthy' | 'degraded';
-  service: string;
-  checks: Record<string, string>;
+  /** 'ok' from the current lightweight liveness probe. */
+  status: 'ok' | 'healthy' | 'degraded';
+  service?: string;
+  checks?: Record<string, string>;
 }
 
 export interface AuthResponse {

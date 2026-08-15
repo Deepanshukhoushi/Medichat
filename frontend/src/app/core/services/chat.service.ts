@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { finalize, map, Observable, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, retry, tap, timer } from 'rxjs';
 
 import { BackendApiService, Conversation, TopicMemoryResponse } from './backend-api.service';
 import { ChatCitation, ChatMessage, ConversationSummary } from '../../shared/models/chat.model';
@@ -37,11 +37,25 @@ export class ChatService {
   readonly persistenceDisabled = this.persistenceDisabledSignal.asReadonly();
 
   bootstrap(): void {
-    this.backendApi.getHealth().subscribe({
+    // Retry up to 4 times with a 15-second delay between attempts to survive
+    // Render Free tier cold-start 504s (spin-up can take 30–50 s).
+    this.backendApi.getHealth().pipe(
+      retry({ count: 4, delay: () => timer(15_000) }),
+      catchError(() => of(null)),
+    ).subscribe({
       next: (response) => {
-        this.backendReadySignal.set(response.status === 'healthy' || response.status === 'degraded');
-        // Surface persistence-disabled state so the UI can warn users.
-        const supabaseCheck = (response as any).checks?.supabase;
+        // Accept 'ok' (current lightweight probe), 'healthy', or 'degraded'
+        // (legacy deep-probe values kept for backward compatibility).
+        const ready = !!response && (
+          response.status === 'ok' ||
+          response.status === 'healthy' ||
+          response.status === 'degraded'
+        );
+        this.backendReadySignal.set(ready);
+        // persistenceDisabledSignal: the lightweight /health endpoint no longer
+        // returns a 'checks' payload, so this stays false by default.
+        // Kept in place for future use if a richer probe is re-introduced.
+        const supabaseCheck = response?.checks?.['supabase'];
         this.persistenceDisabledSignal.set(supabaseCheck === 'disabled');
       },
       error: () => {
