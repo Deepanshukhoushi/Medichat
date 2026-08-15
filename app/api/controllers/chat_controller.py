@@ -55,6 +55,12 @@ def _validate_jwt_structure(token: str) -> bool:
 
 
 def _probe_pinecone_health(api_key: str, cache_ttl_seconds: float = _PINECONE_HEALTH_CACHE_TTL_SECONDS) -> bool:
+    """Probe the Pinecone API and cache the result for *cache_ttl_seconds*.
+
+    This helper is **not** called by the /health endpoint.  It is kept as a
+    standalone utility that may be used for diagnostics or background checks,
+    and is covered by the existing TestPineconeHealthProbeCaching test suite.
+    """
     cached = _PINECONE_HEALTH_CACHE.get(api_key)
     now = time.monotonic()
     if cached and (now - cached[0]) < cache_ttl_seconds:
@@ -408,55 +414,16 @@ class ChatController:
 
 
     def health(self):
-        checks: dict[str, str] = {}
-        all_healthy = True
-        timeout = 3.0
+        """Lightweight liveness probe — no DB, AI, or external calls.
 
-        # --- Pinecone ---
-        try:
-            if _probe_pinecone_health(self.settings.pinecone_api_key):
-                checks["pinecone"] = "ok"
-            else:
-                raise RuntimeError("pinecone health check failed")
-        except Exception as exc:
-            logger.warning("Health check: Pinecone unreachable: %s", exc)
-            checks["pinecone"] = "error"
-            all_healthy = False
+        Returns HTTP 200 with ``{"status": "ok"}`` to confirm that the Flask
+        application is running and accepting requests.  Intended for uptime
+        monitors such as UptimeRobot and Render's health-check facility.
 
-        # --- Cohere ---
-        try:
-            import httpx
-            resp = httpx.get("https://api.cohere.com", timeout=timeout)
-            checks["cohere"] = "ok" if resp.status_code < 500 else "error"
-            if checks["cohere"] == "error":
-                all_healthy = False
-        except Exception as exc:
-            logger.warning("Health check: Cohere unreachable: %s", exc)
-            checks["cohere"] = "error"
-            all_healthy = False
-
-        # --- Supabase (only when persistence is enabled) ---
-        if self.settings.persistence_enabled and self.settings.supabase_url:
-            try:
-                import httpx
-                resp = httpx.get(
-                    f"{self.settings.supabase_url}/rest/v1/",
-                    headers={"apikey": self.settings.supabase_key or ""},
-                    timeout=timeout,
-                )
-                checks["supabase"] = "ok" if resp.status_code < 500 else "error"
-                if checks["supabase"] == "error":
-                    all_healthy = False
-            except Exception as exc:
-                logger.warning("Health check: Supabase unreachable: %s", exc)
-                checks["supabase"] = "error"
-                all_healthy = False
-        else:
-            checks["supabase"] = "disabled"
-
-        status = "healthy" if all_healthy else "degraded"
-        http_status = 200 if all_healthy else 503
-        return jsonify({"status": status, "service": "MediChat API", "checks": checks}), http_status
+        This endpoint intentionally requires no authentication, CSRF token, or
+        session cookie.  It must not be guarded by ``_require_auth``.
+        """
+        return jsonify({"status": "ok"}), 200
 
     def spa(self, path: str):
         spa_root = Path(__file__).resolve().parents[3] / "frontend" / "dist" / "medichat-frontend" / "browser"
