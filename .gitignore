@@ -32,6 +32,7 @@ frontend/dist/
 frontend/.angular/
 
 # AI agent & IDE tooling (auto-generated, not source)
+.agents/
 .claude/
 skills-lock.json
 PRODUCT.md
