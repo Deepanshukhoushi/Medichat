@@ -142,7 +142,7 @@
       </label>
     </div>
 
-    <button class="relative w-full mt-2 flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-accent to-emerald-400 py-2.5 text-sm font-bold text-white transition-all hover:shadow-glow hover:-translate-y-0.5 disabled:opacity-70 disabled:pointer-events-none disabled:transform-none shadow-sm" type="submit" [disabled]="isSubmitting()">
+    <button class="primary-button w-full mt-2" type="submit" [disabled]="isSubmitting()">
       @if (isSubmitting()) {
         <svg class="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V2.5" />
@@ -158,7 +158,7 @@
       <div class="relative px-3 text-[11px] font-medium text-muted bg-surface uppercase tracking-wide">Or</div>
     </div>
 
-    <a class="auth-google-btn mt-4" [href]="googleOAuthUrl">
+    <a class="secondary-button w-full mt-4" [href]="googleOAuthUrl">
       <mc-google-icon class="h-4 w-4" />
       Continue with Google
     </a>
