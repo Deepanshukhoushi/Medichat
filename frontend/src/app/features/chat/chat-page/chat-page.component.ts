@@ -9,12 +9,11 @@ import { ProfileService } from '../../../core/services/profile.service';
 import { appIcons } from '../../../shared/icons/lucide-icons';
 import { ChatComposerComponent } from '../components/chat-composer/chat-composer.component';
 import { ChatMessageComponent } from '../components/chat-message/chat-message.component';
-import { MemoryPanelComponent } from '../components/memory-panel/memory-panel.component';
 
 @Component({
   selector: 'mc-chat-page',
   standalone: true,
-  imports: [FormsModule, LucideDynamicIcon, ChatComposerComponent, ChatMessageComponent, MemoryPanelComponent],
+  imports: [FormsModule, LucideDynamicIcon, ChatComposerComponent, ChatMessageComponent],
   templateUrl: './chat-page.component.html',
   styleUrl: './chat-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

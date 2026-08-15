@@ -1,7 +1,6 @@
-<div class="relative flex h-full flex-col overflow-hidden bg-canvas">
-  <div #scrollContainer class="relative flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-all flex flex-col" (scroll)="onScroll()" style="overflow-anchor: none;">
-    <div class="mx-auto w-full max-w-[860px] px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
-      
+<div class="relative flex h-full flex-col overflow-hidden w-full">
+  <div #scrollContainer class="flex-1 overflow-y-auto px-4 sm:px-6 pt-16 pb-44 scroll-smooth" (scroll)="onScroll()">
+    <div class="max-w-3xl mx-auto w-full flex flex-col gap-6">
       @if (userProfile()?.user_id?.startsWith('guest_')) {
         <div class="flex items-center gap-2.5 rounded-2xl bg-accent/[0.08] border border-accent/[0.12] px-4 py-3 text-sm text-accent mb-4">
           <svg [lucideIcon]="icons.Info" class="h-4 w-4 shrink-0"></svg>
@@ -11,17 +10,17 @@
 
       @if (chatService.isHistoryLoading()) {
         <div class="space-y-8 pt-4">
-          <div class="flex animate-pulse gap-4 opacity-50">
-            <div class="h-8 w-8 rounded-full bg-ink/10 shrink-0 mt-0.5"></div>
+          <div class="flex animate-pulse gap-4 opacity-70">
+            <div class="h-8 w-8 rounded-full bg-surface shrink-0 mt-0.5 border border-line"></div>
             <div class="flex-1 space-y-2.5 py-1">
-              <div class="h-3.5 w-3/4 rounded-full bg-ink/10"></div>
-              <div class="h-3.5 w-5/6 rounded-full bg-ink/10"></div>
-              <div class="h-3.5 w-2/3 rounded-full bg-ink/10"></div>
+              <div class="h-3.5 w-3/4 rounded-full bg-surface border border-line"></div>
+              <div class="h-3.5 w-5/6 rounded-full bg-surface border border-line"></div>
+              <div class="h-3.5 w-2/3 rounded-full bg-surface border border-line"></div>
             </div>
           </div>
-          <div class="flex animate-pulse gap-4 flex-row-reverse opacity-50">
+          <div class="flex animate-pulse gap-4 flex-row-reverse opacity-70">
             <div class="flex-1 space-y-2.5 py-1 flex flex-col items-end">
-              <div class="h-3.5 w-1/2 rounded-full bg-ink/10"></div>
+              <div class="h-3.5 w-1/2 rounded-full bg-surface border border-line"></div>
             </div>
           </div>
         </div>
@@ -39,15 +38,16 @@
 
       } @else if (chatService.messages().length === 0) {
         <!-- ── Landing / Empty state ──────────────────────────────────────── -->
-        <div class="flex-1 flex flex-col items-center justify-center w-full animate-fade-in pb-8">
+        <div class="flex-1 flex flex-col items-center justify-center w-full animate-fade-in pb-8 relative">
 
           <!-- Greeting block -->
-          <div class="w-full max-w-[800px] mx-auto text-center mb-7">
-            <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/[0.08] border border-accent/[0.12] mx-auto shadow-sm">
-              <svg [lucideIcon]="icons.Stethoscope" class="h-5 w-5 text-accent"></svg>
+          <div class="w-full max-w-[800px] mx-auto text-center mb-7 relative z-10">
+            <div class="relative mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 border border-accent/20 mx-auto shadow-sm">
+              <div class="absolute inset-0 rounded-2xl border-2 border-accent/40 animate-[ping_3s_ease-in-out_infinite] opacity-20"></div>
+              <svg [lucideIcon]="icons.Stethoscope" class="h-5 w-5 text-accent relative z-10"></svg>
             </div>
             <h1 class="text-[32px] font-bold text-ink tracking-tight leading-tight">{{ greeting() }}</h1>
-            <p class="text-[15px] text-ink/50 mt-2">What would you like to learn today?</p>
+            <p class="text-[15px] text-muted mt-2">What would you like to learn today?</p>
           </div>
 
           <!-- Hero Composer — same max-width as greeting -->
@@ -56,10 +56,11 @@
           </div>
 
           <!-- Suggestion chips -->
-          <div class="mt-5 flex flex-wrap justify-center gap-2 max-w-[800px] mx-auto">
-            @for (prompt of starterPrompts(); track prompt) {
+          <div class="mt-5 flex flex-wrap justify-center gap-2 max-w-[800px] mx-auto relative z-10">
+            @for (prompt of starterPrompts(); track prompt; let i = $index) {
               <button
-                class="flex items-center gap-1.5 rounded-full border border-line/[0.08] bg-surface/40 px-4 py-2 text-[13px] font-medium text-ink/60 transition-all duration-200 hover:bg-surface hover:border-line/[0.16] hover:text-ink hover:-translate-y-px hover:shadow-sm"
+                class="flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2 text-[13px] font-medium text-secondary transition-all duration-300 hover:bg-hover hover:border-accent/50 hover:text-ink hover:scale-[1.03] active:scale-95 shadow-sm animate-fade-up-spring"
+                [style.animation-delay]="i * 75 + 'ms'"
                 type="button"
                 (click)="insertPrompt(prompt.prompt)"
               >
@@ -71,23 +72,23 @@
 
           <!-- Study progress widget -->
           @if (dashboardStats()?.recent_conversations?.length) {
-            <div class="mt-14 w-full max-w-[600px] mx-auto rounded-2xl border border-line/[0.07] bg-surface/20 p-5 flex items-center justify-between">
+            <div class="mt-14 w-full max-w-[600px] mx-auto rounded-2xl border border-line bg-surface p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
               <div class="flex items-center gap-4">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 shrink-0">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 border border-accent/20 shrink-0">
                   <svg [lucideIcon]="icons.Flame" class="h-5 w-5 text-accent"></svg>
                 </div>
                 <div>
                   <h3 class="text-[14px] font-semibold text-ink">Continue where you left off</h3>
-                  <p class="text-[12px] text-ink/45 mt-0.5">
+                  <p class="text-[12px] text-muted mt-0.5">
                     {{ dashboardStats()!.stats.total_sessions }} session{{ dashboardStats()!.stats.total_sessions === 1 ? '' : 's' }} &bull;
                     {{ dashboardStats()!.stats.unique_topics }} topic{{ dashboardStats()!.stats.unique_topics === 1 ? '' : 's' }}
                   </p>
                   @if (dashboardStats()?.recent_conversations?.[0]?.title) {
-                    <p class="text-[11px] text-ink/30 mt-0.5 truncate max-w-[240px]">Last: {{ dashboardStats()!.recent_conversations[0].title }}</p>
+                    <p class="text-[11px] text-muted/70 mt-0.5 truncate max-w-[240px]">Last: {{ dashboardStats()!.recent_conversations[0].title }}</p>
                   }
                 </div>
               </div>
-              <button class="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-canvas transition-all hover:bg-ink/85 hover:-translate-y-px shadow-sm shrink-0" type="button" (click)="resumeLastChat()">
+              <button class="rounded-xl border border-line bg-hover px-4 py-2 text-sm font-semibold text-ink transition-all hover:bg-sidebar shadow-sm shrink-0" type="button" (click)="resumeLastChat()">
                 Resume
               </button>
             </div>
@@ -96,7 +97,7 @@
 
       } @else {
         <!-- ── Conversation messages ───────────────────────────────────────── -->
-        <div class="space-y-1 pt-2 pb-4">
+        <div class="flex flex-col gap-8 w-full">
           @for (message of chatService.messages(); track message.id; let last = $last) {
             <mc-chat-message 
               [message]="message" 
@@ -113,77 +114,64 @@
     </div>
   </div>
 
-  @if (!isNearBottom() && chatService.messages().length > 0 && !composerFocused()) {
-    <button
-      class="absolute bottom-28 right-6 z-20 flex items-center gap-2 rounded-full border border-line/[0.1] bg-surface/80 backdrop-blur-xl px-4 py-2 text-xs font-medium text-ink/70 shadow-md transition hover:bg-surface hover:text-ink max-sm:bottom-24 max-sm:right-4"
-      type="button"
-      (click)="scrollToBottom()"
-    >
-      <svg [lucideIcon]="icons.ArrowDown" class="h-3.5 w-3.5"></svg>
-      Latest
-    </button>
-  }
-
   @if (chatService.messages().length > 0) {
-    <div class="mx-auto w-full max-w-[860px] px-4 sm:px-6 pb-4 sm:pb-6 pt-2 relative z-10">
-      <mc-memory-panel class="mb-3 block" />
-      <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
-      <!-- Footer hint row -->
-      <div class="mt-2.5 flex items-center justify-between text-[11px] text-ink/35 font-normal">
-        <span>MediChat can make mistakes. Always verify important medical information.</span>
-        <div class="flex items-center gap-3">
-          <span class="hidden sm:block">Enter to send &bull; Shift+Enter for new line</span>
-          <button 
-            class="flex h-5 w-5 items-center justify-center rounded-full border border-ink/[0.12] text-ink/40 transition hover:bg-ink/[0.06] hover:text-ink/70" 
-            type="button" 
-            (click)="openShortcuts()" 
-            title="Keyboard shortcuts"
-            aria-label="Open keyboard shortcuts"
+    <div class="absolute bottom-0 left-0 right-0 pt-12 pb-4 px-4 bg-gradient-to-t from-canvas via-canvas/90 to-transparent pointer-events-none z-20">
+      <div class="pointer-events-auto max-w-3xl mx-auto w-full relative">
+        @if (!isNearBottom() && !composerFocused()) {
+          <button
+            class="absolute -top-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-xs font-medium text-secondary shadow-md transition hover:bg-hover hover:text-ink"
+            type="button"
+            (click)="scrollToBottom()"
           >
-            <svg [lucideIcon]="icons.CircleHelp" class="h-3.5 w-3.5"></svg>
+            <svg [lucideIcon]="icons.ArrowDown" class="h-3.5 w-3.5"></svg>
+            Latest
           </button>
+        }
+        <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
+        <div class="text-center text-xs text-slate-500 mt-2 pointer-events-none">
+          MediChat can make mistakes. Always verify important medical info.
         </div>
       </div>
     </div>
   }
 
   @if (showShortcuts()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-4 py-6" role="presentation" (click)="closeShortcuts()" (keydown.escape)="closeShortcuts()" tabindex="-1">
-      <div class="w-full max-w-lg rounded-[28px] border border-white/10 bg-canvas p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6 animate-fade-in" role="presentation" (click)="closeShortcuts()" (keydown.escape)="closeShortcuts()" tabindex="-1">
+      <div class="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title" (click)="$event.stopPropagation()">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink/40">Composer help</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Composer help</p>
             <h2 id="shortcuts-title" class="mt-1 text-xl font-semibold text-ink">Keyboard shortcuts</h2>
           </div>
-          <button class="rounded-full p-2 text-ink/50 transition hover:bg-ink/5 hover:text-ink" type="button" (click)="closeShortcuts()" aria-label="Close keyboard shortcuts">
+          <button class="rounded-full p-2 text-muted transition hover:bg-hover hover:text-ink" type="button" (click)="closeShortcuts()" aria-label="Close keyboard shortcuts">
             <svg [lucideIcon]="icons.X" class="h-4 w-4"></svg>
           </button>
         </div>
 
-        <div class="mt-5 space-y-3 text-sm text-ink/75">
-          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+        <div class="mt-5 space-y-3 text-sm text-secondary">
+          <div class="flex items-center justify-between gap-4 rounded-xl bg-sidebar border border-line px-4 py-3">
             <span>Send message</span>
-            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Enter</kbd>
+            <kbd class="rounded-md bg-hover px-2 py-1 font-mono text-xs text-secondary border border-line">Enter</kbd>
           </div>
-          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+          <div class="flex items-center justify-between gap-4 rounded-xl bg-sidebar border border-line px-4 py-3">
             <span>New line</span>
-            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Shift + Enter</kbd>
+            <kbd class="rounded-md bg-hover px-2 py-1 font-mono text-xs text-secondary border border-line">Shift + Enter</kbd>
           </div>
-          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+          <div class="flex items-center justify-between gap-4 rounded-xl bg-sidebar border border-line px-4 py-3">
             <span>Clear composer</span>
-            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Ctrl / Cmd + K</kbd>
+            <kbd class="rounded-md bg-hover px-2 py-1 font-mono text-xs text-secondary border border-line">Ctrl / Cmd + K</kbd>
           </div>
-          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+          <div class="flex items-center justify-between gap-4 rounded-xl bg-sidebar border border-line px-4 py-3">
             <span>Close composer / modal</span>
-            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">Esc</kbd>
+            <kbd class="rounded-md bg-hover px-2 py-1 font-mono text-xs text-secondary border border-line">Esc</kbd>
           </div>
-          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+          <div class="flex items-center justify-between gap-4 rounded-xl bg-sidebar border border-line px-4 py-3">
             <span>Focus composer</span>
-            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">/</kbd>
+            <kbd class="rounded-md bg-hover px-2 py-1 font-mono text-xs text-secondary border border-line">/</kbd>
           </div>
-          <div class="flex items-center justify-between gap-4 rounded-2xl bg-ink/5 px-4 py-3">
+          <div class="flex items-center justify-between gap-4 rounded-xl bg-sidebar border border-line px-4 py-3">
             <span>Open this help panel</span>
-            <kbd class="rounded-md bg-canvas px-2 py-1 font-mono text-xs text-ink/60">?</kbd>
+            <kbd class="rounded-md bg-hover px-2 py-1 font-mono text-xs text-secondary border border-line">?</kbd>
           </div>
         </div>
       </div>
