@@ -8,21 +8,23 @@
   color-scheme: dark;
 
   /* Text */
-  --color-ink: 255 255 255;
-  --color-muted: 161 161 170;
+  --color-ink: 249 250 251; /* #F9FAFB */
+  --color-secondary: 209 213 219; /* #D1D5DB */
+  --color-muted: 156 163 175; /* #9CA3AF */
   --color-placeholder: 107 114 128;
 
   /* Backgrounds */
-  --color-canvas: 13 17 23; /* #0D1117 */
-  --color-surface: 22 27 34; /* #161B22 */
-  --color-sidebar: 13 17 23; /* Seamless with canvas */
+  --color-canvas: 11 17 32; /* #0B1120 */
+  --color-sidebar: 17 24 39; /* #111827 */
+  --color-surface: 31 41 55; /* #1F2937 */
+  --color-hover: 39 53 73; /* #273549 */
 
   /* Borders */
-  --color-line: 255 255 255; /* Use with /8 opacity for borders */
+  --color-line: 55 65 81; /* #374151 */
 
   /* Brand/Accents */
-  --color-accent: 0 208 132;
-  --color-accent-hover: 0 230 145;
+  --color-accent: 20 184 166; /* #14B8A6 */
+  --color-accent-hover: 45 212 191; /* #2DD4BF */
 
   /* States */
   --color-success: 22 163 74;
@@ -82,7 +84,7 @@ body {
 
 body {
   @apply bg-canvas text-ink antialiased transition-colors duration-500;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   margin: 0;
 }
 
@@ -155,95 +157,64 @@ body {
     @apply relative mx-auto min-h-screen px-4 pb-8 pt-4 sm:px-6 lg:px-8;
   }
 
-  .glass-panel {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 18px;
-    box-shadow: theme('boxShadow.glass');
-  }
-  
-  @supports (backdrop-filter: blur(20px)) {
-    .glass-panel {
-      backdrop-filter: blur(var(--surface-blur));
-      -webkit-backdrop-filter: blur(var(--surface-blur));
-    }
-  }
-  @supports not (backdrop-filter: blur(20px)) {
-    .glass-panel {
-      background: rgba(14, 18, 30, 0.95);
-    }
+  .glass-card {
+    @apply bg-surface/60 backdrop-blur-xl border border-white/5 shadow-lg rounded-xl;
   }
 
-  .surface-outline {
-    border: 1px solid var(--color-line);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-
-  .glass-panel:hover {
-    box-shadow: theme('boxShadow.glassHover');
+  .glass-card-interactive {
+    @apply bg-surface/60 backdrop-blur-xl border border-white/5 rounded-xl cursor-pointer hover:bg-surface/80 hover:border-accent/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(20,184,166,0.15)];
   }
 
   .glass-sidebar {
-    background: var(--glass-bg);
-    border-right: 1px solid var(--glass-border);
-    border-radius: 22px;
-  }
-  @supports (backdrop-filter: blur(20px)) {
-    .glass-sidebar {
-      backdrop-filter: blur(var(--surface-blur));
-      -webkit-backdrop-filter: blur(var(--surface-blur));
-    }
-  }
-  @supports not (backdrop-filter: blur(20px)) {
-    .glass-sidebar {
-      background: rgba(22, 27, 34, 0.95);
-    }
-  }
-
-  .pill-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-ink transition-colors duration-200;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--glass-border);
-  }
-
-  .pill-button:hover {
-    background: rgba(255,255,255,0.06);
+    @apply border-r border-white/5 bg-sidebar/80 backdrop-blur-xl;
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-medium text-canvas transition-colors duration-200 border border-transparent shadow-sm;
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent to-emerald-400 px-4 text-sm font-bold text-white shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] hover:-translate-y-0.5 active:scale-[0.98];
   }
 
-  .primary-button:hover {
-    @apply bg-ink/90;
+  .secondary-button, .pill-button {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink transition-all hover:bg-hover hover:text-white active:scale-[0.98] shadow-sm hover:shadow;
   }
 
-  .secondary-button {
-    @apply pill-button;
+  .mc-badge {
+    @apply rounded-full bg-surface border border-line px-3 py-1 text-xs font-medium text-accent;
   }
 
   .field-shell {
-    @apply glass-panel relative flex items-center rounded-[14px] px-4 py-3;
+    @apply glass-card relative flex items-center px-4 py-3;
+  }
+
+  /* 3D Transform Utilities */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .floating-grid {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 28px 28px;
+    display: none;
   }
 
   /* Shared Auth Styles */
-  .auth-input {
-    @apply w-full rounded-[14px] border border-white/[0.08] bg-[#1A1F2B] px-4 h-11 text-sm text-white outline-none placeholder-[#6B7280] focus:border-accent focus-visible:ring-2 focus-visible:ring-accent/50 transition-all;
+  .auth-input, .auth-form input {
+    @apply w-full rounded-xl border border-line bg-surface px-4 h-11 text-sm text-ink outline-none placeholder-muted focus-within:ring-2 focus-within:ring-accent focus:border-accent focus-visible:ring-2 focus-visible:ring-accent transition-all shadow-sm;
+  }
+  .auth-form .relative:focus-within .input-icon {
+    @apply text-accent;
   }
 
   .auth-toggle {
-    @apply absolute inset-y-0 right-3 my-auto flex items-center justify-center rounded-md px-2 text-xs font-medium text-white/60 transition hover:text-white focus-visible:ring-2 focus-visible:ring-accent/50;
+    @apply absolute inset-y-0 right-3 my-auto flex items-center justify-center rounded-md px-2 text-xs font-medium text-secondary transition hover:text-ink focus-visible:ring-2 focus-visible:ring-accent;
   }
 
   .auth-google-btn {
-    @apply flex w-full items-center justify-center gap-3 rounded-[14px] border border-white/[0.08] bg-[#161B22] h-11 text-sm font-medium text-white transition hover:bg-white/5 no-underline shadow-sm;
+    @apply flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface h-11 text-sm font-medium text-ink transition hover:bg-hover no-underline shadow-sm;
   }
 }
 
@@ -337,13 +308,14 @@ body {
   }
 
   blockquote {
-    border-left: 3px solid rgb(var(--color-accent) / 0.5);
-    background: rgb(var(--color-accent) / 0.04);
-    padding: 0.75em 1em;
-    margin: 1.25em 0;
-    border-radius: 0 10px 10px 0;
-    color: rgb(var(--color-ink) / 0.75);
+    background: rgba(4, 47, 46, 0.2); /* bg-emerald-950/20 */
+    border-left: 4px solid rgb(16, 185, 129); /* border-emerald-500 */
+    padding: 1em 1.2em;
+    margin: 1.5em 0;
+    border-radius: 0 12px 12px 0;
+    color: rgb(209, 250, 229); /* text-emerald-100 */
     font-size: 14px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     
     p {
       margin-bottom: 0.4em;
@@ -351,12 +323,12 @@ body {
     }
     
     strong {
-      color: rgb(var(--color-accent));
-      font-size: 11px;
+      color: rgb(52, 211, 153); /* text-emerald-400 */
+      font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       display: block;
-      margin-bottom: 0.35em;
+      margin-bottom: 0.4em;
     }
   }
 
@@ -389,32 +361,23 @@ body {
   }
 
   table {
-    width: 100%;
-    text-align: left;
-    border-collapse: collapse;
-    margin: 1.25em 0;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid rgb(var(--color-line) / 0.08);
-    font-size: 14px;
+    @apply w-full text-left border-collapse my-4 overflow-hidden rounded-xl border border-line bg-surface shadow-md;
+    
+    thead {
+      @apply bg-sidebar border-b border-line text-xs font-semibold uppercase tracking-wider text-secondary;
+    }
     
     th {
-      background: rgb(var(--color-surface) / 0.6);
-      padding: 0.65em 0.9em;
-      font-weight: 600;
-      font-size: 13px;
-      border-bottom: 1px solid rgb(var(--color-line) / 0.08);
-      color: rgb(var(--color-ink) / 0.9);
+      @apply px-4 py-3 text-left;
+    }
+    
+    tr {
+      @apply border-b border-line last:border-b-0 hover:bg-hover transition-colors;
     }
     
     td {
-      padding: 0.6em 0.9em;
-      border-bottom: 1px solid rgb(var(--color-line) / 0.05);
-      color: rgb(var(--color-ink) / 0.78);
+      @apply px-4 py-3 text-sm text-secondary text-left;
     }
-    
-    tr:last-child td { border-bottom: 0; }
-    tr:nth-child(even) { background: rgb(var(--color-line) / 0.02); }
   }
 }
 

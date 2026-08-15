@@ -1,4 +1,4 @@
-<div class="flex h-screen w-full bg-canvas text-ink font-sans selection:bg-accent/30 selection:text-white overflow-hidden">
+<div class="flex h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-black text-ink font-sans selection:bg-accent/30 selection:text-white overflow-hidden">
   
   <!-- Left Side: Marketing Panel -->
   <div class="hidden lg:flex relative w-1/2 flex-col justify-between overflow-hidden bg-[#070B14] p-8 lg:p-12">
@@ -8,7 +8,7 @@
       <div class="absolute inset-0 floating-grid opacity-20"></div>
       
       <div class="absolute top-0 left-0 h-[400px] w-[400px] rounded-full bg-accent/20 blur-[120px] animate-blob"></div>
-      <div class="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-[#8B5CF6]/20 blur-[120px] animate-blob" style="animation-delay: 3s;"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-accent/20 blur-[120px] animate-blob delay-[3s]"></div>
     </div>
 
     <!-- Top Logo & Badges -->
@@ -18,7 +18,7 @@
       <div class="flex flex-col gap-3 mt-4">
         <h1 class="text-[36px] font-display font-extrabold text-white tracking-tight leading-[1.1]">
           Learn Medicine,<br />
-          <span class="bg-gradient-to-r from-accent to-emerald-400 bg-clip-text text-transparent">Faster & Smarter.</span>
+          <span class="text-accent">Faster & Smarter.</span>
         </h1>
         <p class="text-[15px] text-white/70 max-w-sm leading-relaxed">
           The premium AI medical assistant for students and professionals.
@@ -44,7 +44,7 @@
 
     <!-- Center Interactive Mockup (Shrunk down) -->
     <div class="relative z-10 flex-1 flex items-end justify-start pt-12 pb-4">
-      <div class="w-full max-w-[360px] rounded-[20px] border border-white/10 bg-white/[0.03] p-3 shadow-2xl backdrop-blur-xl animate-fade-up" style="animation-delay: 0.1s;">
+      <div class="w-full max-w-[360px] rounded-[20px] border border-white/10 bg-white/[0.03] p-3 shadow-2xl backdrop-blur-xl animate-fade-up delay-100">
         <!-- Window Header -->
         <div class="mb-3 flex items-center gap-1.5 border-b border-white/5 pb-3">
           <div class="h-2 w-2 rounded-full bg-white/20"></div>
@@ -66,9 +66,9 @@
             </div>
             <div class="space-y-2 rounded-xl rounded-bl-sm border border-white/5 bg-white/[0.02] p-3 text-[12px] text-white/80 w-full">
               <p class="leading-snug">Diabetes Mellitus involves absolute or relative insulin deficiency...</p>
-              <div class="flex items-center gap-1.5 rounded-lg border border-accent/20 bg-accent/10 p-2 mt-2">
-                <svg [lucideIcon]="icons.CheckCircle2" class="h-3 w-3 text-accent"></svg>
-                <p class="text-[10px] font-semibold text-white">2 Flashcards Generated</p>
+              <div class="flex items-center gap-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/20 p-2 mt-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                <svg [lucideIcon]="icons.CheckCircle2" class="h-3 w-3 text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]"></svg>
+                <p class="text-[10px] font-semibold text-white drop-shadow-md">2 Flashcards Generated</p>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@
   </div>
 
   <!-- Right Side: Authentication Panel -->
-  <div class="flex w-full lg:w-1/2 flex-col relative bg-canvas overflow-y-auto">
+  <div class="flex w-full lg:w-1/2 flex-col relative overflow-y-auto">
     <!-- Responsive Header for Mobile -->
     <div class="flex items-center p-6 lg:hidden">
       <mc-app-logo />
@@ -86,7 +86,7 @@
 
     <!-- Centered Auth Card -->
     <div class="flex flex-1 flex-col justify-center items-center px-4 py-4 sm:px-6 relative z-10 min-h-0">
-      <div class="w-full max-w-[380px] sm:max-w-[420px] rounded-2xl border border-line/[0.08] bg-surface p-5 sm:p-6 shadow-glass backdrop-blur-2xl transition-all duration-300 animate-fade-up">
+      <div class="glass-card w-full max-w-[380px] sm:max-w-[420px] p-5 sm:p-6 animate-fade-up">
         <router-outlet></router-outlet>
       </div>
     </div>

@@ -6,15 +6,17 @@ module.exports = {
     extend: {
       fontFamily: {
         display: ["'General Sans'", "sans-serif"],
-        sans: ["'Inter'", "sans-serif"]
+        sans: ["'Plus Jakarta Sans'", "sans-serif"]
       },
       colors: {
         ink: "rgb(var(--color-ink) / <alpha-value>)",
+        secondary: "rgb(var(--color-secondary) / <alpha-value>)",
         muted: "rgb(var(--color-muted) / <alpha-value>)",
         placeholder: "rgb(var(--color-placeholder) / <alpha-value>)",
         canvas: "rgb(var(--color-canvas) / <alpha-value>)",
         surface: "rgb(var(--color-surface) / <alpha-value>)",
         sidebar: "rgb(var(--color-sidebar) / <alpha-value>)",
+        hover: "rgb(var(--color-hover) / <alpha-value>)",
         line: "rgb(var(--color-line) / <alpha-value>)",
         accent: "rgb(var(--color-accent) / <alpha-value>)",
         accentHover: "rgb(var(--color-accent-hover) / <alpha-value>)",
@@ -35,6 +37,9 @@ module.exports = {
         pulseGlow: "pulseGlow 4s ease-in-out infinite",
         "fade-in": "fadeIn 0.4s ease-out forwards",
         "fade-up": "fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "fade-up-spring": "fadeUpSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
+        "fade-up-smooth": "fadeUpSmooth 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "slide-in-right": "slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "accordion-down": "accordionDown 0.2s ease-out",
         "accordion-up": "accordionUp 0.2s ease-out",
         marquee: "marquee 40s linear infinite",
@@ -48,6 +53,18 @@ module.exports = {
         fadeUp: {
           "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" }
+        },
+        fadeUpSpring: {
+          "0%": { opacity: "0", transform: "translateY(24px) scale(0.95)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" }
+        },
+        fadeUpSmooth: {
+          "0%": { opacity: "0", transform: "translateY(12px) scale(0.98)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" }
+        },
+        slideInRight: {
+          "0%": { opacity: "0", transform: "translateX(20px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" }
         },
         float: {
           "0%, 100%": { transform: "translateY(0px)" },

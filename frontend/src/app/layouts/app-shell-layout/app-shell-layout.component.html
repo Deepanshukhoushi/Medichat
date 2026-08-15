@@ -1,9 +1,9 @@
-<div class="flex h-screen w-full overflow-hidden bg-canvas">
+<div class="flex h-screen w-full overflow-hidden bg-gradient-to-b from-sidebar to-canvas text-ink relative">
   <!-- Floating Sidebar Toggle: hidden whenever sidebar is open to avoid overlapping controls -->
   <div class="absolute top-4 left-4 z-50 flex items-center transition-opacity duration-300"
        [class.opacity-0]="isSidebarOpen()"
        [class.pointer-events-none]="isSidebarOpen()">
-    <button class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line/[0.08] shadow-sm text-ink/70 hover:text-ink hover:bg-ink/5" (click)="toggleSidebar()" title="Open sidebar">
+    <button class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line shadow-sm text-secondary hover:text-ink hover:bg-hover" (click)="toggleSidebar()" title="Open sidebar">
       <svg [lucideIcon]="isMobile() ? icons.Menu : icons.PanelLeftOpen" class="h-5 w-5"></svg>
     </button>
   </div>
@@ -24,8 +24,8 @@
 
   <!-- Left Sidebar (The Notebook) -->
   <aside
-    class="flex flex-col shrink-0 h-full border-r border-line/[0.06] bg-sidebar transition-all duration-300 z-40 overflow-hidden"
-    [class.w-[240px]]="isSidebarOpen()"
+    class="glass-sidebar flex-shrink-0 p-3 flex flex-col justify-between transition-all duration-300 z-40 overflow-hidden h-full"
+    [class.w-64]="isSidebarOpen()"
     [class.w-0]="!isSidebarOpen()"
     [class.fixed]="isMobile()"
     [class.inset-y-0]="isMobile()"
@@ -35,9 +35,9 @@
     [class.pointer-events-none]="!isSidebarOpen() && isMobile()"
   >
     <!-- Mobile Header -->
-    <header class="flex h-14 shrink-0 items-center justify-between border-b border-line/[0.05] bg-canvas/80 px-4 backdrop-blur-xl md:hidden sticky top-0 z-40">
+    <header class="flex h-14 shrink-0 items-center justify-between border-b border-line bg-sidebar px-4 md:hidden sticky top-0 z-40">
       <div class="flex items-center gap-3">
-        <button class="rounded-lg p-1.5 text-ink/60 hover:bg-ink/10 hover:text-ink transition-colors" (click)="toggleSidebar()">
+        <button class="rounded-lg p-1.5 text-secondary hover:bg-hover hover:text-ink transition-colors" (click)="toggleSidebar()">
           <svg [lucideIcon]="icons.Menu" class="h-5 w-5"></svg>
         </button>
         <a routerLink="/" class="flex items-center gap-2 no-underline">
@@ -52,26 +52,26 @@
             <span class="text-[10px] font-semibold uppercase tracking-wider text-accent">Generating</span>
           </div>
         }
-        <button class="rounded-lg p-1.5 text-ink/60 hover:bg-ink/10 hover:text-ink transition-colors" (click)="startNewChat()" title="New Chat">
+        <button class="rounded-lg p-1.5 text-secondary hover:bg-hover hover:text-ink transition-colors" (click)="startNewChat()" title="New Chat">
           <svg [lucideIcon]="icons.Plus" class="h-5 w-5"></svg>
         </button>
       </div>
     </header>
 
     <!-- Header -->
-    <div class="flex items-center justify-between gap-3 p-3 shrink-0 overflow-hidden w-[240px]">
+    <div class="flex w-full shrink-0 items-center justify-between gap-3 overflow-hidden px-4 py-4">
       <a routerLink="/" class="flex items-center gap-2.5 no-underline">
         <app-logo size="32"></app-logo>
-        <span class="font-display text-[17px] font-bold tracking-tight text-ink leading-none mt-0.5">MediChat</span>
+        <span class="mt-0.5 font-display text-[17px] font-bold leading-none tracking-tight text-ink">MediChat</span>
       </a>
-      <button class="rounded-lg p-1.5 text-ink/50 hover:bg-ink/10 hover:text-ink transition-colors" type="button" [attr.aria-label]="sidebarLabel()" (click)="toggleSidebar()">
+      <button class="rounded-lg p-1.5 text-muted transition-colors hover:bg-hover hover:text-ink" type="button" [attr.aria-label]="sidebarLabel()" (click)="toggleSidebar()">
         <svg [lucideIcon]="icons.PanelLeftClose" class="h-4 w-4"></svg>
       </button>
     </div>
 
     <!-- New Chat / Action Button -->
-    <div class="px-3 pb-3 shrink-0 overflow-hidden w-[240px]">
-      <button class="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-accent bg-accent/[0.08] transition-colors hover:bg-accent/[0.12] border border-accent/[0.05]" type="button" (click)="startNewChat()">
+    <div class="w-full shrink-0 overflow-hidden px-4 pb-4">
+      <button class="group flex h-9 w-full items-center gap-2.5 rounded-lg border border-accent/20 bg-accent/10 px-3 text-sm font-medium text-accent transition-all duration-200 hover:bg-accent/20 active:scale-[0.98]" type="button" (click)="startNewChat()">
         <svg [lucideIcon]="icons.Plus" class="h-4 w-4 shrink-0 transition-transform group-hover:scale-110"></svg>
         <span class="flex-1 text-left">New Chat</span>
         <svg [lucideIcon]="icons.SquarePen" class="h-3.5 w-3.5 opacity-50 transition-opacity group-hover:opacity-80"></svg>
@@ -79,19 +79,19 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="px-3 pb-2 shrink-0 overflow-hidden w-[240px]">
+    <nav class="w-full shrink-0 overflow-hidden px-2 pb-2">
       <div class="space-y-0.5">
         @for (item of navItems; track item.route) {
           <a
             [routerLink]="item.route"
-            class="group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink/60 no-underline transition-all hover:bg-ink/[0.04] hover:text-ink"
-            [class.bg-ink/[0.05]]="isActiveRoute(item.route)"
-            [class.text-ink]="isActiveRoute(item.route)"
+            class="group flex h-9 items-center gap-2.5 rounded-lg px-2 text-sm font-medium text-secondary no-underline transition-all hover:bg-hover hover:text-ink"
+            [class.bg-accent/10]="isActiveRoute(item.route)"
+            [class.text-accent]="isActiveRoute(item.route)"
             [class.font-semibold]="isActiveRoute(item.route)"
             [title]="isGuestUser() ? 'Sign up to unlock' : item.hint"
           >
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-              <svg [lucideIcon]="item.icon" class="h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-ink/80" [class.text-ink]="isActiveRoute(item.route)"></svg>
+            <div class="flex min-w-0 flex-1 items-center gap-3">
+              <svg [lucideIcon]="item.icon" class="h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-ink/80" [class.text-accent]="isActiveRoute(item.route)"></svg>
               <span class="truncate">{{ item.label }}</span>
             </div>
             @if (isGuestUser()) {
@@ -102,48 +102,48 @@
       </div>
     </nav>
 
-    <div class="my-2 border-t border-line/[0.05] mx-4 shrink-0 overflow-hidden w-[208px]"></div>
+    <div class="mx-4 my-2 shrink-0 border-t border-line"></div>
 
     <!-- Smart History (Recent) -->
-    <div class="min-h-0 flex-1 overflow-y-auto px-2 w-[240px] flex flex-col">
-      <div class="px-2 mb-2 mt-1 shrink-0">
-        <div class="relative flex items-center group/search">
-          <svg [lucideIcon]="icons.Search" class="absolute left-2.5 h-3.5 w-3.5 text-ink/30 transition-colors group-focus-within/search:text-accent"></svg>
+    <div class="flex w-full min-h-0 flex-1 flex-col overflow-y-auto px-2">
+      <div class="mb-2 mt-1 shrink-0 px-2">
+        <div class="group/search relative flex items-center">
+          <svg [lucideIcon]="icons.Search" class="absolute left-2.5 h-3.5 w-3.5 text-muted transition-colors group-focus-within/search:text-accent"></svg>
           <input 
             type="text" 
             placeholder="Search sessions..." 
-            class="w-full rounded-[10px] border border-line/[0.04] bg-ink/[0.02] py-1.5 pl-8 pr-3 text-xs text-ink placeholder:text-ink/30 outline-none transition-all hover:bg-ink/[0.04] focus:border-accent/40 focus:bg-ink/[0.02]"
+            class="h-8 w-full rounded-[10px] border border-line bg-surface pl-8 pr-3 text-xs text-ink outline-none placeholder:text-muted transition-all hover:bg-hover focus:border-accent focus:bg-hover"
             [ngModel]="searchTerm()" 
             (ngModelChange)="searchTerm.set($event)"
           />
         </div>
       </div>
-      <p class="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink/40 shrink-0">Recent</p>
-      <div class="flex flex-col gap-0.5 overflow-y-auto flex-1">
+      <p class="shrink-0 px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">Recent</p>
+      <div class="flex flex-1 flex-col gap-0.5 overflow-y-auto">
         @for (conversation of historyPreview(); track conversation.id) {
-          <div class="group/history relative flex items-center rounded-lg px-2.5 hover:bg-ink/[0.03] transition-colors h-[32px]">
-            <button class="flex flex-1 items-center gap-2.5 px-0 h-full text-left overflow-hidden" type="button" (click)="loadConversation(conversation.id)">
-              <div class="flex-1 min-w-0 pr-6">
-                <span class="block truncate text-[14px] font-medium text-ink/75 group-hover/history:text-ink transition-colors">{{ conversation.title }}</span>
+          <div class="group/history relative flex h-8 items-center rounded-lg px-2 transition-colors hover:bg-hover">
+            <button class="flex h-full flex-1 items-center gap-2.5 overflow-hidden px-0 text-left" type="button" (click)="loadConversation(conversation.id)">
+              <div class="min-w-0 flex-1 pr-6">
+                <span class="block overflow-hidden whitespace-nowrap text-[13px] font-medium text-secondary transition-colors group-hover/history:text-ink" style="-webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%); mask-image: linear-gradient(to right, black 80%, transparent 100%);">{{ conversation.title }}</span>
               </div>
             </button>
-            <div class="absolute right-1.5 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/history:opacity-100 pointer-events-none group-hover/history:pointer-events-auto bg-sidebar from-transparent via-sidebar to-sidebar bg-gradient-to-r rounded-md px-1 z-10">
-              <button class="rounded-md p-1.5 text-ink/40 hover:bg-warning/10 hover:text-warning transition-colors" type="button" title="Delete session" (click)="requestDelete(conversation.id, $event)">
+            <div class="absolute right-1.5 z-10 flex items-center gap-0.5 rounded-md bg-sidebar bg-gradient-to-r from-transparent via-sidebar to-sidebar px-1 opacity-0 transition-opacity pointer-events-none group-hover/history:pointer-events-auto group-hover/history:opacity-100">
+              <button class="rounded-md p-1.5 text-muted transition-colors hover:bg-warning/10 hover:text-warning" type="button" title="Delete session" (click)="requestDelete(conversation.id, $event)">
                 <svg [lucideIcon]="icons.Trash2" class="h-[13px] w-[13px]"></svg>
               </button>
             </div>
           </div>
         }
         @if (isHistoryLoading()) {
-          <div class="px-3 py-3 space-y-3">
-            <div class="h-3 w-3/4 rounded bg-ink/10 animate-pulse"></div>
-            <div class="h-3 w-1/2 rounded bg-ink/10 animate-pulse"></div>
+          <div class="space-y-3 px-3 py-3">
+            <div class="h-3 w-3/4 animate-pulse rounded bg-surface border border-line"></div>
+            <div class="h-3 w-1/2 animate-pulse rounded bg-surface border border-line"></div>
           </div>
         }
 
         @if (filteredHistory().length > 0 && chatService.hasMoreHistorySignal()) {
           <div class="px-2 pb-2">
-            <button class="flex w-full items-center justify-center gap-2 rounded-xl border border-line/[0.08] bg-canvas py-2 text-xs font-semibold text-ink/70 transition-all hover:bg-ink/[0.02] hover:text-ink disabled:opacity-50"
+            <button class="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface py-2 text-xs font-semibold text-secondary transition-all hover:bg-hover hover:text-ink disabled:opacity-50"
                     (click)="chatService.loadMoreHistory()"
                     [disabled]="chatService.isLoadingMoreHistorySignal()">
               @if (chatService.isLoadingMoreHistorySignal()) {
@@ -157,42 +157,42 @@
         }
 
         @if (!isHistoryLoading() && filteredHistory().length === 0) {
-          <p class="px-4 py-2 text-xs text-ink/45">No recent study sessions.</p>
+          <p class="px-4 py-2 text-xs text-muted">No recent study sessions.</p>
         }
         @if (!isHistoryLoading() && chatService.conversationHistory().length >= 30) {
-          <p class="px-3 py-1.5 text-[10px] text-ink/35 text-center">Showing the 30 most recent sessions.</p>
+          <p class="px-3 py-1.5 text-[10px] text-muted text-center">Showing the 30 most recent sessions.</p>
         }
       </div>
     </div>
 
     <!-- User Profile Footer -->
-    <div class="relative shrink-0 border-t border-line/[0.05] p-2 w-[220px] user-menu-container">
+    <div class="user-menu-container relative w-full shrink-0 border-t border-line p-2">
       <button
-        class="flex w-full items-center gap-2.5 rounded-[10px] px-2 py-1.5 transition hover:bg-ink/5"
+        class="flex w-full items-center gap-2 rounded-lg p-1.5 transition hover:bg-hover group"
         type="button"
         (click)="toggleUserMenu()"
       >
-        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink/10 font-bold text-ink text-xs">
+        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface border border-line text-[11px] font-bold text-ink">
           {{ userProfile()?.display_name?.charAt(0)?.toUpperCase() || 'U' }}
         </div>
-        <div class="flex-1 truncate text-left flex flex-col">
-          <span class="text-[13px] font-semibold text-ink">{{ userProfile()?.display_name || 'Medical Student' }}</span>
-          <span class="mt-0.5 inline-flex w-fit items-center rounded-md bg-ink/[0.04] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink/60">Free Plan</span>
+        <div class="flex min-w-0 flex-1 flex-col truncate text-left">
+          <span class="truncate text-xs font-semibold text-ink">{{ userProfile()?.display_name || 'Medical Student' }}</span>
+          <span class="mt-0.5 w-fit rounded bg-surface border border-line px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider text-secondary">Free Plan</span>
         </div>
-        <svg [lucideIcon]="icons.MoreHorizontal" class="h-4 w-4 shrink-0 text-ink/30 transition-colors group-hover:text-ink/60"></svg>
+        <svg [lucideIcon]="icons.MoreHorizontal" class="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-ink"></svg>
       </button>
 
       @if (isUserMenuOpen()) {
-        <div class="absolute bottom-16 left-3 right-3 z-50 overflow-hidden rounded-[14px] border border-line/[0.08] bg-surface/95 backdrop-blur-xl p-1 shadow-glassHover animate-fade-in">
+        <div class="absolute bottom-16 left-3 right-3 z-50 overflow-hidden rounded-[14px] border border-line bg-surface backdrop-blur-xl p-1 shadow-glassHover animate-fade-up-smooth">
           <nav class="space-y-0.5 text-sm">
             @for (item of userNavItems; track item.route) {
               <a
                 [routerLink]="item.route"
                 (click)="closeUserMenu()"
                 [title]="isGuestUser() ? 'Sign up to unlock' : item.hint"
-                class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-ink no-underline transition hover:bg-ink/5"
+                class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-secondary no-underline transition hover:bg-hover hover:text-ink"
               >
-                <svg [lucideIcon]="item.icon" class="h-4 w-4 shrink-0 text-ink/50"></svg>
+                <svg [lucideIcon]="item.icon" class="h-4 w-4 shrink-0 text-muted"></svg>
                 <span class="flex-1 truncate">{{ item.label }}</span>
                 @if (isGuestUser()) {
                   <svg [lucideIcon]="icons.Lock" class="h-3.5 w-3.5 shrink-0 opacity-40"></svg>
@@ -200,7 +200,7 @@
               </a>
             }
           </nav>
-          <div class="my-1 border-t border-line/[0.08] mx-2"></div>
+          <div class="my-1 border-t border-line mx-2"></div>
           <button (click)="logout()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left font-medium text-warning hover:bg-warning/10">
             <svg [lucideIcon]="icons.LogOut" class="h-4 w-4"></svg>
             Log out
@@ -211,7 +211,7 @@
   </aside>
 
   <!-- Center Chat Area -->
-  <main class="flex-1 flex flex-col min-w-0 h-full relative">
+  <main class="flex-1 relative flex flex-col h-full min-w-0 overflow-hidden">
     @if (chatService.persistenceDisabled()) {
       <div class="absolute top-0 inset-x-0 z-20 flex justify-center p-2 pointer-events-none">
         <div class="flex items-center gap-3 rounded-full border border-warning/40 bg-warning/15 px-4 py-1.5 text-xs text-warning backdrop-blur-md shadow-sm pointer-events-auto">
@@ -233,7 +233,7 @@
        <!-- Toggle handled by absolute overlay above -->
     </div>
     
-    <div class="flex-1 min-h-0 w-full bg-canvas shadow-sm">
+    <div class="flex-1 min-h-0 w-full bg-transparent shadow-sm">
       <router-outlet />
     </div>
   </main>
@@ -250,7 +250,7 @@
           Are you sure you want to delete this chat session? This action cannot be undone and you will lose this history.
         </p>
         <div class="flex items-center gap-3 w-full">
-          <button class="flex-1 rounded-xl bg-ink/5 px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-ink/10" type="button" (click)="cancelDelete()">
+          <button class="flex-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-hover hover:text-white" type="button" (click)="cancelDelete()">
             Cancel
           </button>
           <button class="flex-1 rounded-xl bg-error text-white px-4 py-2.5 text-sm font-semibold transition hover:bg-error/90 shadow-sm disabled:opacity-50" type="button" (click)="confirmDelete()" [disabled]="isDeleting()">
