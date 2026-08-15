@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, take } from 'rxjs';
 
 import { ChatService } from './core/services/chat.service';
 import { ThemeService } from './core/services/theme.service';
@@ -17,9 +18,22 @@ export class AppComponent {
   private readonly themeService = inject(ThemeService);
   private readonly chatService = inject(ChatService);
   private readonly toastr = inject(ToastrService);
+  private readonly router = inject(Router);
 
   constructor() {
-    this.chatService.bootstrap();
+    // Only wake up the backend when the user actually navigates into the
+    // authenticated app shell (/app/*). The landing page and auth pages
+    // never need the backend at bootstrap time, so we avoid triggering
+    // Render cold-start 504s on public pages entirely.
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      take(1),
+    ).subscribe((e) => {
+      if (e.urlAfterRedirects.startsWith('/app')) {
+        this.chatService.bootstrap();
+      }
+    });
+
     effect(() => {
       this.themeService.activeTheme();
     });
