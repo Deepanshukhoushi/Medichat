@@ -233,6 +233,44 @@ npm start
 
 ---
 
+## 🩺 Health Check & Uptime Monitoring
+
+### Endpoint
+
+```
+GET /health
+```
+
+Returns HTTP `200 OK` when the API is running and accepting requests:
+
+```json
+{ "status": "ok" }
+```
+
+The endpoint requires **no authentication**, CSRF token, or session cookie. It performs no database queries, no AI calls, and no external service checks — it responds immediately.
+
+### Render Health Check
+
+In your Render dashboard:
+
+```
+Render Dashboard → MediChat API → Settings → Health Check Path → /health
+```
+
+### UptimeRobot Configuration
+
+To reduce Render Free tier inactivity spin-down, configure an UptimeRobot HTTP(S) monitor:
+
+| Setting | Value |
+|---------|-------|
+| Monitor Type | HTTP(S) |
+| URL | `https://<your-render-domain>/health` |
+| Monitoring Interval | Every 5 minutes |
+
+> **Note**: External monitoring provides periodic inbound traffic but does not guarantee continuous uptime. Render's Free tier spin-down behavior and platform limits still apply.
+
+---
+
 ## 🛡️ Security
 
 - **JWT Authentication**: Secured via Supabase Auth and Angular HttpInterceptors.
