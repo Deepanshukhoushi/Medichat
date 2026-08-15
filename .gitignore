@@ -1,15 +1,38 @@
+# Environment & secrets
 .env
+.env.*
+!.env.example
+
+# Python
 venv/
 __pycache__/
 *.pyc
-.idea/
-.vscode/
-Data/
-logs/
+*.pyo
+*.pyd
+.python-version
+
+# Test & lint caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 *.log
+
+# IDE
+.idea/
+.vscode/
+
+# Data directories
+Data/
+logs/
+chroma_data/
+
+# Frontend build artifacts
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
+
+# AI agent & IDE tooling (auto-generated, not source)
+.claude/
+skills-lock.json
+PRODUCT.md
+DESIGN_SYSTEM.md
