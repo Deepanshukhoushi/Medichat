@@ -77,7 +77,13 @@ export class BackendApiService {
   private readonly runtimeConfig = inject(RuntimeConfigService);
 
   get health$(): Observable<BackendHealthResponse> {
-    return this.http.get<BackendHealthResponse>(this.url('/health'), { withCredentials: true });
+    // SKIP_GLOBAL_ERROR: 504 cold-start timeouts are handled silently by the
+    // retry logic in ChatService.bootstrap(). We don't want a toastr "Error"
+    // toast on every retry attempt while Render is waking up.
+    return this.http.get<BackendHealthResponse>(this.url('/health'), {
+      withCredentials: true,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true),
+    });
   }
 
   getHealth(): Observable<BackendHealthResponse> {
