@@ -1,19 +1,23 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-forgot-password-page',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, LucideDynamicIcon],
   templateUrl: './forgot-password-page.component.html',
   styleUrls: ['./forgot-password-page.component.scss', '../auth-page.shared.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForgotPasswordPageComponent {
   private readonly authService = inject(AuthService);
+
+  protected readonly icons = appIcons;
 
   protected readonly email = signal('');
   protected readonly isSubmitting = signal(false);

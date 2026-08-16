@@ -2,13 +2,15 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-reset-password-page',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, LucideDynamicIcon],
   templateUrl: './reset-password-page.component.html',
   styleUrls: ['./reset-password-page.component.scss', '../auth-page.shared.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -21,10 +23,13 @@ export class ResetPasswordPageComponent implements OnInit {
 
   private accessToken = '';
 
+  protected readonly icons = appIcons;
+
   protected readonly password = signal('');
   protected readonly confirmPassword = signal('');
   protected readonly isSubmitting = signal(false);
   protected readonly statusMessage = signal('');
+  protected readonly statusType = signal<'success' | 'error' | null>(null);
   protected readonly isTokenValid = signal(false);
   protected readonly isSuccess = signal(false);
   protected readonly submitted = signal(false);
@@ -62,8 +67,10 @@ export class ResetPasswordPageComponent implements OnInit {
   protected submit(): void {
     this.submitted.set(true);
     this.statusMessage.set('');
+    this.statusType.set(null);
     if (!this.accessToken) {
       this.statusMessage.set('Invalid recovery token. Please request a new link.');
+      this.statusType.set('error');
       return;
     }
 
@@ -89,6 +96,7 @@ export class ResetPasswordPageComponent implements OnInit {
       },
       error: (error: { error?: { error?: string } }) => {
         this.statusMessage.set(error?.error?.error ?? 'Unable to update password right now.');
+        this.statusType.set('error');
         this.isSubmitting.set(false);
       }
     });
