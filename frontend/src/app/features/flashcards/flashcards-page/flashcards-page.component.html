@@ -1,4 +1,4 @@
-<div class="h-full overflow-y-auto space-y-5">
+<div class="h-full overflow-y-auto space-y-5 p-6">
   @if (!activeDeck()) {
     <div class="space-y-5">
       <mc-glass-card>
@@ -10,19 +10,19 @@
 
         <form [formGroup]="form" (ngSubmit)="generateDeck()" class="mt-6 flex flex-wrap items-end gap-4">
           <div class="flex-1">
-            <label class="mb-1 block text-sm font-medium">Topic</label>
-            <input type="text" formControlName="topic" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]" placeholder="e.g. Nephrotic Syndrome">
+            <label class="mb-1 block text-sm font-medium text-ink">Topic</label>
+            <input type="text" formControlName="topic" class="h-10 w-full rounded-xl border border-line bg-surface px-3 text-[13px] text-ink outline-none shadow-sm transition-all placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent" placeholder="e.g. Nephrotic Syndrome">
           </div>
           <div class="w-24">
-            <label class="mb-1 block text-sm font-medium">Count</label>
-            <input type="number" formControlName="count" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]">
+            <label class="mb-1 block text-sm font-medium text-ink">Count</label>
+            <input type="number" formControlName="count" class="h-10 w-full rounded-xl border border-line bg-surface px-3 text-[13px] text-ink outline-none shadow-sm transition-all placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent">
           </div>
-          <button type="submit" [disabled]="form.invalid || isGenerating()" class="primary-button disabled:opacity-50 disabled:hover:brightness-100 disabled:active:scale-100">
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="primary-button">
             {{ isGenerating() ? 'Generating...' : 'Generate' }}
           </button>
         </form>
         @if (errorMessage()) {
-          <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ errorMessage() }}</p>
+          <p class="mt-4 rounded-xl border border-error/20 bg-error/10 p-3 text-sm text-error">{{ errorMessage() }}</p>
         }
       </mc-glass-card>
 
@@ -30,10 +30,13 @@
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           @for (_ of [1, 2, 3]; track $index) {
             <div class="glass-card animate-pulse space-y-4 p-6">
-              <div class="h-4 w-3/4 rounded bg-ink/10"></div>
-              <div class="h-3 w-1/2 rounded bg-ink/10"></div>
-              <div class="mt-4 border-t border-ink/10 pt-4">
-                <div class="h-4 w-24 rounded bg-ink/10"></div>
+              <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-lg bg-surface border border-line shrink-0"></div>
+                <div class="h-4 w-3/4 rounded bg-surface border border-line"></div>
+              </div>
+              <div class="h-3 w-1/2 rounded bg-surface border border-line"></div>
+              <div class="mt-4 border-t border-line pt-4">
+                <div class="h-4 w-24 rounded bg-surface border border-line"></div>
               </div>
             </div>
           }
@@ -42,31 +45,43 @@
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           @for (deck of decks$ | async; track deck.id) {
             <mc-glass-card class="flex flex-col">
-              <h3 class="text-lg font-semibold">{{ deck.topic }}</h3>
-              <p class="mt-1 text-sm text-ink/50">Generated: {{ deck.created_at | date }}</p>
+              <!-- Deck header with icon badge -->
+              <div class="flex items-start gap-3 mb-1">
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
+                  <svg [lucideIcon]="icons.Layers" class="h-4 w-4 text-accent"></svg>
+                </div>
+                <h3 class="text-base font-semibold text-ink leading-snug pt-0.5">{{ deck.topic }}</h3>
+              </div>
+              <!-- Bug fix: was text-ink/50 (opacity-on-ink, bypasses token) -->
+              <p class="mt-1 text-sm text-muted">Generated: {{ deck.created_at | date }}</p>
 
               @if (deck.total_cards !== undefined && deck.total_cards > 0) {
                 <div class="mt-3 space-y-2">
                   <!-- Mastery progress bar -->
-                  <div class="flex items-center justify-between text-xs text-ink/60">
+                  <!-- Bug fix: was text-ink/60 / text-ink/40 -->
+                  <div class="flex items-center justify-between text-xs text-muted">
                     <span>{{ deck.known_cards ?? 0 }} / {{ deck.total_cards }} known</span>
                     <span class="font-semibold text-accent">{{ deck.mastery_percent ?? 0 }}% mastery</span>
                   </div>
-                  <div class="h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
+                  <!-- Bug fix: was bg-ink/10 -->
+                  <div class="h-1.5 w-full overflow-hidden rounded-full bg-hover">
                     <div
                       class="h-full rounded-full bg-accent transition-all duration-500"
                       [style.width.%]="deck.mastery_percent ?? 0"
                     ></div>
                   </div>
                   @if (deck.last_studied_at) {
-                    <p class="text-[11px] text-ink/40">Last studied: {{ deck.last_studied_at | date:'mediumDate' }}</p>
+                    <!-- Bug fix: was text-ink/40 -->
+                    <p class="text-[11px] text-muted">Last studied: {{ deck.last_studied_at | date:'mediumDate' }}</p>
                   }
                 </div>
               } @else if (deck.total_cards !== undefined) {
-                <p class="mt-3 text-xs text-ink/40">{{ deck.total_cards }} card{{ deck.total_cards !== 1 ? 's' : '' }}</p>
+                <!-- Bug fix: was text-ink/40 -->
+                <p class="mt-3 text-xs text-muted">{{ deck.total_cards }} card{{ deck.total_cards !== 1 ? 's' : '' }}</p>
               }
 
-              <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
+              <!-- Bug fix: was border-ink/10 -->
+              <div class="mt-4 flex flex-1 items-end border-t border-line pt-4">
                 <button (click)="studyDeck(deck.id)" class="text-sm text-accent transition-colors hover:text-accentHover">Study Deck &rarr;</button>
               </div>
             </mc-glass-card>
@@ -74,13 +89,25 @@
         </div>
 
         @if ((decks$ | async)?.length === 0) {
+          <!-- Upgraded empty state -->
           <mc-glass-card class="mt-5">
-            <h2 class="text-xl font-semibold">No decks found</h2>
-            <p class="mt-2 text-sm text-ink/70">Generate your first deck above.</p>
+            <div class="flex flex-col items-center py-10 text-center gap-4">
+              <div class="flex h-16 w-16 items-center justify-center rounded-full bg-accent/8 border border-accent/15">
+                <svg [lucideIcon]="icons.Layers" class="h-7 w-7 text-accent/50"></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-ink">No decks yet</h2>
+                <p class="mt-1 text-sm text-muted">Generate your first flashcard deck above to start practising.</p>
+              </div>
+            </div>
           </mc-glass-card>
         }
-        @if ((decks$ | async)?.length ?? 0 >= 30) {
-          <p class="mt-3 text-center text-xs text-ink/40">Showing the 30 most recent decks.</p>
+        <!-- Bug fix: operator precedence — was ((decks$ | async)?.length ?? 0 >= 30)
+             which parsed as length ?? (0 >= 30), showing for ANY non-empty list.
+             Fixed: ((decks$ | async)?.length ?? 0) >= 30 -->
+        @if (((decks$ | async)?.length ?? 0) >= 30) {
+          <!-- Bug fix: was text-ink/40 -->
+          <p class="mt-3 text-center text-xs text-muted">Showing the 30 most recent decks.</p>
         }
       }
     </div>
@@ -89,12 +116,27 @@
   @if (activeDeck(); as deck) {
     <div class="mx-auto mt-8 max-w-2xl">
       <div class="mb-6 flex items-center justify-between">
-        <button (click)="closeDeck()" class="text-sm font-medium text-ink/60 transition-colors hover:text-ink">&larr; Back to Decks</button>
-        <div class="text-sm font-medium text-ink/60">{{ currentCardIndex() + 1 }} / {{ deck.cards?.length || 0 }}</div>
+        <!-- Bug fix: was text-ink/60 -->
+        <button (click)="closeDeck()" class="text-sm font-medium text-secondary transition-colors hover:text-ink">&larr; Back to Decks</button>
+        <div class="text-sm font-medium text-secondary">{{ currentCardIndex() + 1 }} / {{ deck.cards?.length || 0 }}</div>
       </div>
 
+      <!-- Story-segment progress bar (Instagram-style) -->
+      @if (deck.cards && deck.cards.length > 0) {
+        <div class="mb-4 flex gap-1">
+          @for (card of deck.cards; track $index) {
+            <div
+              class="h-1 flex-1 rounded-full transition-all duration-300"
+              [class.bg-accent]="$index <= currentCardIndex()"
+              [class.bg-hover]="$index > currentCardIndex()"
+            ></div>
+          }
+        </div>
+      }
+
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs uppercase tracking-widest text-ink/45">Use Enter or Space to flip, arrows to move</p>
+        <!-- Bug fix: was text-ink/45 -->
+        <p class="text-xs uppercase tracking-widest text-muted">Use Enter or Space to flip, arrows to move</p>
         <div class="flex items-center gap-2">
           <button type="button" (click)="rateCurrentCard('known')" class="rounded-full border border-success/20 bg-success/10 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/15">
             Known
@@ -107,7 +149,8 @@
 
       @if (isLoadingDeck()) {
         <div class="glass-card flex h-[400px] items-center justify-center">
-          <p class="text-sm text-ink/60">Loading deck...</p>
+          <!-- Bug fix: was text-ink/60 -->
+          <p class="text-sm text-muted">Loading deck...</p>
         </div>
       } @else {
         <div
@@ -128,7 +171,8 @@
               @if (deck.cards) {
                 <h2 class="text-xl font-medium text-ink sm:text-2xl">{{ deck.cards[currentCardIndex()].front }}</h2>
               }
-              <p class="mt-6 text-xs text-ink/40">Click to reveal answer</p>
+              <!-- Bug fix: was text-ink/40 -->
+              <p class="mt-6 text-xs text-muted">Click to reveal answer</p>
             </div>
 
             <div
@@ -137,7 +181,8 @@
             >
               <span class="mb-4 text-xs font-semibold uppercase tracking-wider text-success/80">Answer</span>
               @if (deck.cards) {
-                <p class="text-lg text-ink/90 sm:text-xl">{{ deck.cards[currentCardIndex()].back }}</p>
+                <!-- Bug fix: was text-ink/90 -->
+                <p class="text-lg text-ink sm:text-xl">{{ deck.cards[currentCardIndex()].back }}</p>
               }
             </div>
           </div>
@@ -162,7 +207,8 @@
       </div>
 
       @if (deck.cards && cardRatings()[deck.cards[currentCardIndex()].front]) {
-        <p class="mt-3 text-center text-xs text-ink/50">
+        <!-- Bug fix: was text-ink/50 -->
+        <p class="mt-3 text-center text-xs text-muted">
           Marked as {{ cardRatings()[deck.cards[currentCardIndex()].front] }}.
         </p>
       }

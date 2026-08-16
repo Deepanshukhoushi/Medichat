@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MarkdownModule } from 'ngx-markdown';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService } from '../../../core/services/backend-api.service';
 import { extractErrorMessage } from '../../../core/utils/extract-error-message';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-study-tools-page',
   standalone: true,
-  imports: [GlassCardComponent, SectionHeadingComponent, CommonModule, ReactiveFormsModule, MarkdownModule],
+  imports: [GlassCardComponent, SectionHeadingComponent, CommonModule, ReactiveFormsModule, MarkdownModule, LucideDynamicIcon],
   templateUrl: './study-tools-page.component.html',
   styleUrl: './study-tools-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -20,6 +22,8 @@ import { extractErrorMessage } from '../../../core/utils/extract-error-message';
 export class StudyToolsPageComponent {
   private api = inject(BackendApiService);
   private fb = inject(FormBuilder);
+
+  protected readonly icons = appIcons;
 
   explainForm = this.fb.nonNullable.group({ topic: ['', Validators.required] });
   summarizeForm = this.fb.nonNullable.group({ text: ['', Validators.required] });

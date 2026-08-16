@@ -2,16 +2,18 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService, FlashcardDeck } from '../../../core/services/backend-api.service';
 import { extractErrorMessage } from '../../../core/utils/extract-error-message';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 @Component({
   selector: 'mc-flashcards-page',
   standalone: true,
-  imports: [GlassCardComponent, SectionHeadingComponent, CommonModule, ReactiveFormsModule],
+  imports: [GlassCardComponent, SectionHeadingComponent, CommonModule, ReactiveFormsModule, LucideDynamicIcon],
   templateUrl: './flashcards-page.component.html',
   styleUrl: './flashcards-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -19,6 +21,8 @@ import { extractErrorMessage } from '../../../core/utils/extract-error-message';
 export class FlashcardsPageComponent implements OnInit {
   private api = inject(BackendApiService);
   private fb = inject(FormBuilder);
+
+  protected readonly icons = appIcons;
 
   decks$ = new BehaviorSubject<FlashcardDeck[]>([]);
   readonly isLoadingDecks = signal(false);

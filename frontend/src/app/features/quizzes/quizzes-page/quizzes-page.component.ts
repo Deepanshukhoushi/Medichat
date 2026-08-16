@@ -2,11 +2,13 @@ import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, in
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 import { GlassCardComponent } from '../../../shared/components/glass-card/glass-card.component';
 import { SectionHeadingComponent } from '../../../shared/components/section-heading/section-heading.component';
 import { BackendApiService, QuizSession } from '../../../core/services/backend-api.service';
 import { extractErrorMessage } from '../../../core/utils/extract-error-message';
+import { appIcons } from '../../../shared/icons/lucide-icons';
 
 interface QuizQuestion {
   question: string;
@@ -22,7 +24,7 @@ interface QuizSessionDetail extends QuizSession {
 @Component({
   selector: 'mc-quizzes-page',
   standalone: true,
-  imports: [GlassCardComponent, SectionHeadingComponent, CommonModule, ReactiveFormsModule],
+  imports: [GlassCardComponent, SectionHeadingComponent, CommonModule, ReactiveFormsModule, LucideDynamicIcon],
   templateUrl: './quizzes-page.component.html',
   styleUrl: './quizzes-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -31,6 +33,8 @@ export class QuizzesPageComponent implements OnInit, OnDestroy {
   private readonly api = inject(BackendApiService);
   private readonly fb = inject(FormBuilder);
   private timerId: number | null = null;
+
+  protected readonly icons = appIcons;
 
   sessions$ = new BehaviorSubject<QuizSession[]>([]);
   readonly isLoading = signal(false);

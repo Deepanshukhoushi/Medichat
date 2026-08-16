@@ -1,4 +1,4 @@
-<div class="h-full overflow-y-auto space-y-5">
+<div class="h-full overflow-y-auto space-y-5 p-6">
   @if (!activeQuiz()) {
     <div>
       <mc-glass-card>
@@ -10,35 +10,39 @@
 
         <form [formGroup]="form" (ngSubmit)="generateQuiz()" class="mt-6 flex flex-wrap items-end gap-4">
           <div class="flex-1">
-            <label class="mb-1 block text-sm font-medium">Topic</label>
-            <input type="text" formControlName="topic" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]" placeholder="e.g. Cardiac Physiology">
+            <label class="mb-1 block text-sm font-medium text-ink">Topic</label>
+            <input type="text" formControlName="topic" class="h-10 w-full rounded-xl border border-line bg-surface px-3 text-[13px] text-ink outline-none shadow-sm transition-all placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent" placeholder="e.g. Cardiac Physiology">
           </div>
           <div class="w-24">
-            <label class="mb-1 block text-sm font-medium">Questions</label>
-            <input type="number" formControlName="count" class="h-10 w-full rounded-xl border border-line/[0.08] bg-ink/[0.02] px-3 text-[13px] outline-none shadow-sm transition-all duration-300 placeholder:text-muted/50 hover:border-line/[0.15] hover:bg-ink/[0.04] focus:border-accent focus:bg-ink/[0.02]">
+            <label class="mb-1 block text-sm font-medium text-ink">Questions</label>
+            <input type="number" formControlName="count" class="h-10 w-full rounded-xl border border-line bg-surface px-3 text-[13px] text-ink outline-none shadow-sm transition-all placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent">
           </div>
-          <button type="submit" [disabled]="form.invalid || isGenerating()" class="primary-button disabled:opacity-50 disabled:hover:brightness-100 disabled:active:scale-100">
+          <button type="submit" [disabled]="form.invalid || isGenerating()" class="primary-button">
             {{ isGenerating() ? 'Generating...' : 'Generate' }}
           </button>
         </form>
 
         @if (generateError()) {
-          <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ generateError() }}</p>
+          <p class="mt-4 rounded-xl border border-error/20 bg-error/10 p-3 text-sm text-error">{{ generateError() }}</p>
         }
         @if (quizLoadError()) {
-          <p class="mt-4 rounded-[14px] bg-red-500/10 p-3 text-sm text-red-500">{{ quizLoadError() }}</p>
+          <p class="mt-4 rounded-xl border border-error/20 bg-error/10 p-3 text-sm text-error">{{ quizLoadError() }}</p>
         }
       </mc-glass-card>
 
       @if (isLoading()) {
+        <!-- Bug fix: was bg-ink/10 / border-ink/10 -->
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           @for (_ of [1, 2, 3]; track $index) {
             <div class="glass-card animate-pulse space-y-4 p-6">
-              <div class="h-4 w-3/4 rounded bg-ink/10"></div>
-              <div class="h-3 w-1/2 rounded bg-ink/10"></div>
-              <div class="h-5 w-16 rounded bg-ink/10"></div>
-              <div class="mt-4 border-t border-ink/10 pt-4">
-                <div class="h-4 w-24 rounded bg-ink/10"></div>
+              <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-lg bg-surface border border-line shrink-0"></div>
+                <div class="h-4 w-3/4 rounded bg-surface border border-line"></div>
+              </div>
+              <div class="h-3 w-1/2 rounded bg-surface border border-line"></div>
+              <div class="h-5 w-16 rounded bg-surface border border-line"></div>
+              <div class="mt-4 border-t border-line pt-4">
+                <div class="h-4 w-24 rounded bg-surface border border-line"></div>
               </div>
             </div>
           }
@@ -47,22 +51,30 @@
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           @for (session of sessions$ | async; track session.id) {
             <mc-glass-card class="flex flex-col">
-              <h3 class="text-lg font-semibold">{{ session.topic }}</h3>
-              <p class="mt-1 text-sm text-ink/50">Generated: {{ session.created_at | date }}</p>
+              <!-- Icon badge header -->
+              <div class="flex items-start gap-3 mb-1">
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
+                  <svg [lucideIcon]="icons.ClipboardList" class="h-4 w-4 text-accent"></svg>
+                </div>
+                <h3 class="text-base font-semibold text-ink leading-snug pt-0.5">{{ session.topic }}</h3>
+              </div>
+              <!-- Bug fix: was text-ink/50 -->
+              <p class="mt-1 text-sm text-muted">Generated: {{ session.created_at | date }}</p>
 
               <div class="mt-3">
                 @if (session.score !== null) {
-                  <span class="inline-block rounded bg-green-500/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300">
+                  <span class="inline-block rounded-lg bg-success/15 border border-success/25 px-2.5 py-0.5 text-xs font-semibold text-success">
                     Score: {{ session.score }}%
                   </span>
                 } @else {
-                  <span class="inline-block rounded bg-yellow-500/20 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300">
+                  <span class="inline-block rounded-lg bg-warning/15 border border-warning/25 px-2.5 py-0.5 text-xs font-semibold text-warning">
                     Pending
                   </span>
                 }
               </div>
 
-              <div class="mt-4 flex flex-1 items-end border-t border-ink/10 pt-4">
+              <!-- Bug fix: was border-ink/10 -->
+              <div class="mt-4 flex flex-1 items-end border-t border-line pt-4">
                 <button (click)="takeQuiz(session.id)" class="text-sm text-accent transition-colors hover:text-accentHover">
                   {{ session.score !== null ? 'Review Quiz' : 'Take Quiz' }} &rarr;
                 </button>
@@ -72,13 +84,25 @@
         </div>
 
         @if ((sessions$ | async)?.length === 0) {
+          <!-- Upgraded empty state -->
           <mc-glass-card class="mt-5">
-            <h2 class="text-xl font-semibold">No quizzes found</h2>
-            <p class="mt-2 text-sm text-ink/70">Generate your first quiz above.</p>
+            <div class="flex flex-col items-center py-10 text-center gap-4">
+              <div class="flex h-16 w-16 items-center justify-center rounded-full bg-accent/8 border border-accent/15">
+                <svg [lucideIcon]="icons.ClipboardList" class="h-7 w-7 text-accent/50"></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-ink">No quizzes yet</h2>
+                <p class="mt-1 text-sm text-muted">Generate your first quiz above to test your knowledge.</p>
+              </div>
+            </div>
           </mc-glass-card>
         }
-        @if ((sessions$ | async)?.length ?? 0 >= 30) {
-          <p class="mt-3 text-center text-xs text-ink/40">Showing the 30 most recent quizzes.</p>
+        <!-- Bug fix: operator precedence — was (sessions$ | async)?.length ?? 0 >= 30
+             which parsed as length ?? (0 >= 30), showing for ANY non-empty list.
+             Fixed: ((sessions$ | async)?.length ?? 0) >= 30 -->
+        @if (((sessions$ | async)?.length ?? 0) >= 30) {
+          <!-- Bug fix: was text-ink/40 -->
+          <p class="mt-3 text-center text-xs text-muted">Showing the 30 most recent quizzes.</p>
         }
       }
     </div>
@@ -87,10 +111,29 @@
   @if (activeQuiz(); as quiz) {
     <div class="mx-auto mt-4 max-w-3xl space-y-5">
       <div class="mb-2 flex items-center justify-between gap-3">
-        <button (click)="closeQuiz()" class="text-sm font-medium text-ink/60 transition-colors hover:text-ink">&larr; Back to Quizzes</button>
-        <div class="flex items-center gap-4 text-sm font-medium">
-          <span class="text-ink/60">Question {{ currentQuestionIndex() + 1 }} of {{ quiz.questions.length }}</span>
-          <span class="rounded-full bg-ink/5 px-3 py-1 text-ink/70">Timer: {{ getElapsedTime() }}</span>
+        <!-- Bug fix: was text-ink/60 -->
+        <button (click)="closeQuiz()" class="text-sm font-medium text-secondary transition-colors hover:text-ink">&larr; Back to Quizzes</button>
+        <div class="flex items-center gap-3 text-sm font-medium">
+          <!-- Bug fix: was text-ink/60 -->
+          <span class="text-secondary">Question {{ currentQuestionIndex() + 1 }} of {{ quiz.questions.length }}</span>
+
+          <!-- Timer — shifts to warning colour past 2 minutes, error past 5 minutes to convey urgency -->
+          <span
+            class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold tabular-nums transition-colors duration-500"
+            [class.bg-hover]="timerSeconds() < 120"
+            [class.text-secondary]="timerSeconds() < 120"
+            [class.bg-warning/15]="timerSeconds() >= 120 && timerSeconds() < 300"
+            [class.text-warning]="timerSeconds() >= 120 && timerSeconds() < 300"
+            [class.border]="timerSeconds() >= 120"
+            [class.border-warning/25]="timerSeconds() >= 120 && timerSeconds() < 300"
+            [class.bg-error/15]="timerSeconds() >= 300"
+            [class.text-error]="timerSeconds() >= 300"
+            [class.border-error/25]="timerSeconds() >= 300"
+          >
+            <svg [lucideIcon]="icons.Clock3" class="h-3 w-3 shrink-0"></svg>
+            {{ getElapsedTime() }}
+          </span>
+
           @if (quizSubmitted()) {
             <span class="font-bold text-accent">Score: {{ quiz.score }}%</span>
           }
@@ -98,14 +141,28 @@
       </div>
 
       @if (quiz.questions && quiz.questions.length > 0) {
+        <!-- Story-segment progress bar — one segment per question -->
+        <div class="flex gap-1 px-0.5">
+          @for (q of quiz.questions; track $index) {
+            <div
+              class="h-1 flex-1 rounded-full transition-all duration-300"
+              [class.bg-accent]="$index < currentQuestionIndex() || ($index === currentQuestionIndex() && selectedAnswers()[currentQuestionIndex()] !== undefined)"
+              [class.bg-accent\/40]="$index === currentQuestionIndex() && selectedAnswers()[currentQuestionIndex()] === undefined"
+              [class.bg-hover]="$index > currentQuestionIndex()"
+            ></div>
+          }
+        </div>
+
         @if (getCurrentQuestion(); as currentQuestion) {
           <mc-glass-card class="min-h-[400px] flex flex-col">
             <div class="flex-1">
               <h3 class="mb-3 text-xl font-semibold text-ink">{{ currentQuestion.question }}</h3>
-              <p class="mb-6 text-xs uppercase tracking-widest text-ink/40">Press A, B, C, or D to answer</p>
+              <!-- Bug fix: was text-ink/40 -->
+              <p class="mb-6 text-xs uppercase tracking-widest text-muted">Press A, B, C, or D to answer</p>
 
               <div class="space-y-3">
                 @for (option of currentQuestion.options; track i; let i = $index) {
+                  <!-- Bug fix: was border-ink/10 hover:bg-ink/5 text-ink/50 -->
                   <button
                     (click)="selectOption(i)"
                     [disabled]="quizSubmitted()"
@@ -115,10 +172,10 @@
                     [class.bg-success/10]="quizSubmitted() && i === currentQuestion.correct"
                     [class.border-warning]="quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i && i !== currentQuestion.correct"
                     [class.bg-warning/10]="quizSubmitted() && selectedAnswers()[currentQuestionIndex()] === i && i !== currentQuestion.correct"
-                    class="flex w-full items-start gap-3 rounded-xl border border-ink/10 p-4 text-left transition-all duration-200 hover:bg-ink/5 disabled:cursor-default disabled:opacity-100"
+                    class="flex w-full items-start gap-3 rounded-xl border border-line p-4 text-left transition-all duration-200 hover:bg-hover disabled:cursor-default disabled:opacity-100"
                     type="button"
                   >
-                    <span class="mt-0.5 font-medium text-ink/50">{{ ['A', 'B', 'C', 'D'][i] }}.</span>
+                    <span class="mt-0.5 font-medium text-secondary">{{ ['A', 'B', 'C', 'D'][i] }}.</span>
                     <span class="flex-1">{{ option }}</span>
                   </button>
                 }
@@ -127,12 +184,14 @@
               @if (quizSubmitted() && currentQuestion.explanation) {
                 <div class="mt-6 rounded-2xl border border-accent/20 bg-accent/5 p-4">
                   <p class="text-xs font-semibold uppercase tracking-widest text-accent">Why this answer is correct</p>
-                  <p class="mt-2 text-sm text-ink/75">{{ currentQuestion.explanation }}</p>
+                  <!-- Bug fix: was text-ink/75 -->
+                  <p class="mt-2 text-sm text-secondary">{{ currentQuestion.explanation }}</p>
                 </div>
               }
             </div>
 
-            <div class="mt-8 flex items-center justify-between gap-3 border-t border-ink/10 pt-5">
+            <!-- Bug fix: was border-ink/10 -->
+            <div class="mt-8 flex items-center justify-between gap-3 border-t border-line pt-5">
               <button
                 (click)="prevQuestion()"
                 [disabled]="currentQuestionIndex() === 0"
