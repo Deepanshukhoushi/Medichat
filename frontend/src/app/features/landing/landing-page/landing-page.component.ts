@@ -5,6 +5,7 @@ import { LucideDynamicIcon } from '@lucide/angular';
 
 import { RevealDirective } from '../../../shared/directives/reveal.directive';
 import { CountUpDirective } from '../../../shared/directives/count-up.directive';
+import { GlobeComponent } from '../../../shared/components/globe/globe.component';
 import { appIcons } from '../../../shared/icons/lucide-icons';
 import { ProfileService } from '../../../core/services/profile.service';
 import { BackendApiService } from '../../../core/services/backend-api.service';
@@ -12,7 +13,7 @@ import { BackendApiService } from '../../../core/services/backend-api.service';
 @Component({
   selector: 'mc-landing-page',
   standalone: true,
-  imports: [RouterLink, LucideDynamicIcon, CommonModule, RevealDirective, CountUpDirective],
+  imports: [RouterLink, LucideDynamicIcon, CommonModule, RevealDirective, CountUpDirective, GlobeComponent],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

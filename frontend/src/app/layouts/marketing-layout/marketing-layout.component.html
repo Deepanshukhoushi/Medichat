@@ -1,19 +1,19 @@
-<div class="min-h-screen bg-canvas text-ink flex flex-col font-sans selection:bg-accent/30 selection:text-white">
+<div class="min-h-screen bg-canvas text-ink flex flex-col font-sans selection:bg-accent/20 selection:text-ink">
   <!-- Navbar -->
-  <header class="fixed top-0 left-0 right-0 z-50 border-b border-line/[0.08] bg-canvas/60 backdrop-blur-xl transition-all duration-300">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+  <header class="fixed top-0 left-0 right-0 z-50 border-b border-line/60 bg-canvas/85 backdrop-blur-xl transition-all duration-300">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4">
       <mc-app-logo />
 
-      <nav class="hidden items-center gap-8 md:flex text-sm font-medium text-muted">
-        <a class="transition-colors hover:text-ink" href="#features">Features</a>
-        <a class="transition-colors hover:text-ink" href="#how-it-works">How It Works</a>
-        <a class="transition-colors hover:text-ink" href="#testimonials">Testimonials</a>
-        <a class="transition-colors hover:text-ink" href="#faq">FAQ</a>
+      <nav class="hidden items-center gap-8 md:flex text-sm font-medium text-secondary">
+        <a class="transition-colors hover:text-accent font-medium" href="#features">Features</a>
+        <a class="transition-colors hover:text-accent font-medium" href="#how-it-works">How It Works</a>
+        <a class="transition-colors hover:text-accent font-medium" href="#testimonials">Testimonials</a>
+        <a class="transition-colors hover:text-accent font-medium" href="#faq">FAQ</a>
       </nav>
 
-      <div class="flex items-center gap-4">
-        <mc-theme-toggle class="hidden md:block" />
-        <a class="primary-button text-sm h-10 px-6" [routerLink]="isLoggedIn() ? '/app/dashboard' : '/auth/login'">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <mc-theme-toggle />
+        <a class="primary-button text-sm h-10 px-5 sm:px-6 shadow-sm" [routerLink]="isLoggedIn() ? '/app/dashboard' : '/auth/login'">
           {{ isLoggedIn() ? 'Go to App' : 'Get Started' }}
         </a>
       </div>
@@ -36,23 +36,35 @@
       </div>
       <div class="flex flex-col gap-3">
         <h3 class="font-semibold text-ink">Product</h3>
+        <!-- #features and #how-it-works are confirmed real section IDs on the landing page -->
         <a href="#features" class="hover:text-accent transition-colors">Features</a>
         <a href="#how-it-works" class="hover:text-accent transition-colors">How it Works</a>
-        <a href="#pricing" class="hover:text-accent transition-colors">Pricing</a>
+        <!-- TODO: restore as a link once a #pricing section or /pricing page is built -->
+        <span class="cursor-default opacity-50">Pricing</span>
       </div>
       <div class="flex flex-col gap-3">
         <h3 class="font-semibold text-ink">Resources</h3>
-        <a href="#" class="hover:text-accent transition-colors">Documentation</a>
-        <a href="#" class="hover:text-accent transition-colors">Blog</a>
-        <a href="#" class="hover:text-accent transition-colors">Help Center</a>
+        <!-- TODO: restore as links once these pages exist -->
+        <!-- <a routerLink="/docs" ...>Documentation</a> -->
+        <!-- <a routerLink="/blog" ...>Blog</a> -->
+        <!-- <a routerLink="/help" ...>Help Center</a> -->
+        <span class="cursor-default opacity-50">Documentation</span>
+        <span class="cursor-default opacity-50">Blog</span>
+        <span class="cursor-default opacity-50">Help Center</span>
       </div>
       <div class="flex flex-col gap-3">
         <h3 class="font-semibold text-ink">Legal</h3>
-        <a href="#" class="hover:text-accent transition-colors">Privacy Policy</a>
-        <a href="#" class="hover:text-accent transition-colors">Terms of Service</a>
-        <a href="#" class="hover:text-accent transition-colors">Contact</a>
+        <!-- TODO: restore as links once /legal/privacy and /legal/terms pages exist.
+             Dead legal links on a medical-information product specifically undermine trust. -->
+        <!-- <a routerLink="/legal/privacy" ...>Privacy Policy</a> -->
+        <!-- <a routerLink="/legal/terms" ...>Terms of Service</a> -->
+        <span class="cursor-default opacity-50">Privacy Policy</span>
+        <span class="cursor-default opacity-50">Terms of Service</span>
+        <!-- TODO: restore as mailto: or /contact once contact page exists -->
+        <span class="cursor-default opacity-50">Contact</span>
       </div>
     </div>
+
     <div class="mx-auto max-w-7xl px-6 mt-12 pt-8 border-t border-line/[0.04] flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
       <p>&copy; 2026 MediChat Inc. All rights reserved.</p>
     </div>
