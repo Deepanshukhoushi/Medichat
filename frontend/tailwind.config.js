@@ -22,15 +22,18 @@ module.exports = {
         accentHover: "rgb(var(--color-accent-hover) / <alpha-value>)",
         success: "rgb(var(--color-success) / <alpha-value>)",
         warning: "rgb(var(--color-warning) / <alpha-value>)",
-        error: "rgb(var(--color-error) / <alpha-value>)"
+        error: "rgb(var(--color-error) / <alpha-value>)",
+        userBubble: "rgb(var(--color-user-bubble) / <alpha-value>)",
+        userBubbleBorder: "rgb(var(--color-user-bubble-border) / <alpha-value>)",
+        userBubbleText: "rgb(var(--color-user-bubble-text) / <alpha-value>)"
       },
       boxShadow: {
-        glow: "0 0 20px rgba(34, 197, 94, 0.15)",
-        glass: "0 4px 20px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1)",
-        glassHover: "0 8px 30px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15)"
+        glow: "0 4px 20px rgba(127, 22, 53, 0.08)",
+        glass: "0 4px 20px rgba(127, 22, 53, 0.05), 0 1px 3px rgba(127, 22, 53, 0.04)",
+        glassHover: "0 8px 30px rgba(127, 22, 53, 0.08), 0 2px 6px rgba(127, 22, 53, 0.06)"
       },
       backgroundImage: {
-        aurora: "radial-gradient(circle at top left, rgba(255, 188, 176, 0.42), transparent 34%), radial-gradient(circle at top right, rgba(124, 228, 255, 0.38), transparent 36%), linear-gradient(135deg, rgba(255,255,255,0.86), rgba(236,243,255,0.72))"
+        aurora: "radial-gradient(circle at top left, rgba(243, 214, 223, 0.45), transparent 34%), radial-gradient(circle at top right, rgba(255, 240, 245, 0.6), transparent 36%), linear-gradient(135deg, rgba(255,255,255,0.9), rgba(252,231,238,0.7))"
       },
       animation: {
         float: "float 8s ease-in-out infinite",

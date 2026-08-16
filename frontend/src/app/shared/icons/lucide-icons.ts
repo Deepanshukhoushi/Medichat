@@ -73,7 +73,9 @@ import {
   LucideShieldCheck,
   LucideShare2,
   LucideLoader2,
+  LucideLogIn,
   LucideStethoscope,
+  LucideUserPlus,
   LucideX,
   LucideWifiOff
 } from '@lucide/angular';
@@ -153,7 +155,9 @@ export const appIcons = {
   ShieldCheck: LucideShieldCheck,
   Share2: LucideShare2,
   Loader2: LucideLoader2,
+  LogIn: LucideLogIn,
   Stethoscope: LucideStethoscope,
+  UserPlus: LucideUserPlus,
   X: LucideX,
   WifiOff: LucideWifiOff
 };

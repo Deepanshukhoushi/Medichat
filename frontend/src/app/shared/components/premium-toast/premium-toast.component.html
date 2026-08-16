@@ -1,63 +1,64 @@
-<div class="flex items-center gap-[14px] px-5 py-[18px] pr-4 rounded-[20px] bg-[rgba(18,20,24,0.95)] backdrop-blur-[18px] border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.35),0_2px_12px_rgba(0,0,0,0.15)] relative overflow-hidden transition-transform duration-200 hover:-translate-y-[2px] min-h-[72px] w-[340px] max-w-full group">
+<div class="flex items-center gap-[14px] px-5 py-[16px] pr-4 rounded-[20px] bg-surface/95 backdrop-blur-xl border border-line shadow-[0_12px_40px_rgba(127,22,53,0.12),0_2px_12px_rgba(0,0,0,0.06)] relative overflow-hidden transition-transform duration-200 hover:-translate-y-[2px] min-h-[68px] w-[340px] max-w-full group">
 
   <!-- Left Accent / Status Indicator -->
   @if (toastPackage.toastType === 'success') {
-    <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500 rounded-l-[20px]"></div>
+    <div class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-success rounded-l-[20px]"></div>
   }
   @if (toastPackage.toastType === 'error') {
-    <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-red-500 rounded-l-[20px]"></div>
+    <div class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-error rounded-l-[20px]"></div>
   }
   @if (toastPackage.toastType === 'warning') {
-    <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-amber-500 rounded-l-[20px]"></div>
+    <div class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-warning rounded-l-[20px]"></div>
   }
   @if (toastPackage.toastType === 'info') {
-    <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-blue-500 rounded-l-[20px]"></div>
+    <div class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-accent rounded-l-[20px]"></div>
   }
 
   <!-- Icon -->
-  <div class="flex-shrink-0 flex items-center justify-center opacity-70 ml-1">
+  <div class="flex-shrink-0 flex items-center justify-center ml-1">
     @if (toastPackage.toastType === 'success') {
-      <svg [lucideIcon]="icons.CheckCircle2" class="h-[20px] w-[20px] text-emerald-500 stroke-[2]"></svg>
+      <svg [lucideIcon]="icons.CheckCircle2" class="h-[20px] w-[20px] text-success stroke-[2]"></svg>
     }
     @if (toastPackage.toastType === 'error') {
-      <svg [lucideIcon]="icons.AlertCircle" class="h-[20px] w-[20px] text-red-500 stroke-[2]"></svg>
+      <svg [lucideIcon]="icons.AlertCircle" class="h-[20px] w-[20px] text-error stroke-[2]"></svg>
     }
     @if (toastPackage.toastType === 'warning') {
       @if (title() === 'Offline' || title() === 'Offline Mode') {
-        <svg [lucideIcon]="icons.WifiOff" class="h-[20px] w-[20px] text-amber-500 stroke-[2]"></svg>
+        <svg [lucideIcon]="icons.WifiOff" class="h-[20px] w-[20px] text-warning stroke-[2]"></svg>
       } @else {
-        <svg [lucideIcon]="icons.AlertTriangle" class="h-[20px] w-[20px] text-amber-500 stroke-[2]"></svg>
+        <svg [lucideIcon]="icons.AlertTriangle" class="h-[20px] w-[20px] text-warning stroke-[2]"></svg>
       }
     }
     @if (toastPackage.toastType === 'info') {
-      <svg [lucideIcon]="icons.Info" class="h-[20px] w-[20px] text-blue-500 stroke-[2]"></svg>
+      <svg [lucideIcon]="icons.Info" class="h-[20px] w-[20px] text-accent stroke-[2]"></svg>
     }
   </div>
 
   <!-- Content -->
   <div class="flex-1 flex flex-col justify-center min-w-0">
     @if (title()) {
-      <div class="text-[16px] font-semibold text-white/90 leading-snug truncate">{{ title() }}</div>
+      <div class="text-[15px] font-semibold text-ink leading-snug truncate">{{ title() }}</div>
     }
-    @if (message()) {
-      <div class="text-[14px] font-normal text-white/70 leading-relaxed" [class.mt-1]="title()" [innerHTML]="message()"></div>
-    }
+      <!-- Security fix: was [innerHTML]="message()" — XSS surface since message() carries
+           raw backend error strings from extractErrorMessage() without sanitization.
+           Plain interpolation is sufficient; Angular escapes the string automatically. -->
+      <div class="text-[13px] font-normal text-secondary leading-relaxed" [class.mt-0.5]="title()">{{ message() }}</div>
   </div>
 
   <!-- Close Button -->
   @if (options().closeButton) {
-    <button type="button" class="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-[6px] opacity-40 hover:opacity-60 hover:bg-black/40 transition-all self-start -mt-1" (click)="remove()">
-      <svg [lucideIcon]="icons.X" class="h-[16px] w-[16px] text-white stroke-[2.5]"></svg>
+    <button type="button" class="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-[6px] text-muted hover:text-ink hover:bg-hover transition-all self-start -mt-1" (click)="remove()">
+      <svg [lucideIcon]="icons.X" class="h-[15px] w-[15px] stroke-[2]"></svg>
     </button>
   }
 
   <!-- Progress Bar -->
   @if (options().progressBar) {
-    <div class="absolute bottom-0 left-0 h-[2px] opacity-30 transition-all duration-100 ease-linear" [style.width]="progressWidth()" 
-      [class.bg-emerald-500]="toastPackage.toastType === 'success'"
-      [class.bg-red-500]="toastPackage.toastType === 'error'"
-      [class.bg-amber-500]="toastPackage.toastType === 'warning'"
-      [class.bg-blue-500]="toastPackage.toastType === 'info'"
+    <div class="absolute bottom-0 left-0 h-[2px] opacity-40 transition-all duration-100 ease-linear" [style.width]="progressWidth()" 
+      [class.bg-success]="toastPackage.toastType === 'success'"
+      [class.bg-error]="toastPackage.toastType === 'error'"
+      [class.bg-warning]="toastPackage.toastType === 'warning'"
+      [class.bg-accent]="toastPackage.toastType === 'info'"
     ></div>
   }
 </div>

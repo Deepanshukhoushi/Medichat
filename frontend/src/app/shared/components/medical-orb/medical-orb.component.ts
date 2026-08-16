@@ -42,14 +42,14 @@ export class MedicalOrbComponent implements AfterViewInit {
 
     const geometry = new THREE.IcosahedronGeometry(1.4, 24);
     const material = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#f8b7d8'),
-      transmission: 1,
+      color: new THREE.Color('#f3d6df'),
+      transmission: 0.95,
       thickness: 1.2,
-      roughness: 0.05,
-      metalness: 0.06,
+      roughness: 0.08,
+      metalness: 0.05,
       clearcoat: 1,
       clearcoatRoughness: 0.08,
-      iridescence: 1,
+      iridescence: 0.8,
       iridescenceIOR: 1.3
     });
     const orb = new THREE.Mesh(geometry, material);
@@ -66,18 +66,18 @@ export class MedicalOrbComponent implements AfterViewInit {
 
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     const particleMaterial = new THREE.PointsMaterial({
-      color: '#7ee7ff',
+      color: '#7f1635',
       size: 0.03,
       transparent: true,
-      opacity: 0.75
+      opacity: 0.65
     });
     const particles = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particles);
 
-    const ambient = new THREE.AmbientLight('#ffffff', 0.7);
-    const pointLight = new THREE.PointLight('#58c7ff', 4, 100);
+    const ambient = new THREE.AmbientLight('#ffffff', 0.8);
+    const pointLight = new THREE.PointLight('#fce7ee', 3, 100);
     pointLight.position.set(4, 3, 6);
-    const accentLight = new THREE.PointLight('#ff7eb4', 3, 100);
+    const accentLight = new THREE.PointLight('#7f1635', 3.5, 100);
     accentLight.position.set(-4, -3, 6);
     scene.add(ambient, pointLight, accentLight);
 

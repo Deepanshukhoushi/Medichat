@@ -5,76 +5,123 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* Text */
-  --color-ink: 249 250 251; /* #F9FAFB */
-  --color-secondary: 209 213 219; /* #D1D5DB */
-  --color-muted: 156 163 175; /* #9CA3AF */
-  --color-placeholder: 107 114 128;
+  --color-ink: 53 21 31;         /* #35151F - Deep burgundy text */
+  --color-secondary: 110 77 89;  /* #6E4D59 - Subdued rose-mauve */
+  --color-muted: 146 117 128;    /* #927580 - Muted mauve */
+  --color-placeholder: 185 162 170; /* #B9A2AA */
 
   /* Backgrounds */
-  --color-canvas: 11 17 32; /* #0B1120 */
-  --color-sidebar: 17 24 39; /* #111827 */
-  --color-surface: 31 41 55; /* #1F2937 */
-  --color-hover: 39 53 73; /* #273549 */
+  --color-canvas: 255 240 245;   /* #FFF0F5 - Soft rose canvas */
+  --color-sidebar: 252 231 238;  /* #FCE7EE - Soft rose sidebar */
+  --color-surface: 255 255 255;  /* #FFFFFF - Pure white elevated card */
+  --color-hover: 251 233 239;    /* #FBE9EF - Surface hover */
 
   /* Borders */
-  --color-line: 55 65 81; /* #374151 */
+  --color-line: 232 197 208;     /* #E8C5D0 - Soft rose border */
 
-  /* Brand/Accents */
-  --color-accent: 20 184 166; /* #14B8A6 */
-  --color-accent-hover: 45 212 191; /* #2DD4BF */
+  /* Brand / Accents */
+  --color-accent: 127 22 53;     /* #7F1635 - Primary burgundy brand */
+  --color-accent-hover: 104 17 43; /* #68112B */
 
   /* States */
-  --color-success: 22 163 74;
-  --color-error: 239 68 68;
-  --color-warning: 250 204 21;
+  --color-success: 40 122 85;    /* #287A55 */
+  --color-error: 180 35 60;      /* #B4233C */
+  --color-warning: 166 106 31;   /* #A66A1F */
+
+  /* User message bubble */
+  --color-user-bubble:        243 214 223;   /* #F3D6DF */
+  --color-user-bubble-border: 232 197 208;   /* #E8C5D0 */
+  --color-user-bubble-text:   53  21  31;    /* #35151F */
 
   /* Glass configuration */
-  --glass-bg: rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --surface-blur: 20px;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(232, 197, 208, 0.7);
+  --surface-blur: 16px;
+
+  /* Layout */
+  --sidebar-width: 256px;
+  --response-max-width: 860px;
 }
 
-/* ── Light theme ─────────────────────────────────────────────────────────── */
-/* All --color-* values are space-separated R G B so Tailwind's              */
-/* rgb(var(--color-ink) / <alpha-value>) syntax keeps working.               */
+/* ── Light theme explicit definition (mirrors :root) ────────────────────────── */
 [data-theme='light'] {
   color-scheme: light;
 
   /* Text */
-  --color-ink: 17 24 39;         /* near-black  */
-  --color-muted: 75 85 99;       /* cool-grey   */
-  --color-placeholder: 156 163 175;
+  --color-ink: 53 21 31;
+  --color-secondary: 110 77 89;
+  --color-muted: 146 117 128;
+  --color-placeholder: 185 162 170;
 
   /* Backgrounds */
-  --color-canvas: 248 250 252;
+  --color-canvas: 255 240 245;
+  --color-sidebar: 252 231 238;
   --color-surface: 255 255 255;
-  --color-sidebar: 248 250 252;
+  --color-hover: 251 233 239;
 
   /* Borders */
-  --color-line: 0 0 0;
+  --color-line: 232 197 208;
 
-  /* Brand/Accents — same green works on light */
-  --color-accent: 22 163 74;
-  --color-accent-hover: 16 185 129;
+  /* Brand/Accents */
+  --color-accent: 127 22 53;
+  --color-accent-hover: 104 17 43;
 
   /* States */
-  --color-success: 21 128 61;
-  --color-error: 220 38 38;
-  --color-warning: 202 138 4;
+  --color-success: 40 122 85;
+  --color-error: 180 35 60;
+  --color-warning: 166 106 31;
 
-  /* Glass — lighter, warm-white tint */
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --surface-blur: 20px;
+  /* User message bubble */
+  --color-user-bubble:        243 214 223;
+  --color-user-bubble-border: 232 197 208;
+  --color-user-bubble-text:   53  21  31;
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(232, 197, 208, 0.7);
+  --surface-blur: 16px;
 }
 
-/* Explicit dark block — keeps color-scheme in sync with the attribute so   */
-/* browser chrome (scrollbars, date pickers, etc.) follows the theme.        */
+/* ── Dark theme (deep burgundy dark palette) ────────────────────────────────── */
 [data-theme='dark'] {
   color-scheme: dark;
+
+  /* Text */
+  --color-ink: 255 241 245;       /* #FFF1F5 */
+  --color-secondary: 215 183 194; /* #D7B7C2 */
+  --color-muted: 169 138 150;     /* #A98A96 */
+  --color-placeholder: 125 99 110;
+
+  /* Backgrounds */
+  --color-canvas: 26 12 18;       /* #1A0C12 */
+  --color-sidebar: 36 16 25;      /* #241019 */
+  --color-surface: 42 20 29;      /* #2A141D */
+  --color-hover: 54 26 37;        /* #361A25 */
+
+  /* Borders */
+  --color-line: 74 38 51;         /* #4A2633 */
+
+  /* Brand/Accents */
+  --color-accent: 168 61 96;      /* #A83D60 */
+  --color-accent-hover: 192 74 110; /* #C04A6E */
+
+  /* States */
+  --color-success: 52 211 153;
+  --color-error: 248 113 113;
+  --color-warning: 251 191 36;
+
+  /* User message bubble */
+  --color-user-bubble:        58  28  40;    /* #3A1C28 */
+  --color-user-bubble-border: 74  38  51;    /* #4A2633 */
+  --color-user-bubble-text:   255 241 245;   /* #FFF1F5 */
+
+  /* Glass */
+  --glass-bg: rgba(42, 20, 29, 0.85);
+  --glass-border: rgba(74, 38, 51, 0.6);
+  --surface-blur: 16px;
 }
 
 html,
@@ -83,7 +130,7 @@ body {
 }
 
 body {
-  @apply bg-canvas text-ink antialiased transition-colors duration-500;
+  @apply bg-canvas text-ink antialiased transition-colors duration-300;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   margin: 0;
 }
@@ -93,31 +140,31 @@ body {
 }
 
 ::selection {
-  background: rgba(34, 197, 94, 0.3);
+  background: rgba(127, 22, 53, 0.18);
+  color: rgb(var(--color-ink));
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: #DDB4C1;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #C990A2;
 }
 
-/* Light-mode scrollbar — thumb needs to be dark to be visible */
-[data-theme='light'] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: rgba(169, 138, 150, 0.25);
 }
-[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.28);
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(169, 138, 150, 0.45);
 }
 
 @layer base {
@@ -134,7 +181,7 @@ body {
   
   p {
     @apply text-muted;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.6;
   }
 
@@ -145,7 +192,6 @@ body {
     @apply font-sans;
   }
 
-  /* Accessibility: Focus rings tailored for glassmorphism */
   :focus-visible {
     outline: 2px solid rgb(var(--color-accent));
     outline-offset: 2px;
@@ -157,28 +203,36 @@ body {
     @apply relative mx-auto min-h-screen px-4 pb-8 pt-4 sm:px-6 lg:px-8;
   }
 
+  /**
+   * Primary layout utility for chat content width.
+   */
+  .mc-response-width {
+    width: min(var(--response-max-width), calc(100% - 48px));
+    margin-inline: auto;
+  }
+
   .glass-card {
-    @apply bg-surface/60 backdrop-blur-xl border border-white/5 shadow-lg rounded-xl;
+    @apply bg-surface border border-line shadow-sm rounded-xl;
   }
 
   .glass-card-interactive {
-    @apply bg-surface/60 backdrop-blur-xl border border-white/5 rounded-xl cursor-pointer hover:bg-surface/80 hover:border-accent/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(20,184,166,0.15)];
+    @apply bg-surface border border-line rounded-xl cursor-pointer hover:bg-hover hover:border-accent/40 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
   }
 
   .glass-sidebar {
-    @apply border-r border-white/5 bg-sidebar/80 backdrop-blur-xl;
+    @apply border-r border-line bg-sidebar;
   }
 
   .primary-button {
-    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent to-emerald-400 px-4 text-sm font-bold text-white shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] hover:-translate-y-0.5 active:scale-[0.98];
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-accentHover hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-45 disabled:pointer-events-none;
   }
 
   .secondary-button, .pill-button {
-    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink transition-all hover:bg-hover hover:text-white active:scale-[0.98] shadow-sm hover:shadow;
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink transition-all hover:bg-hover hover:border-accent/30 active:scale-[0.98] shadow-sm;
   }
 
   .mc-badge {
-    @apply rounded-full bg-surface border border-line px-3 py-1 text-xs font-medium text-accent;
+    @apply rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs font-semibold text-accent;
   }
 
   .field-shell {
@@ -231,20 +285,21 @@ body {
 /* Medical Markdown Prose Styles */
 .mc-assistant-prose {
   @apply font-sans;
-  color: rgb(var(--color-ink) / 0.88);
+  color: rgb(var(--color-ink));
   font-size: 15px;
-  line-height: 1.75;
-  
+  line-height: 1.7;
+
   p {
-    margin-bottom: 1em;
+    margin-bottom: 0.9em;
+    color: rgb(var(--color-ink));
     &:last-child { margin-bottom: 0; }
   }
-  
+
   h1 {
     font-size: 22px;
     font-weight: 700;
     margin-top: 2em;
-    margin-bottom: 0.6em;
+    margin-bottom: 0.55em;
     color: rgb(var(--color-ink));
     letter-spacing: -0.02em;
     line-height: 1.3;
@@ -252,50 +307,52 @@ body {
   }
 
   h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-top: 1.75em;
-    margin-bottom: 0.5em;
+    font-size: 19px;
+    font-weight: 650;
+    margin-top: 1.7em;
+    margin-bottom: 0.45em;
     color: rgb(var(--color-ink));
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
     line-height: 1.35;
     &:first-child { margin-top: 0; }
   }
 
   h3 {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    margin-top: 1.5em;
-    margin-bottom: 0.4em;
-    color: rgb(var(--color-ink) / 0.95);
+    margin-top: 1.4em;
+    margin-bottom: 0.35em;
+    color: rgb(var(--color-accent));
     &:first-child { margin-top: 0; }
   }
 
   h4 {
     font-size: 14px;
     font-weight: 600;
-    margin-top: 1.25em;
-    margin-bottom: 0.35em;
-    color: rgb(var(--color-ink) / 0.85);
+    margin-top: 1.2em;
+    margin-bottom: 0.3em;
+    color: rgb(var(--color-secondary));
     &:first-child { margin-top: 0; }
   }
 
   ul {
-    margin-bottom: 1em;
+    margin-bottom: 0.9em;
     padding-left: 1.4em;
     list-style-type: disc;
   }
   ol {
-    margin-bottom: 1em;
+    margin-bottom: 0.9em;
     padding-left: 1.4em;
     list-style-type: decimal;
   }
   li {
-    margin-bottom: 0.35em;
-    color: rgb(var(--color-ink) / 0.85);
+    margin-bottom: 0.28em;
+    color: rgb(var(--color-ink));
     font-size: 15px;
-    &::marker { color: rgb(var(--color-ink) / 0.35); }
+    line-height: 1.6;
+    &::marker { color: rgb(var(--color-accent) / 0.6); }
     &:last-child { margin-bottom: 0; }
+    ul, ol { margin-top: 0.25em; margin-bottom: 0.25em; }
   }
 
   strong {
@@ -304,79 +361,152 @@ body {
   }
 
   em {
-    color: rgb(var(--color-ink) / 0.8);
+    color: rgb(var(--color-secondary));
   }
 
   blockquote {
-    background: rgba(4, 47, 46, 0.2); /* bg-emerald-950/20 */
-    border-left: 4px solid rgb(16, 185, 129); /* border-emerald-500 */
-    padding: 1em 1.2em;
-    margin: 1.5em 0;
-    border-radius: 0 12px 12px 0;
-    color: rgb(209, 250, 229); /* text-emerald-100 */
-    font-size: 14px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    
+    background: rgba(127, 22, 53, 0.04);
+    border-left: 3px solid rgb(var(--color-accent));
+    padding: 0.85em 1.1em;
+    margin: 1.4em 0;
+    border-radius: 0 10px 10px 0;
+    color: rgb(var(--color-secondary));
+    font-size: 14.5px;
+    line-height: 1.65;
+
     p {
-      margin-bottom: 0.4em;
+      margin-bottom: 0.35em;
+      color: rgb(var(--color-secondary));
       &:last-child { margin-bottom: 0; }
     }
-    
+
     strong {
-      color: rgb(52, 211, 153); /* text-emerald-400 */
-      font-size: 11.5px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      display: block;
-      margin-bottom: 0.4em;
+      color: rgb(var(--color-ink));
+      font-size: inherit;
+      font-weight: 600;
+    }
+  }
+
+  a {
+    color: rgb(var(--color-accent));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgb(var(--color-accent) / 0.4);
+    transition: text-decoration-color 0.15s;
+    &:hover { text-decoration-color: rgb(var(--color-accent)); }
+  }
+
+  /* Inline citation markers like [1], [17] */
+  a[href^="#cite"],
+  sup a,
+  .footnote-ref {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 4px;
+    background: rgba(127, 22, 53, 0.08);
+    border: 1px solid rgba(127, 22, 53, 0.25);
+    color: rgb(var(--color-accent));
+    font-size: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    vertical-align: super;
+    line-height: 1;
+    margin-left: 1px;
+    transition: background 0.15s, border-color 0.15s;
+    &:hover {
+      background: rgba(127, 22, 53, 0.16);
+      border-color: rgba(127, 22, 53, 0.4);
     }
   }
 
   code {
-    background: rgb(var(--color-ink) / 0.07);
-    color: rgb(var(--color-ink) / 0.85);
+    background: #F6F1F3;
+    color: rgb(var(--color-ink));
     padding: 0.15em 0.45em;
     border-radius: 5px;
     font-size: 13px;
     font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-    border: 1px solid rgb(var(--color-line) / 0.05);
+    border: 1px solid #E8DADF;
+  }
+
+  [data-theme='dark'] code {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 
   pre {
-    background: #0d1117;
-    color: rgb(var(--color-ink) / 0.85);
+    background: #2A141D;
+    color: #FFF1F5;
     padding: 1em 1.2em;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow-x: auto;
-    border: 1px solid rgb(var(--color-line) / 0.07);
-    margin: 1.25em 0;
-    
+    border: 1px solid #4A2633;
+    margin: 1.2em 0;
+
     code {
       background: transparent;
       padding: 0;
       border: 0;
       font-size: 13px;
+      color: inherit;
       font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
     }
   }
 
+  hr {
+    border: none;
+    border-top: 1px solid rgb(var(--color-line));
+    margin: 1.5em 0;
+  }
+
   table {
-    @apply w-full text-left border-collapse my-4 overflow-hidden rounded-xl border border-line bg-surface shadow-md;
-    
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+    margin: 1.2em 0;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid rgb(var(--color-line));
+    background: rgb(var(--color-surface));
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
     thead {
-      @apply bg-sidebar border-b border-line text-xs font-semibold uppercase tracking-wider text-secondary;
+      background: rgba(252, 231, 238, 0.7);
+      border-bottom: 1px solid rgb(var(--color-line));
+
+      th {
+        padding: 10px 14px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgb(var(--color-ink));
+        white-space: nowrap;
+      }
     }
-    
-    th {
-      @apply px-4 py-3 text-left;
+
+    [data-theme='dark'] thead {
+      background: rgb(var(--color-sidebar));
     }
-    
-    tr {
-      @apply border-b border-line last:border-b-0 hover:bg-hover transition-colors;
+
+    tbody tr {
+      border-bottom: 1px solid rgb(var(--color-line) / 0.5);
+      transition: background 0.12s;
+      &:last-child { border-bottom: none; }
+      &:hover { background: rgb(var(--color-hover) / 0.5); }
     }
-    
+
     td {
-      @apply px-4 py-3 text-sm text-secondary text-left;
+      padding: 9px 14px;
+      font-size: 14px;
+      color: rgb(var(--color-ink));
+      vertical-align: top;
     }
   }
 }
@@ -406,3 +536,36 @@ body {
 .mc-premium-toast-host:hover {
   box-shadow: none !important;
 }
+
+/* ── Landing Hero Typewriter ─────────────────────────────────────────────────
+ * Pure-CSS typewriter for the hero mockup AI response text.
+ * Width animates 0→100% in discrete steps; blinking caret via border-right.
+ * Fires once on load. Respects prefers-reduced-motion.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@keyframes mc-type {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+@keyframes mc-blink {
+  0%, 100% { border-right-color: rgb(var(--color-accent) / 0.75); }
+  50%       { border-right-color: transparent; }
+}
+
+.mc-typewriter {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid rgb(var(--color-accent) / 0.75);
+  width: 0;
+  animation:
+    mc-type  2.4s steps(60, end) 0.6s forwards,
+    mc-blink 0.75s step-end 0.6s infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    width: 100%;
+    border-right: none;
+  }
+}
+
