@@ -2,12 +2,13 @@
   @if (message().role === 'user') {
     <div class="flex w-full justify-end group/userMsg">
       <div class="relative flex flex-col items-end w-full">
-        <div class="ml-auto max-w-[80%] rounded-3xl bg-surface/80 backdrop-blur-xl border border-white/5 px-5 py-3 text-ink text-sm sm:text-base leading-relaxed shadow-lg">
+        <!-- Issue #5: token classes replace hardcoded hex -->
+        <div class="ml-auto max-w-[80%] rounded-2xl bg-userBubble border border-userBubbleBorder px-5 py-3 text-userBubbleText text-sm sm:text-base leading-relaxed shadow-sm">
           <p class="whitespace-pre-wrap break-words m-0">{{ message().content }}</p>
         </div>
           
-          <!-- Actions & Timestamp (visible on hover) -->
-          <div class="flex items-center gap-2 mt-1.5 opacity-0 group-hover/userMsg:opacity-100 transition-opacity duration-200 text-[11px] text-ink/70 font-medium px-1">
+          <!-- Issue #3: opacity-60 on mobile (always visible), sm: reverts to hover-only -->
+          <div class="flex items-center gap-2 mt-1.5 opacity-60 sm:opacity-0 sm:group-hover/userMsg:opacity-100 transition-opacity duration-200 text-[11px] text-muted font-medium px-1">
             <span>{{ message().timestamp }}</span>
             <div class="w-1 h-1 rounded-full bg-line"></div>
             <button class="hover:text-ink transition flex items-center gap-1" title="Edit message" (click)="editMessage()">
@@ -18,7 +19,7 @@
               <svg [lucideIcon]="icons.Copy" class="h-3 w-3"></svg>
               <span>Copy</span>
             </button>
-            <button class="hover:text-warning transition flex items-center gap-1" title="Delete message" (click)="deleteMessage()">
+            <button class="hover:text-error transition flex items-center gap-1" title="Delete message" (click)="deleteMessage()">
               <svg [lucideIcon]="icons.Trash2" class="h-3 w-3"></svg>
             </button>
           </div>
@@ -28,98 +29,151 @@
     <!-- Assistant Message -->
     @else {
       <div class="flex items-start gap-4 w-full">
-        <!-- Avatar -->
-        <div class="w-8 h-8 flex-shrink-0 mt-1 flex items-center justify-center rounded-full border border-accent/40 bg-accent/10 relative shadow-glow">
+        <!-- Avatar — static ring; only animate while this is the active streaming message -->
+        <div class="w-8 h-8 flex-shrink-0 mt-1 flex items-center justify-center rounded-full border border-accent/25 bg-accent/10 relative">
           <svg [lucideIcon]="icons.Bot" class="h-4 w-4 text-accent"></svg>
           @if (isStreaming() && isLast()) {
+            <!-- Streaming: pulsing accent dot -->
             <span class="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent/60 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent"></span>
             </span>
           } @else {
-            <span class="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success/60 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+            <!-- Completed: static dot, no pulse -->
+            <span class="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
             </span>
           }
         </div>
 
         <!-- Content Area -->
-        <div class="w-full text-secondary text-sm sm:text-base leading-relaxed space-y-4 min-w-0">
+        <div
+          class="w-full text-secondary text-sm sm:text-base leading-relaxed space-y-4 min-w-0"
+          [class.animate-fade-up-smooth]="!isStreaming() || !isLast()"
+        >
           
           @if (message().content) {
-            <!-- The markdown prose will be styled in styles.scss to resemble light cards and tables -->
-            <markdown class="prose prose-sm prose-invert max-w-none mc-assistant-prose" [data]="message().content" />
+            <markdown class="prose prose-sm max-w-none mc-assistant-prose" [data]="message().content" />
           } @else {
-            <div class="flex items-center gap-2 text-ink/60 h-6">
-              <span class="h-1.5 w-1.5 rounded-full bg-accent/80 animate-bounce [animation-delay:0ms]"></span>
-              <span class="h-1.5 w-1.5 rounded-full bg-accent/80 animate-bounce [animation-delay:150ms]"></span>
-              <span class="h-1.5 w-1.5 rounded-full bg-accent/80 animate-bounce [animation-delay:300ms]"></span>
+            <div class="flex items-center gap-2 text-muted h-6">
+              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:0ms]"></span>
+              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:150ms]"></span>
+              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:300ms]"></span>
             </div>
           }
 
           <!-- Citations & Actions -->
           @if (message().content && (!isStreaming() || !isLast())) {
-            <div class="mt-4 flex flex-col gap-3">
+            <div class="mt-3 flex flex-col gap-3">
               
-              <!-- Citations Bar -->
+              <!-- Issue #4: Citations — informational chips only, no pointer/hover promise -->
               @if (message().citations?.length) {
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-1.5">
                   @for (citation of message().citations; track citation.title) {
-                    <div class="flex items-center gap-2 rounded-lg border border-line bg-surface px-2 py-1 text-xs text-secondary hover:bg-hover hover:border-accent/50 hover:text-ink transition cursor-pointer shadow-sm">
-                      <svg [lucideIcon]="icons.BookOpen" class="h-3 w-3 opacity-70"></svg>
-                      <span class="font-medium">{{ citation.title }}</span>
-                      <span class="opacity-50 text-[10px] uppercase">{{ citation.chapter }}</span>
+                    <div class="flex items-center gap-1.5 rounded-lg border border-line border-l-2 border-l-accent/50 bg-accent/[0.04] px-2.5 py-1 text-xs text-secondary hover:bg-hover transition-colors select-text">
+                      <svg [lucideIcon]="icons.BookOpen" class="h-3 w-3 opacity-60 shrink-0"></svg>
+                      <span class="font-medium truncate max-w-[160px]">{{ citation.title }}</span>
+                      @if (citation.chapter) {
+                        <span class="opacity-50 text-[10px] shrink-0">{{ citation.chapter }}</span>
+                      }
                     </div>
                   }
                 </div>
               }
 
-              <!-- Action Toolbar (Permanent anchor at bottom) -->
-              <div class="mt-6 pt-3 border-t border-line flex items-center gap-2 text-xs text-muted transition-opacity duration-200">
-                <button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-hover hover:text-ink border border-line hover:border-accent/40 hover:shadow-glow transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:-translate-y-0.5" title="Copy message" (click)="copy()">
+              <!-- Action Toolbar — reduced visual weight; answer content must dominate -->
+              <div class="pt-2 border-t border-line flex items-center gap-1 text-xs text-muted">
+                <button
+                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Copy message"
+                  (click)="copy()"
+                >
                   <svg [lucideIcon]="icons.Copy" class="h-3.5 w-3.5"></svg>
                   <span>Copy</span>
                 </button>
-                <button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-hover hover:text-ink border border-line hover:border-accent/40 hover:shadow-glow transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:-translate-y-0.5" title="Generate Flashcards">
+                <!-- Issue #1: Flashcards wired to coming-soon toast -->
+                <button
+                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Generate Flashcards"
+                  (click)="openFlashcards()"
+                >
                   <svg [lucideIcon]="icons.BookOpen" class="h-3.5 w-3.5"></svg>
                   <span>Flashcards</span>
                 </button>
-                <button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-hover hover:text-ink border border-line hover:border-accent/40 hover:shadow-glow transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:-translate-y-0.5" title="Create Quiz">
+                <!-- Issue #1: Quiz wired to coming-soon toast -->
+                <button
+                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Create Quiz"
+                  (click)="createQuiz()"
+                >
                   <svg [lucideIcon]="icons.ClipboardList" class="h-3.5 w-3.5"></svg>
                   <span>Quiz</span>
                 </button>
-                <button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-hover hover:text-ink border border-line hover:border-accent/40 hover:shadow-glow transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:-translate-y-0.5" title="Create Notes">
+                <!-- Issue #1: Notes wired to coming-soon toast -->
+                <button
+                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Create Notes"
+                  (click)="createNotes()"
+                >
                   <svg [lucideIcon]="icons.NotebookPen" class="h-3.5 w-3.5"></svg>
                   <span>Notes</span>
                 </button>
                 
-                <div class="w-px h-3 bg-line mx-1"></div>
+                <div class="w-px h-3 bg-line mx-0.5"></div>
                 
-                <!-- More Menu -->
-                <div class="relative group/more">
-                  <button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-hover hover:text-ink border border-line hover:border-accent/40 hover:shadow-glow transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:-translate-y-0.5" title="More Actions">
+                <!-- Issue #2: More Menu — click-toggled signal, touch-safe -->
+                <div class="relative">
+                  <!-- Outside-click backdrop -->
+                  @if (showMoreMenu()) {
+                    <div class="fixed inset-0 z-40" (click)="closeMoreMenu()"></div>
+                  }
+                  <button
+                    class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="More Actions"
+                    [attr.aria-expanded]="showMoreMenu()"
+                    aria-haspopup="menu"
+                    (click)="toggleMoreMenu()"
+                    (keydown.escape)="closeMoreMenu()"
+                  >
                     <svg [lucideIcon]="icons.MoreHorizontal" class="h-3.5 w-3.5"></svg>
                   </button>
                   
-                  <div class="absolute bottom-full left-0 mb-1 hidden group-hover/more:block z-50 min-w-[140px] rounded-xl border border-line bg-surface backdrop-blur-xl p-1 shadow-glassHover animate-fade-in">
-                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-ink transition">
-                      <svg [lucideIcon]="icons.Mic" class="h-3.5 w-3.5"></svg>
-                      Read Aloud
-                    </button>
-                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-ink transition" (click)="regenerate()">
-                      <svg [lucideIcon]="icons.RefreshCcw" class="h-3.5 w-3.5"></svg>
-                      Regenerate
-                    </button>
-                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-ink transition">
-                      <svg [lucideIcon]="icons.Bookmark" class="h-3.5 w-3.5"></svg>
-                      Bookmark
-                    </button>
-                    <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-ink transition">
-                      <svg [lucideIcon]="icons.Share2" class="h-3.5 w-3.5"></svg>
-                      Share
-                    </button>
-                  </div>
+                  @if (showMoreMenu()) {
+                    <div
+                      role="menu"
+                      class="absolute bottom-full left-0 mb-1 z-50 min-w-[148px] rounded-xl border border-line bg-surface p-1 shadow-glassHover animate-fade-in"
+                    >
+                      <button
+                        role="menuitem"
+                        class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-accent transition"
+                        (click)="regenerate()"
+                        (keydown.escape)="closeMoreMenu()"
+                      >
+                        <svg [lucideIcon]="icons.RefreshCcw" class="h-3.5 w-3.5"></svg>
+                        Regenerate
+                      </button>
+                      <!-- Issue #1: Bookmark wired to coming-soon toast -->
+                      <button
+                        role="menuitem"
+                        class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-accent transition"
+                        (click)="bookmarkMessage()"
+                        (keydown.escape)="closeMoreMenu()"
+                      >
+                        <svg [lucideIcon]="icons.Bookmark" class="h-3.5 w-3.5"></svg>
+                        Bookmark
+                      </button>
+                      <!-- Issue #1: Share wired to coming-soon toast -->
+                      <button
+                        role="menuitem"
+                        class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-accent transition"
+                        (click)="shareMessage()"
+                        (keydown.escape)="closeMoreMenu()"
+                      >
+                        <svg [lucideIcon]="icons.Share2" class="h-3.5 w-3.5"></svg>
+                        Share
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             </div>
@@ -127,4 +181,5 @@
         </div>
       </div>
     }
+
 </article>

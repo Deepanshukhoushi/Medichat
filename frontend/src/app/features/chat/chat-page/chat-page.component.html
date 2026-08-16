@@ -1,15 +1,12 @@
 <div class="relative flex h-full flex-col overflow-hidden w-full">
-  <div #scrollContainer class="flex-1 overflow-y-auto px-4 sm:px-6 pt-16 pb-44 scroll-smooth" (scroll)="onScroll()">
-    <div class="max-w-3xl mx-auto w-full flex flex-col gap-6">
-      @if (userProfile()?.user_id?.startsWith('guest_')) {
-        <div class="flex items-center gap-2.5 rounded-2xl bg-accent/[0.08] border border-accent/[0.12] px-4 py-3 text-sm text-accent mb-4">
-          <svg [lucideIcon]="icons.Info" class="h-4 w-4 shrink-0"></svg>
-          <p>You're browsing as a guest &mdash; <a routerLink="/auth/login" class="font-semibold underline hover:text-accent/80 transition-colors">sign up</a> to unlock flashcards, quizzes &amp; analytics.</p>
-        </div>
-      }
+  <!-- pt-14 = clears the floating sidebar-toggle button; pb-40 = clears the pinned composer -->
+  <div #scrollContainer class="flex-1 overflow-y-auto scroll-smooth pt-14 pb-40" (scroll)="onScroll()">
+    <div class="mc-response-width flex flex-col gap-6">
+
 
       @if (chatService.isHistoryLoading()) {
         <div class="space-y-8 pt-4">
+          <!-- Assistant skeleton: circular avatar + three lines -->
           <div class="flex animate-pulse gap-4 opacity-70">
             <div class="h-8 w-8 rounded-full bg-surface shrink-0 mt-0.5 border border-line"></div>
             <div class="flex-1 space-y-2.5 py-1">
@@ -18,9 +15,16 @@
               <div class="h-3.5 w-2/3 rounded-full bg-surface border border-line"></div>
             </div>
           </div>
-          <div class="flex animate-pulse gap-4 flex-row-reverse opacity-70">
-            <div class="flex-1 space-y-2.5 py-1 flex flex-col items-end">
+          <!-- User skeleton: right-aligned bubble pill -->
+          <div class="flex animate-pulse justify-end opacity-70">
+            <div class="h-9 w-48 rounded-2xl bg-userBubble border border-userBubbleBorder"></div>
+          </div>
+          <!-- Second assistant skeleton: shorter -->
+          <div class="flex animate-pulse gap-4 opacity-70">
+            <div class="h-8 w-8 rounded-full bg-surface shrink-0 mt-0.5 border border-line"></div>
+            <div class="flex-1 space-y-2.5 py-1">
               <div class="h-3.5 w-1/2 rounded-full bg-surface border border-line"></div>
+              <div class="h-3.5 w-2/3 rounded-full bg-surface border border-line"></div>
             </div>
           </div>
         </div>
@@ -38,41 +42,40 @@
 
       } @else if (chatService.messages().length === 0) {
         <!-- ── Landing / Empty state ──────────────────────────────────────── -->
-        <div class="flex-1 flex flex-col items-center justify-center w-full animate-fade-in pb-8 relative">
+        <div class="flex-1 flex flex-col items-center w-full animate-fade-in pt-16 sm:pt-20 md:pt-24 pb-8 relative">
 
           <!-- Greeting block -->
-          <div class="w-full max-w-[800px] mx-auto text-center mb-7 relative z-10">
-            <div class="relative mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 border border-accent/20 mx-auto shadow-sm">
-              <div class="absolute inset-0 rounded-2xl border-2 border-accent/40 animate-[ping_3s_ease-in-out_infinite] opacity-20"></div>
-              <svg [lucideIcon]="icons.Stethoscope" class="h-5 w-5 text-accent relative z-10"></svg>
+          <div class="w-full text-center mb-6 relative z-10">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 border border-accent/20 mx-auto mb-4">
+              <svg [lucideIcon]="icons.Stethoscope" class="h-5 w-5 text-accent"></svg>
             </div>
-            <h1 class="text-[32px] font-bold text-ink tracking-tight leading-tight">{{ greeting() }}</h1>
-            <p class="text-[15px] text-muted mt-2">What would you like to learn today?</p>
+            <h1 class="text-[28px] font-bold text-ink tracking-tight leading-tight">{{ greeting() }}</h1>
+            <p class="text-[14px] text-muted mt-2">Your AI-powered medical study companion</p>
           </div>
 
-          <!-- Hero Composer — same max-width as greeting -->
-          <div class="w-full max-w-[800px] mx-auto relative z-20">
+          <!-- Hero Composer -->
+          <div class="w-full relative z-20 mb-3.5">
             <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
           </div>
 
           <!-- Suggestion chips -->
-          <div class="mt-5 flex flex-wrap justify-center gap-2 max-w-[800px] mx-auto relative z-10">
+          <div class="w-full flex flex-wrap justify-center items-center gap-2 relative z-10">
             @for (prompt of starterPrompts(); track prompt; let i = $index) {
               <button
-                class="flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2 text-[13px] font-medium text-secondary transition-all duration-300 hover:bg-hover hover:border-accent/50 hover:text-ink hover:scale-[1.03] active:scale-95 shadow-sm animate-fade-up-spring"
-                [style.animation-delay]="i * 75 + 'ms'"
+                class="group flex items-center gap-1.5 rounded-full border border-line/50 bg-surface/40 px-3 py-1 text-[12.5px] font-normal text-muted transition-all duration-200 hover:bg-surface/80 hover:border-accent/30 hover:text-ink active:scale-95 animate-fade-up-spring"
+                [style.animation-delay]="i * 60 + 'ms'"
                 type="button"
                 (click)="insertPrompt(prompt.prompt)"
               >
-                <svg [lucideIcon]="icons.Sparkles" class="h-3.5 w-3.5 text-accent/60 shrink-0"></svg>
-                {{ prompt.label }}
+                <svg [lucideIcon]="icons.Sparkles" class="h-2.5 w-2.5 text-accent/50 group-hover:text-accent shrink-0 transition-colors"></svg>
+                <span>{{ prompt.label }}</span>
               </button>
             }
           </div>
 
           <!-- Study progress widget -->
           @if (dashboardStats()?.recent_conversations?.length) {
-            <div class="mt-14 w-full max-w-[600px] mx-auto rounded-2xl border border-line bg-surface p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div class="mt-10 w-full rounded-2xl border border-line bg-surface/60 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
               <div class="flex items-center gap-4">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 border border-accent/20 shrink-0">
                   <svg [lucideIcon]="icons.Flame" class="h-5 w-5 text-accent"></svg>
@@ -115,8 +118,8 @@
   </div>
 
   @if (chatService.messages().length > 0) {
-    <div class="absolute bottom-0 left-0 right-0 pt-12 pb-4 px-4 bg-gradient-to-t from-canvas via-canvas/90 to-transparent pointer-events-none z-20">
-      <div class="pointer-events-auto max-w-3xl mx-auto w-full relative">
+    <div class="absolute bottom-0 left-0 right-0 pt-10 pb-4 bg-gradient-to-t from-canvas via-canvas/90 to-transparent pointer-events-none z-20">
+      <div class="pointer-events-auto mc-response-width relative">
         @if (!isNearBottom() && !composerFocused()) {
           <button
             class="absolute -top-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-xs font-medium text-secondary shadow-md transition hover:bg-hover hover:text-ink"
@@ -127,10 +130,10 @@
             Latest
           </button>
         }
-        <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
-        <div class="text-center text-xs text-slate-500 mt-2 pointer-events-none">
+        <div class="text-center text-[11px] text-muted/70 mb-2 pointer-events-none">
           MediChat can make mistakes. Always verify important medical info.
         </div>
+        <mc-chat-composer [isStreaming]="chatService.isStreaming()" (submitted)="startConversation($event)" (stopped)="stopGeneration()" (focusStateChange)="onComposerFocusChange($event)" />
       </div>
     </div>
   }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 
 import { ChatService } from '../../../core/services/chat.service';
@@ -35,14 +35,24 @@ export class ChatPageComponent {
   protected readonly userProfile = this.profileService.profile;
   protected readonly dashboardStats = signal<DashboardStats | null>(null);
 
+  protected readonly isGuestUser = computed(() => {
+    const profile = this.userProfile();
+    if (profile === null) return true;
+    return profile.user_id.startsWith('guest_');
+  });
+
   protected readonly greeting = computed(() => {
     const hour = new Date().getHours();
     let timeGreeting = 'Good Evening';
     if (hour < 12) timeGreeting = 'Good Morning';
     else if (hour < 18) timeGreeting = 'Good Afternoon';
 
-    const name = this.userProfile()?.display_name || 'Medical Student';
-    return `${timeGreeting}, ${name}`;
+    if (this.isGuestUser()) {
+      return timeGreeting;
+    }
+
+    const name = this.userProfile()?.display_name;
+    return name ? `${timeGreeting}, ${name}` : `${timeGreeting}, Medical Student`;
   });
 
   protected readonly starterPrompts = computed(() => {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
@@ -28,6 +28,9 @@ export class ChatMessageComponent {
   
   protected readonly icons = appIcons;
 
+  /** Controls the "More" dropdown — click-toggled, touch-safe. */
+  protected readonly showMoreMenu = signal(false);
+
   constructor(
     private readonly clipboard: Clipboard,
     private readonly toastr: ToastrService
@@ -47,10 +50,49 @@ export class ChatMessageComponent {
   }
 
   protected regenerate(): void {
+    this.closeMoreMenu();
     this.regenerated.emit();
   }
 
   protected editMessage(): void {
     this.editRequested.emit(this.message().id);
+  }
+
+  // ── More-menu toggle ──────────────────────────────────────────────────────
+
+  protected toggleMoreMenu(): void {
+    this.showMoreMenu.update(v => !v);
+  }
+
+  protected closeMoreMenu(): void {
+    this.showMoreMenu.set(false);
+  }
+
+  // ── Coming-soon stubs (Flashcards, Quiz, Notes, Bookmark, Share) ──────────
+
+  protected openFlashcards(): void {
+    this.comingSoon('Flashcards');
+  }
+
+  protected createQuiz(): void {
+    this.comingSoon('Quiz');
+  }
+
+  protected createNotes(): void {
+    this.comingSoon('Notes');
+  }
+
+  protected bookmarkMessage(): void {
+    this.closeMoreMenu();
+    this.comingSoon('Bookmark');
+  }
+
+  protected shareMessage(): void {
+    this.closeMoreMenu();
+    this.comingSoon('Share');
+  }
+
+  private comingSoon(feature: string): void {
+    this.toastr.info(`${feature} is coming soon!`, '', { timeOut: 2500 });
   }
 }
