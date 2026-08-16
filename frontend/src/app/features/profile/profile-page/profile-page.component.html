@@ -6,12 +6,18 @@
   />
 
   @if (isLoading()) {
-    <!-- Loading skeleton -->
+    <!-- Loading skeleton — bug fix: was bg-ink/10 -->
     <mc-glass-card class="space-y-4 animate-pulse">
-      <div class="h-5 w-40 rounded bg-ink/10"></div>
-      <div class="h-10 w-full rounded-[14px] bg-ink/10"></div>
-      <div class="h-5 w-32 rounded bg-ink/10"></div>
-      <div class="h-10 w-full rounded-[14px] bg-ink/10"></div>
+      <div class="flex items-center gap-4">
+        <div class="h-16 w-16 rounded-full bg-surface border border-line shrink-0"></div>
+        <div class="space-y-2 flex-1">
+          <div class="h-5 w-40 rounded bg-surface border border-line"></div>
+          <div class="h-4 w-24 rounded bg-surface border border-line"></div>
+        </div>
+      </div>
+      <div class="h-10 w-full rounded-[14px] bg-surface border border-line"></div>
+      <div class="h-5 w-32 rounded bg-surface border border-line"></div>
+      <div class="h-10 w-full rounded-[14px] bg-surface border border-line"></div>
     </mc-glass-card>
   } @else if (initialLoadFailed()) {
     <mc-glass-card class="flex flex-col items-center justify-center py-10 text-center">
@@ -19,34 +25,47 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
       </div>
       <h3 class="text-lg font-semibold text-ink">Failed to load profile</h3>
-      <p class="text-sm text-ink/60 mt-1 mb-5">There was a problem retrieving your account details.</p>
+      <!-- Bug fix: was text-ink/60 -->
+      <p class="text-sm text-secondary mt-1 mb-5">There was a problem retrieving your account details.</p>
       <button type="button" class="primary-button px-6 py-2" (click)="retryLoad()">Try Again</button>
     </mc-glass-card>
   } @else {
     <form [formGroup]="form" (ngSubmit)="saveProfile()">
-      <!-- Personal Info -->
+      <!-- Personal Info card with initials avatar -->
       <mc-glass-card class="mb-5">
+        <!-- Avatar header -->
+        <div class="mb-6 flex items-center gap-4">
+          <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent/15 border border-accent/25 text-2xl font-bold text-accent select-none">
+            {{ (form.get('display_name')?.value || 'U').charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <p class="text-base font-semibold text-ink">
+              {{ form.get('display_name')?.value || 'Your Profile' }}
+            </p>
+            <p class="text-xs text-muted mt-0.5">Edit your details below</p>
+          </div>
+        </div>
         <h2 class="text-lg font-semibold text-ink mb-5">Personal Information</h2>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-ink/80 mb-1">Display Name <span class="text-red-400">*</span></label>
+            <label class="block text-sm font-medium text-ink mb-1">Display Name <span class="text-error">*</span></label>
             <input
               formControlName="display_name"
               type="text"
               placeholder="Your full name"
-              class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+              class="w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-ink text-sm outline-none shadow-sm focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
             />
             @if (form.get('display_name')?.invalid && form.get('display_name')?.touched) {
-              <p class="mt-1 text-xs text-red-500">Display name is required.</p>
+              <p class="mt-1 text-xs text-error">Display name is required.</p>
             }
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-ink/80 mb-1">Specialty / Program</label>
+              <label class="block text-sm font-medium text-ink mb-1">Specialty / Program</label>
               <select
                 formControlName="specialty"
-                class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+                class="w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-ink text-sm outline-none shadow-sm focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
               >
                 <option value="">Select specialty</option>
                 <option value="MBBS">MBBS</option>
@@ -59,10 +78,10 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-ink/80 mb-1">Medical Year</label>
+              <label class="block text-sm font-medium text-ink mb-1">Medical Year</label>
               <select
                 formControlName="medical_year"
-                class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+                class="w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-ink text-sm outline-none shadow-sm focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
               >
                 <option [value]="null">Select year</option>
                 <option [value]="1">Year 1</option>
@@ -76,12 +95,12 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-ink/80 mb-1">University / College</label>
+            <label class="block text-sm font-medium text-ink mb-1">University / College</label>
             <input
               formControlName="university"
               type="text"
               placeholder="e.g. AIIMS Delhi"
-              class="w-full rounded-[14px] border border-ink/10 bg-transparent px-4 py-2.5 text-ink text-sm outline-none focus:border-accent transition-colors"
+              class="w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-ink text-sm outline-none shadow-sm focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
             />
           </div>
         </div>
@@ -100,7 +119,7 @@
           <p class="text-sm font-medium text-success">✓ {{ successMessage() }}</p>
         }
         @if (errorMsg()) {
-          <p class="text-sm font-medium text-red-500">{{ errorMsg() }}</p>
+          <p class="text-sm font-medium text-error">{{ errorMsg() }}</p>
         }
       </div>
     </form>

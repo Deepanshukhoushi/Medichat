@@ -17,14 +17,20 @@
   }
 
   @if (isLoading()) {
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      @for (_ of [1, 2, 3, 4]; track $index) {
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      @for (_ of [1, 2, 3]; track $index) {
         <div class="glass-card animate-pulse space-y-3 p-5">
           <div class="h-4 w-24 rounded bg-ink/10"></div>
           <div class="h-8 w-16 rounded bg-ink/10"></div>
           <div class="h-4 w-28 rounded bg-ink/10"></div>
         </div>
       }
+    </div>
+    <!-- Streak hero skeleton -->
+    <div class="glass-card animate-pulse space-y-3 p-6">
+      <div class="h-5 w-32 rounded bg-ink/10"></div>
+      <div class="h-10 w-20 rounded bg-ink/10"></div>
+      <div class="h-4 w-40 rounded bg-ink/10"></div>
     </div>
 
     <div class="glass-card animate-pulse space-y-3 p-5">
@@ -33,10 +39,13 @@
       <div class="h-4 w-3/4 rounded bg-ink/10"></div>
     </div>
   } @else if (dashboardStats(); as data) {
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+
+    <!-- ── Three secondary stat cards ──────────────────────────────── -->
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <!-- Sessions — accent (brand) -->
       <mc-glass-card class="flex flex-col gap-2 animate-fade-up-smooth delay-[50ms]">
         <div class="flex items-center gap-3">
-          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 shadow-glow">
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
             <svg [lucideIcon]="icons.MessageCircle" class="h-4 w-4 text-accent"></svg>
           </div>
           <p class="text-sm font-medium text-secondary">Total Sessions</p>
@@ -45,10 +54,11 @@
         <p class="text-xs text-muted">Study sessions completed</p>
       </mc-glass-card>
 
+      <!-- Messages — success (teal/green) -->
       <mc-glass-card class="flex flex-col gap-2 animate-fade-up-smooth delay-100">
         <div class="flex items-center gap-3">
-          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 shadow-glow">
-            <svg [lucideIcon]="icons.MessagesSquare" class="h-4 w-4 text-accent"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-success/10 border border-success/20">
+            <svg [lucideIcon]="icons.MessagesSquare" class="h-4 w-4 text-success"></svg>
           </div>
           <p class="text-sm font-medium text-secondary">Messages</p>
         </div>
@@ -56,39 +66,69 @@
         <p class="text-xs text-muted">Total AI interactions</p>
       </mc-glass-card>
 
-      <mc-glass-card class="flex flex-col gap-2 animate-fade-up-smooth delay-[150ms]">
+      <!-- Topics — warning (amber) -->
+      <mc-glass-card class="flex flex-col gap-2 animate-fade-up-smooth delay-[150ms] col-span-2 lg:col-span-1">
         <div class="flex items-center gap-3">
-          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 shadow-glow">
-            <svg [lucideIcon]="icons.BookOpen" class="h-4 w-4 text-accent"></svg>
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10 border border-warning/20">
+            <svg [lucideIcon]="icons.BookOpen" class="h-4 w-4 text-warning"></svg>
           </div>
           <p class="text-sm font-medium text-secondary">Topics Covered</p>
         </div>
         <p class="text-3xl font-bold text-ink">{{ data.stats.unique_topics }}</p>
         <p class="text-xs text-muted">Unique medical topics</p>
       </mc-glass-card>
-
-      <mc-glass-card class="flex flex-col gap-2 animate-fade-up-smooth delay-200">
-        <div class="flex items-center gap-3">
-          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 shadow-glow">
-            <svg [lucideIcon]="icons.Flame" class="h-4 w-4 text-accent"></svg>
-          </div>
-          <p class="text-sm font-medium text-secondary">Day Streak</p>
-        </div>
-        <p class="text-3xl font-bold text-ink">{{ data.stats.streak_days }}</p>
-        <p class="text-xs text-muted">Consecutive days studying</p>
-      </mc-glass-card>
     </div>
 
+    <!-- ── Day Streak — hero card ───────────────────────────────────── -->
+    <div
+      class="relative overflow-hidden rounded-2xl border border-warning/25 bg-gradient-to-br from-warning/15 via-error/8 to-accent/10 p-6 animate-fade-up-smooth delay-200 transition-shadow"
+      [class.shadow-[0_0_48px_rgba(166,106,31,0.18)]]="data.stats.streak_days >= 7"
+      [class.shadow-sm]="data.stats.streak_days < 7"
+    >
+      <!-- subtle grain overlay -->
+      <div class="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/5 to-transparent"></div>
+
+      <div class="relative flex items-start justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning/20 border border-warning/30">
+              <svg [lucideIcon]="icons.Flame" class="h-5 w-5 text-warning"></svg>
+            </div>
+            <p class="text-sm font-semibold text-secondary">Day Streak</p>
+          </div>
+          <p class="text-4xl font-bold text-ink tabular-nums">{{ data.stats.streak_days }}</p>
+          <p class="text-xs text-muted">Consecutive days studying</p>
+        </div>
+
+        <!-- Milestone badge -->
+        @if (data.stats.streak_days >= 30) {
+          <span class="shrink-0 rounded-full border border-warning/30 bg-warning/15 px-3 py-1 text-[11px] font-bold tracking-wide text-warning">🔥 30-day legend</span>
+        } @else if (data.stats.streak_days >= 7) {
+          <span class="shrink-0 rounded-full border border-warning/30 bg-warning/15 px-3 py-1 text-[11px] font-bold tracking-wide text-warning">🔥 Week streak</span>
+        }
+      </div>
+    </div>
+
+    <!-- ── Recent Conversations ─────────────────────────────────────── -->
     <mc-glass-card class="animate-fade-up-smooth delay-[250ms]">
       <div class="mb-5 flex items-center justify-between gap-4">
         <h2 class="text-xl font-semibold">Recent Conversations</h2>
-        <a routerLink="/app/chat" class="text-sm font-medium text-accent no-underline transition-colors hover:text-accent/80">Open Chat &rarr;</a>
+        <a routerLink="/app/chat" class="text-sm font-medium text-accent no-underline transition-colors hover:text-accentHover">Open Chat &rarr;</a>
       </div>
 
       @if (data.recent_conversations.length === 0) {
-        <div class="flex flex-col items-center justify-center py-10 text-center text-muted">
-          <svg [lucideIcon]="icons.MessageCircle" class="mb-3 h-10 w-10 opacity-30"></svg>
-          <p class="text-sm">No conversations yet. <a routerLink="/app/chat" class="text-accent no-underline hover:text-emerald-400">Start chatting</a></p>
+        <!-- Upgraded empty state -->
+        <div class="flex flex-col items-center justify-center py-12 text-center gap-4">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-accent/8 border border-accent/15">
+            <svg [lucideIcon]="icons.MessageCircle" class="h-7 w-7 text-accent/50"></svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-ink">Start your first session</p>
+            <p class="mt-1 text-xs text-muted">Ask any medical question to get started</p>
+          </div>
+          <a routerLink="/app/chat" class="primary-button text-sm px-5 py-2 h-auto no-underline">
+            Ask MediChat
+          </a>
         </div>
       } @else {
         <div class="space-y-2">
@@ -112,29 +152,30 @@
       }
     </mc-glass-card>
 
+    <!-- ── Quick Actions ────────────────────────────────────────────── -->
     <mc-glass-card class="animate-fade-up-smooth delay-300">
       <h2 class="mb-5 text-xl font-semibold">Quick Actions</h2>
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <a routerLink="/app/chat" class="glass-card-interactive group flex flex-col items-center gap-2 p-4">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:shadow-glow transition-all">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 transition-all">
             <svg [lucideIcon]="icons.MessageCircle" class="h-5 w-5 text-secondary group-hover:text-accent transition-colors"></svg>
           </div>
           <span class="text-center text-xs font-medium text-secondary group-hover:text-ink transition-colors">New Chat</span>
         </a>
         <a routerLink="/app/flashcards" class="glass-card-interactive group flex flex-col items-center gap-2 p-4">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:shadow-glow transition-all">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 transition-all">
             <svg [lucideIcon]="icons.Layers" class="h-5 w-5 text-secondary group-hover:text-accent transition-colors"></svg>
           </div>
           <span class="text-center text-xs font-medium text-secondary group-hover:text-ink transition-colors">Flashcards</span>
         </a>
         <a routerLink="/app/quizzes" class="glass-card-interactive group flex flex-col items-center gap-2 p-4">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:shadow-glow transition-all">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 transition-all">
             <svg [lucideIcon]="icons.ClipboardList" class="h-5 w-5 text-secondary group-hover:text-accent transition-colors"></svg>
           </div>
           <span class="text-center text-xs font-medium text-secondary group-hover:text-ink transition-colors">Quiz</span>
         </a>
         <a routerLink="/app/study-tools" class="glass-card-interactive group flex flex-col items-center gap-2 p-4">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:shadow-glow transition-all">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-line group-hover:border-accent/40 group-hover:bg-accent/10 transition-all">
             <svg [lucideIcon]="icons.BookOpen" class="h-5 w-5 text-secondary group-hover:text-accent transition-colors"></svg>
           </div>
           <span class="text-center text-xs font-medium text-secondary group-hover:text-ink transition-colors">Study Tools</span>
