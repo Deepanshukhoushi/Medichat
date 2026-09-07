@@ -33,6 +33,7 @@ class ImportSmokeTest(unittest.TestCase):
                 self.config = {}
                 self.extensions = {}
                 self.url_rules = []
+                self.wsgi_app = object()
 
             def before_request(self, func):
                 return func
@@ -136,11 +137,13 @@ class ImportSmokeTest(unittest.TestCase):
                 self.metadata = metadata or {}
 
         stub_module("flask", Flask=StubFlask, jsonify=lambda payload=None, **kwargs: payload, make_response=lambda value=None: StubResponse(), send_from_directory=lambda *args, **kwargs: None, render_template=lambda *args, **kwargs: "<html />", request=types.SimpleNamespace(form={}, cookies={}, get_json=lambda silent=True: None, headers={}, method="GET", path="/", remote_addr="127.0.0.1"), g=types.SimpleNamespace())
-        stub_module("supabase", create_client=lambda *args, **kwargs: StubSupabaseClient())
+        stub_module("supabase", create_client=lambda *args, **kwargs: StubSupabaseClient(), ClientOptions=lambda *a, **k: None)
         stub_module("dotenv", load_dotenv=lambda *args, **kwargs: None)
         stub_module("streamlit", set_page_config=lambda *args, **kwargs: None, session_state={}, sidebar=types.SimpleNamespace(__enter__=lambda self: self, __exit__=lambda self, exc_type, exc, tb: False))
         stub_module("werkzeug", exceptions=types.SimpleNamespace())
         stub_module("werkzeug.exceptions", HTTPException=Exception)
+        stub_module("werkzeug.utils", secure_filename=lambda x: x)
+        stub_module("werkzeug.middleware.proxy_fix", ProxyFix=lambda app, *args, **kwargs: app)
         stub_module("langchain_community.chat_message_histories", ChatMessageHistory=type("ChatMessageHistory", (), {"add_user_message": lambda self, message: None, "add_ai_message": lambda self, message: None}))
         stub_module("langchain_cohere", CohereEmbeddings=object, ChatCohere=StubChatModel)
         stub_module("langchain_core.prompts", ChatPromptTemplate=StubPrompt, MessagesPlaceholder=object)

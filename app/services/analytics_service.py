@@ -27,7 +27,7 @@ class AnalyticsService:
             conv_res = self.supabase.table("conversations").select("id", count="exact").eq("user_id", user_id).execute()
             total_sessions = conv_res.count if conv_res.count else 0
 
-            # Unique topics — primary: session_topics table (populated by Celery topic extraction)
+            # Unique topics - primary: session_topics table (populated by Celery topic extraction)
             # Fallback: count distinct conversation titles, which are set to the first user message
             # and act as a reliable proxy for topic diversity when Celery is not running.
             conv_ids = [c["id"] for c in conv_res.data] if conv_res.data else []

@@ -52,7 +52,7 @@ class ServiceFactory:
         else:
             self.supabase = None
             logger.error(
-                "PERSISTENCE IS DISABLED — database is not connected. "
+                "PERSISTENCE IS DISABLED - database is not connected. "
                 "Signups will be refused. Chat messages and all user data will NOT be saved. "
                 "Set SUPABASE_URL and SUPABASE_KEY to enable persistence."
             )

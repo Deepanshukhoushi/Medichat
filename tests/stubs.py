@@ -36,10 +36,18 @@ def setup_stubs():
     _stub("langchain_pinecone", PineconeVectorStore=object)
     _stub("pinecone", ServerlessSpec=object, Pinecone=object)
     _stub("pinecone.grpc", PineconeGRPC=object)
-    _stub("supabase", create_client=lambda *a, **k: None)
+    _stub("supabase", create_client=lambda *a, **k: None, ClientOptions=object)
     _stub("werkzeug", exceptions=types.SimpleNamespace())
     _stub("werkzeug.exceptions", HTTPException=Exception)
-    _stub("flask", Flask=object, jsonify=dict, make_response=lambda v=None: v,
+    _stub("werkzeug.utils", secure_filename=lambda x: x)
+    _stub("werkzeug.middleware.proxy_fix", ProxyFix=lambda *a, **k: None)
+    
+    def _jsonify(*a, **k):
+        if a:
+            return a[0]
+        return k
+
+    _stub("flask", Flask=object, jsonify=_jsonify, make_response=lambda v=None: v,
           send_from_directory=lambda *a, **k: None,
           render_template=lambda *a, **k: "", request=types.SimpleNamespace(
               form={}, cookies={}, get_json=lambda silent=True: None,

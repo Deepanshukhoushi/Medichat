@@ -83,7 +83,7 @@ class AuthService:
         """Best-effort sign-out of the session tied to *access_token*.
 
         Used after a password change to invalidate the reset-link token.
-        Failures are silently swallowed — the caller issues a new guest
+        Failures are silently swallowed - the caller issues a new guest
         cookie regardless.
         """
         if self.user_repository is None or not access_token:

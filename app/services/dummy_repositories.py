@@ -32,7 +32,7 @@ class DummyMemoryRepository(IMemoryRepository):
 
 class DummyUserRepository(IUserRepository):
     def create_user(self, email: str, password_hash: str) -> dict:
-        # Refuse to create users when persistence is disabled — a silent fake
+        # Refuse to create users when persistence is disabled - a silent fake
         # signup discards all data and is worse than an honest error message.
         raise AppError(
             "Signups are temporarily unavailable: the database is not connected. "

@@ -297,87 +297,47 @@ class TestChatServiceRouting(unittest.TestCase):
         chat_svc_mod = importlib.import_module("app.services.chat_service")
         return patch.object(chat_svc_mod, "retrieve_documents_with_scores", return_value=return_value)
 
-    def test_zero_retrieved_docs_uses_general_llm_path(self):
+    def test_zero_retrieved_docs_uses_safe_refusal(self):
         svc = self._make_service()
-        fake_llm = MagicMock()
-        fake_llm.invoke.return_value = types.SimpleNamespace(content="general answer")
 
-        with self._patch_retrieve([]), \
-             patch.object(type(svc), "llm", new_callable=lambda: property(lambda self: fake_llm)):
+        with self._patch_retrieve([]):
             answer = svc.get_answer("What is aspirin?", "guest_abc")
 
-        fake_llm.invoke.assert_called_once()
-        self.assertIn("[general]", answer)
-        self.assertNotIn("[indexed]", answer)
+        self.assertIn("couldn't find reliable information", answer.lower())
 
-    def test_all_low_score_docs_uses_general_llm_path(self):
+    def test_all_low_score_docs_uses_safe_refusal(self):
         svc = self._make_service()
-        fake_doc = types.SimpleNamespace(page_content="irrelevant content")
-        fake_llm = MagicMock()
-        fake_llm.invoke.return_value = types.SimpleNamespace(content="general answer")
+        fake_doc = types.SimpleNamespace(page_content="irrelevant content", metadata={})
 
         low_score_results = [(fake_doc, 0.1), (fake_doc, 0.2)]
-        with self._patch_retrieve(low_score_results), \
-             patch.object(type(svc), "llm", new_callable=lambda: property(lambda self: fake_llm)):
+        with self._patch_retrieve(low_score_results):
             answer = svc.get_answer("What is aspirin?", "guest_abc")
 
-        self.assertIn("[general]", answer)
+        self.assertIn("couldn't find reliable information", answer.lower())
 
-    def test_relevant_docs_uses_qa_chain_path(self):
+    def test_relevant_docs_uses_grounded_path(self):
         svc = self._make_service()
-        fake_doc = types.SimpleNamespace(page_content="aspirin reduces fever")
-        fake_chain = MagicMock()
-        fake_chain.invoke.return_value = {"answer": "aspirin helps with fever"}
+        fake_doc = types.SimpleNamespace(page_content="aspirin reduces fever and inflammation", metadata={"source": "Pharma", "page": 10})
+        fake_llm = MagicMock()
+        fake_llm.invoke.return_value = types.SimpleNamespace(content="Aspirin reduces fever and inflammation.")
 
         high_score_results = [(fake_doc, 0.9)]
         with self._patch_retrieve(high_score_results), \
-             patch.object(type(svc), "qa_chain", new_callable=lambda: property(lambda self: fake_chain)):
+             patch.object(type(svc), "llm", new_callable=lambda: property(lambda self: fake_llm)):
             answer = svc.get_answer("What does aspirin do?", "guest_abc")
 
-        fake_chain.invoke.assert_called_once()
-        self.assertIn("[indexed]", answer)
-        self.assertNotIn("[general]", answer)
-
-    def test_chain_dict_response_with_answer_key(self):
-        svc = self._make_service()
-        fake_doc = types.SimpleNamespace(page_content="content")
-        fake_chain = MagicMock()
-        fake_chain.invoke.return_value = {"answer": "  my answer  "}
-
-        with self._patch_retrieve([(fake_doc, 0.9)]), \
-             patch.object(type(svc), "qa_chain", new_callable=lambda: property(lambda self: fake_chain)):
-            answer = svc.get_answer("q", "user_1")
-
-        self.assertIn("my answer", answer)
-
-    def test_chain_object_with_content_attribute(self):
-        svc = self._make_service()
-        fake_doc = types.SimpleNamespace(page_content="content")
-        fake_chain = MagicMock()
-        fake_chain.invoke.return_value = types.SimpleNamespace(content="object answer")
-
-        with self._patch_retrieve([(fake_doc, 0.9)]), \
-             patch.object(type(svc), "qa_chain", new_callable=lambda: property(lambda self: fake_chain)):
-            answer = svc.get_answer("q", "user_1")
-
-        self.assertIn("object answer", answer)
-
-    def test_chain_failure_falls_back_to_direct_llm(self):
-        svc = self._make_service()
-        fake_doc = types.SimpleNamespace(page_content="ctx content")
-        fake_chain = MagicMock()
-        fake_chain.invoke.side_effect = RuntimeError("chain exploded")
-        fake_llm = MagicMock()
-        fake_llm.invoke.return_value = types.SimpleNamespace(content="fallback answer")
-
-        with self._patch_retrieve([(fake_doc, 0.9)]), \
-             patch.object(type(svc), "qa_chain", new_callable=lambda: property(lambda self: fake_chain)), \
-             patch.object(type(svc), "llm", new_callable=lambda: property(lambda self: fake_llm)):
-            answer = svc.get_answer("q", "user_1")
-
-        # Chain failed → LLM direct call → indexed suffix still applied
         fake_llm.invoke.assert_called_once()
-        self.assertIn("[indexed]", answer)
+        self.assertIn("Aspirin", answer)
+
+    def test_fictional_disease_is_safely_refused(self):
+        svc = self._make_service()
+        fake_doc = types.SimpleNamespace(page_content="general medical text", metadata={})
+        low_score_results = [(fake_doc, 0.4)]
+
+        with self._patch_retrieve(low_score_results):
+            answer = svc.get_answer("What is a fictional disease called XYZ?", "guest_abc")
+
+        self.assertIn("couldn't find reliable information", answer.lower())
 
 
 class TestChatServiceStreamPersistence(unittest.TestCase):
@@ -389,11 +349,9 @@ class TestChatServiceStreamPersistence(unittest.TestCase):
             flask_secret_key="s",
             persistence_enabled=False,
             relevance_score_threshold=0.55,
-            indexed_answer_suffix="[indexed]",
-            general_answer_suffix="[general]",
         )
 
-    def test_partial_stream_is_persisted_on_disconnect(self):
+    def test_stream_persists_answer_successfully(self):
         import importlib
 
         chat_svc_mod = importlib.import_module("app.services.chat_service")
@@ -406,25 +364,22 @@ class TestChatServiceStreamPersistence(unittest.TestCase):
             chat_history_repository=MagicMock(),
             memory_service=memory_service,
         )
-        svc.conversation_service.get_or_create_conversation = MagicMock(return_value="conv-1")
+        svc.conversation_service.ensure_conversation = MagicMock(return_value="conv-1")
         svc.topic_service = None
         svc.summary_service = None
 
         with patch.object(chat_svc_mod, "retrieve_documents_with_scores", return_value=[]), \
-             patch.object(svc, "_generate_answer_stream", return_value=iter(["part one ", "part two"])), \
+             patch.object(svc, "_generate_and_validate_answer", return_value=("Pneumonia is an infection.", None)), \
              patch.object(svc, "_run_background_memory_tasks") as mock_bg:
             stream = svc.get_answer_stream("What is pneumonia?", "student-1")
 
-            first_event = next(stream)
-            second_event = next(stream)
-
-            self.assertIn("conversation_id", first_event)
-            self.assertIn("token", second_event)
-
-            stream.close()
+            events = list(stream)
+            self.assertTrue(any("conversation_id" in e for e in events))
+            self.assertTrue(any("token" in e for e in events))
+            self.assertTrue(any("[DONE]" in e for e in events))
 
         memory_service.save_message.assert_any_call("conv-1", "student-1", "user", "What is pneumonia?")
-        memory_service.save_message.assert_any_call("conv-1", "student-1", "assistant", "part one ")
+        memory_service.save_message.assert_any_call("conv-1", "student-1", "assistant", "Pneumonia is an infection.")
         mock_bg.assert_called_once()
 
 
