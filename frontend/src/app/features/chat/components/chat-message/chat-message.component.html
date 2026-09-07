@@ -55,10 +55,13 @@
           @if (message().content) {
             <markdown class="prose prose-sm max-w-none mc-assistant-prose" [data]="message().content" />
           } @else {
-            <div class="flex items-center gap-2 text-muted h-6">
-              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:0ms]"></span>
-              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:150ms]"></span>
-              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-bounce [animation-delay:300ms]"></span>
+            <!-- Issue #5: content-shaped shimmer skeleton replaces the 3-dot bounce.
+                 Signals "structured answer incoming" vs generic "unknown wait".
+                 aria-live politely announces to screen-readers when content arrives. -->
+            <div class="space-y-2 py-0.5" aria-label="Generating response…" aria-live="polite">
+              <div class="h-3 w-3/4 rounded-full mc-shimmer"></div>
+              <div class="h-3 w-5/6 rounded-full mc-shimmer [animation-delay:0.15s]"></div>
+              <div class="h-3 w-1/2 rounded-full mc-shimmer [animation-delay:0.3s]"></div>
             </div>
           }
 

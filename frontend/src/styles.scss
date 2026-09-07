@@ -10,7 +10,7 @@
   /* Text */
   --color-ink: 53 21 31;         /* #35151F - Deep burgundy text */
   --color-secondary: 110 77 89;  /* #6E4D59 - Subdued rose-mauve */
-  --color-muted: 146 117 128;    /* #927580 - Muted mauve */
+  --color-muted: 141 98 113;    /* #8D6271 - Muted mauve — darkened for WCAG AA (4.62:1 on canvas) */
   --color-placeholder: 185 162 170; /* #B9A2AA */
 
   /* Backgrounds */
@@ -53,7 +53,7 @@
   /* Text */
   --color-ink: 53 21 31;
   --color-secondary: 110 77 89;
-  --color-muted: 146 117 128;
+  --color-muted: 141 98 113;
   --color-placeholder: 185 162 170;
 
   /* Backgrounds */
@@ -569,3 +569,28 @@ body {
   }
 }
 
+/* ── Response Wait Skeleton ──────────────────────────────────────────────────
+ * Shimmer animation for the content-shaped loading skeleton shown while the
+ * assistant is generating a response. Uses CSS custom properties so it
+ * automatically adapts to both light and dark themes without extra selectors.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@keyframes mc-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.mc-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--color-hover))   25%,
+    rgb(var(--color-surface)) 50%,
+    rgb(var(--color-hover))   75%
+  );
+  background-size: 200% 100%;
+  animation: mc-shimmer 1.4s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: rgb(var(--color-hover));
+  }
+}
