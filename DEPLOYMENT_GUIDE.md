@@ -306,7 +306,15 @@ services:
 
 1. Go to [supabase.com](https://supabase.com)
 2. Create a project
-3. Get `SUPABASE_URL` and `SUPABASE_KEY` (anon/public key)
+3. Get `SUPABASE_URL` and `SUPABASE_KEY` — **use the service-role key** (found under
+   Project Settings → API → `service_role` secret), **not** the anon/public key.
+
+   > ⚠️ **Why the anon key will not work:** This application uses Supabase admin APIs
+   > (`auth.admin.get_user_by_id`), which are only available with the service-role key.
+   > If you use the anon key, every first-time profile fetch will throw an error and,
+   > because the app never sets a per-request JWT, Row Level Security will block all
+   > inserts and selects — silently breaking all persistence features.
+
 4. Run migration scripts from `scripts/` folder:
    - `scripts/profiles_migration.sql`
    - `scripts/memory_migration.sql`
@@ -371,7 +379,7 @@ FLASK_SECRET_KEY=generate_a_random_64_char_string
 # Optional (enable persistence)
 PERSISTENCE_ENABLED=true
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_anon_key
+SUPABASE_KEY=your_service_role_key   # service-role key — NOT the anon key (see Supabase setup above)
 
 # Optional (performance)
 REDIS_URL=your_upstash_url
