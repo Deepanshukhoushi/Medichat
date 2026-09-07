@@ -29,10 +29,15 @@ class ConversationRepository:
             logger.exception("Failed to create conversation")
             raise RepositoryError("Failed to ensure conversation") from exc
 
-    def update_title(self, conversation_id: str, title: str) -> None:
-        """Set a human-readable title derived from the first user message."""
+    def update_title(self, conversation_id: str, title: str, user_id: str) -> None:
+        """Set a human-readable title derived from the first user message.
+
+        Defense-in-depth: filters by *user_id* so only the owning user's
+        conversation can be renamed — prevents accidental updates when called
+        without a prior ownership check.
+        """
         try:
-            self.supabase.table("conversations").update({"title": title}).eq("id", conversation_id).execute()
+            self.supabase.table("conversations").update({"title": title}).eq("id", conversation_id).eq("user_id", user_id).execute()
         except Exception as exc:
             logger.warning("Failed to update conversation title: %s", exc)
 

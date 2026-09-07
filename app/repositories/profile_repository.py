@@ -3,10 +3,26 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
-from app.core.security.exceptions import RepositoryError
+from pydantic import BaseModel, Field, ValidationError as PydanticValidationError, field_validator
+
+from app.core.security.exceptions import RepositoryError, ValidationError
 
 
 logger = logging.getLogger(__name__)
+
+
+class ProfileUpdate(BaseModel):
+    """Validates and sanitizes inbound profile data before any DB write."""
+
+    display_name: str | None = Field(default=None, max_length=100)
+    medical_year: int | None = Field(default=None, ge=1, le=10)
+    specialty: str | None = Field(default=None, max_length=100)
+    university: str | None = Field(default=None, max_length=200)
+
+    @field_validator("display_name", "specialty", "university", mode="before")
+    @classmethod
+    def _strip_strings(cls, v):
+        return v.strip() if isinstance(v, str) else v
 
 
 class ProfileRepository:
@@ -16,7 +32,7 @@ class ProfileRepository:
     def get_profile(self, user_id: str) -> dict:
         if user_id.startswith("guest_"):
             return {"user_id": user_id, "display_name": "", "medical_year": None, "specialty": "", "university": ""}
-            
+
         try:
             res = self.supabase.table("user_profiles").select("*").eq("user_id", user_id).execute()
             if not res.data:
@@ -37,17 +53,25 @@ class ProfileRepository:
             raise RepositoryError("Failed to get profile") from exc
 
     def upsert_profile(self, user_id: str, data: dict) -> dict:
+        # Fix #16: validate and sanitize before writing to DB.
+        try:
+            validated = ProfileUpdate.model_validate(data)
+        except PydanticValidationError as exc:
+            raise ValidationError("Invalid profile data", details=exc.errors()) from exc
+
         try:
             payload = {
                 "user_id": user_id,
-                "display_name": data.get("display_name"),
-                "medical_year": data.get("medical_year"),
-                "specialty": data.get("specialty"),
-                "university": data.get("university"),
+                "display_name": validated.display_name,
+                "medical_year": validated.medical_year,
+                "specialty": validated.specialty,
+                "university": validated.university,
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }
             res = self.supabase.table("user_profiles").upsert(payload).execute()
             return res.data[0]
+        except ValidationError:
+            raise
         except Exception as exc:
             logger.exception("Failed to upsert profile")
             raise RepositoryError("Failed to upsert profile") from exc

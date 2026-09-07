@@ -73,19 +73,45 @@ class FlashcardRepository:
             logger.exception("Failed to get flashcard deck")
             raise RepositoryError("Failed to get flashcard deck") from exc
 
-    def rate_card(self, deck_id: str, card_id: str, rating: str) -> None:
+    def rate_card(self, deck_id: str, card_id: str, rating: str, user_id: str) -> None:
+        """Rate a flashcard difficulty, verifying deck ownership atomically.
+
+        Defense-in-depth: the deck ownership check is part of this method itself
+        rather than a separate pre-check in the controller whose return value is
+        discarded.  A future refactor that calls rate_card() directly cannot
+        accidentally bypass ownership.
+        """
         try:
-            card_res = self.supabase.table("flashcards").select("difficulty").eq("id", card_id).eq("deck_id", deck_id).execute()
+            # Verify the calling user owns the deck that contains this card.
+            deck_ownership = (
+                self.supabase.table("flashcard_decks")
+                .select("id")
+                .eq("id", deck_id)
+                .eq("user_id", user_id)
+                .execute()
+            )
+            if not deck_ownership.data:
+                raise RepositoryError("Card not found")
+
+            card_res = (
+                self.supabase.table("flashcards")
+                .select("difficulty")
+                .eq("id", card_id)
+                .eq("deck_id", deck_id)
+                .execute()
+            )
             if not card_res.data:
                 raise RepositoryError("Card not found")
-            
+
             difficulty = card_res.data[0].get("difficulty", 3)
             if rating == "known":
                 difficulty = max(1, difficulty - 1)
             elif rating == "unknown":
                 difficulty = min(5, difficulty + 1)
-                
+
             self.supabase.table("flashcards").update({"difficulty": difficulty}).eq("id", card_id).execute()
+        except RepositoryError:
+            raise
         except Exception as exc:
             logger.exception("Failed to rate flashcard")
             raise RepositoryError("Failed to rate flashcard") from exc

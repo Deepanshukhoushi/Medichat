@@ -44,7 +44,7 @@ class ChatHistoryRepository:
         return history
 
     # ------------------------------------------------------------------
-    # chat_messages table — used by the advanced memory system
+    # chat_messages table - used by the advanced memory system
     # ------------------------------------------------------------------
 
     def save_chat_message(self, session_id: str, user_id: str, role: str, content: str) -> str | None:
@@ -87,34 +87,42 @@ class ChatHistoryRepository:
             raise RepositoryError("Failed to delete message") from exc
 
     def rate_message(self, session_id: str, user_id: str, message_id: str, liked: bool) -> None:
-        """Rate a specific message (thumbs up / thumbs down)."""
-        if user_id.startswith(self.settings.guest_session_prefix):
-            return
-            
-        try:
-            # We assume a 'liked' boolean column exists or will be added.
-            # self.supabase.table("chat_messages").update({"liked": liked}).eq("id", message_id).eq("session_id", session_id).eq("user_id", user_id).execute()
-            pass # column 'liked' does not exist in chat_messages table yet
-        except Exception as exc:
-            # If the column doesn't exist yet, we catch and log gracefully
-            logger.warning("Failed to rate message %s (schema may need updating): %s", message_id, exc)
+        """Rate a specific message (thumbs up / thumbs down).
 
-    def delete_latest_exchange(self, session_id: str) -> None:
-        """Delete the latest user and assistant messages for regeneration."""
+        Not yet implemented: the ``liked`` column does not exist in
+        ``chat_messages``.  Raises ``NotImplementedError`` so callers can
+        return an honest 501/503 instead of silently reporting false success.
+        Add the column migration and uncomment the update call to activate.
+        """
+        # TODO: run migration to add `liked BOOLEAN` column to chat_messages,
+        #       then replace this with:
+        #   self.supabase.table("chat_messages")
+        #       .update({"liked": liked})
+        #       .eq("id", message_id).eq("session_id", session_id)
+        #       .eq("user_id", user_id).execute()
+        raise NotImplementedError("rate_message: 'liked' column not yet added to chat_messages")
+
+    def delete_latest_exchange(self, session_id: str, user_id: str) -> None:
+        """Delete the latest user and assistant messages for regeneration.
+
+        Defense-in-depth: filters by *user_id* in addition to *session_id*,
+        consistent with ``delete_message`` and ``rate_message``.
+        """
         try:
-            # Supabase doesn't support DELETE with LIMIT directly easily, 
-            # so we fetch the last 2 IDs and delete them.
+            # Supabase doesn't support DELETE with LIMIT directly easily,
+            # so we fetch the last 2 IDs (filtered by user_id) and delete them.
             result = (
                 self.supabase.table("chat_messages")
                 .select("id")
                 .eq("session_id", session_id)
+                .eq("user_id", user_id)
                 .order("created_at", desc=True)
                 .limit(2)
                 .execute()
             )
             if not result.data:
                 return
-                
+
             ids_to_delete = [row["id"] for row in result.data]
             if ids_to_delete:
                 self.supabase.table("chat_messages").delete().in_("id", ids_to_delete).execute()

@@ -13,9 +13,9 @@ EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 class AuthRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    email: str = Field(min_length=3)
-    password: str = Field(min_length=8)
-    display_name: str | None = Field(default=None, min_length=1)
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+    display_name: str | None = Field(default=None, min_length=1, max_length=100)
     remember_me: bool = Field(default=False)
 
     @field_validator("email")
