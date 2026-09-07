@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 _PINECONE_HEALTH_CACHE: dict[str, tuple[float, bool]] = {}
 _PINECONE_HEALTH_CACHE_TTL_SECONDS = 30.0
 
-# JWT structural regex — three base64url segments separated by dots.
+# JWT structural regex - three base64url segments separated by dots.
 _JWT_SEGMENT_RE = re.compile(r'^[A-Za-z0-9_\-]+=*$')
 _JWT_MAX_LENGTH = 2048
 
@@ -44,7 +44,7 @@ def _validate_jwt_structure(token: str) -> bool:
     - Exactly three dot-separated segments
     - Each segment is non-empty and contains only URL-safe Base64 chars
 
-    This is a structural check only — it does NOT verify the signature.
+    This is a structural check only - it does NOT verify the signature.
     """
     if not token or len(token) > _JWT_MAX_LENGTH:
         return False
@@ -55,27 +55,28 @@ def _validate_jwt_structure(token: str) -> bool:
 
 
 def _probe_pinecone_health(api_key: str, cache_ttl_seconds: float = _PINECONE_HEALTH_CACHE_TTL_SECONDS) -> bool:
-    """Probe the Pinecone API and cache the result for *cache_ttl_seconds*.
-
-    This helper is **not** called by the /health endpoint.  It is kept as a
-    standalone utility that may be used for diagnostics or background checks,
-    and is covered by the existing TestPineconeHealthProbeCaching test suite.
-    """
+    """Probe Pinecone connectivity and cache the result."""
     cached = _PINECONE_HEALTH_CACHE.get(api_key)
     now = time.monotonic()
     if cached and (now - cached[0]) < cache_ttl_seconds:
         return cached[1]
 
     try:
-        import httpx
-        httpx.get(
-            "https://api.pinecone.io/indexes",
-            headers={"Api-Key": api_key},
-            timeout=3.0,
-        )
+        from app.rag.vector_store import get_pinecone_client
+        client = get_pinecone_client(api_key)
+        client.list_indexes()
         healthy = True
     except Exception:
-        healthy = False
+        try:
+            import httpx
+            httpx.get(
+                "https://api.pinecone.io/indexes",
+                headers={"Api-Key": api_key},
+                timeout=3.0,
+            )
+            healthy = True
+        except Exception:
+            healthy = False
 
     _PINECONE_HEALTH_CACHE[api_key] = (now, healthy)
     return healthy
@@ -146,7 +147,7 @@ class ChatController:
 
         user_id = self._get_user_id_from_cookie()
 
-        # IDOR guard — verify the caller owns the conversation before reading
+        # IDOR guard - verify the caller owns the conversation before reading
         # its history into the prompt or writing new messages to it.
         if conversation_id and self.conversation_repository:
             if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
@@ -175,7 +176,7 @@ class ChatController:
 
         user_id = self._get_user_id_from_cookie()
 
-        # IDOR guard — verify the caller owns the conversation before reading
+        # IDOR guard - verify the caller owns the conversation before reading
         # its history into the prompt or writing new messages to it.
         if conversation_id and self.conversation_repository:
             if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
@@ -267,15 +268,22 @@ class ChatController:
     def google_login(self):
         from flask import redirect
         import os
+        # Build the redirect URL only from trusted, server-side configured values.
+        # Never use X-Forwarded-Host, Host, or any other client-supplied header:
+        # ProxyFix is already configured with x_host=0, so reading raw headers
+        # here would bypass that protection entirely (Host-header injection).
         render_url = os.environ.get("RENDER_EXTERNAL_URL")
+        public_app_url = os.environ.get("PUBLIC_APP_URL")
         if render_url:
             redirect_url = f"{render_url}/api/auth/callback"
+        elif public_app_url:
+            redirect_url = f"{public_app_url.rstrip('/')}/api/auth/callback"
+        elif self.settings.frontend_origins:
+            redirect_url = f"{self.settings.frontend_origins[0].rstrip('/')}/api/auth/callback"
         else:
-            host = request.headers.get("X-Forwarded-Host", request.headers.get("Host", request.host))
-            scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
-            redirect_url = f"{scheme}://{host}/api/auth/callback"
-            
-        logger.warning(f"GENERATED REDIRECT URL: {redirect_url}")
+            # Last resort: derive from the WSGI environment, which is controlled
+            # by the server process — not by client headers.
+            redirect_url = f"{request.scheme}://{request.host}/api/auth/callback"
         try:
             url = self.auth_service.get_google_oauth_url(redirect_url)
             return redirect(url)
@@ -309,6 +317,10 @@ class ChatController:
     def logout(self):
         if not self.settings.persistence_enabled:
             guest_context = self.auth_service.session_manager.create_guest_cookie()
+            # Fix #11: assign to g.session_context so the after_request hook
+            # rotates the session cookie — the persistence-enabled branch already
+            # does this; this branch was missing it.
+            g.session_context = guest_context
             response = make_response(jsonify({"message": "Logged out"}))
             return response
 
@@ -343,10 +355,19 @@ class ChatController:
             return jsonify({"error": "Email is required"}), 400
 
         try:
-            origin = request.headers.get("Origin")
-            if not origin and self.settings.frontend_origins:
-                origin = self.settings.frontend_origins[0]
-            if not origin:
+            # Fix: Never trust the raw Origin header for building the reset URL.
+            # Origin is a browser-enforced header only; non-browser clients (curl,
+            # Postman) can set it to an arbitrary value, causing link-poisoning.
+            # Validate the header value against the configured whitelist and fall
+            # back to the first trusted origin when no match is found.
+            raw_origin = request.headers.get("Origin", "").rstrip("/")
+            trusted_origins = self.settings.frontend_origins
+            if raw_origin and raw_origin in trusted_origins:
+                origin = raw_origin
+            elif trusted_origins:
+                origin = trusted_origins[0]
+            else:
+                # No configured origins at all — derive from the WSGI env (server-side).
                 origin = request.host_url.rstrip("/")
 
             redirect_url = f"{origin}/auth/reset-password"
@@ -380,7 +401,7 @@ class ChatController:
 
         if not access_token:
             return jsonify({"error": "Access token is required"}), 400
-        # Issue #2 — structural JWT validation before hitting the database
+        # Issue #2 - structural JWT validation before hitting the database
         if not _validate_jwt_structure(access_token):
             logger.warning(
                 "reset_password: malformed access_token from remote_addr=%s",
@@ -392,7 +413,7 @@ class ChatController:
 
         try:
             self.auth_service.update_password(access_token, new_password)
-            # Issue #4 — invalidate the reset token and force re-login
+            # Issue #4 - invalidate the reset token and force re-login
             self.auth_service.sign_out_with_token(access_token)
             if self.audit_service:
                 session_context = getattr(g, "session_context", None)
@@ -414,15 +435,7 @@ class ChatController:
 
 
     def health(self):
-        """Lightweight liveness probe — no DB, AI, or external calls.
-
-        Returns HTTP 200 with ``{"status": "ok"}`` to confirm that the Flask
-        application is running and accepting requests.  Intended for uptime
-        monitors such as UptimeRobot and Render's health-check facility.
-
-        This endpoint intentionally requires no authentication, CSRF token, or
-        session cookie.  It must not be guarded by ``_require_auth``.
-        """
+        """Lightweight liveness probe - no external calls."""
         return jsonify({"status": "ok"}), 200
 
     def spa(self, path: str):
@@ -442,13 +455,29 @@ class ChatController:
     # ------------------------------------------------------------------
 
     def get_topic_memory(self):
-        """GET /api/memory/topic — returns current_topic and related_topics."""
-        session_id = self._get_user_id_from_cookie()
-        if not session_id or not self.topic_service:
+        """GET /api/memory/topic - returns current_topic and related_topics.
+
+        Accepts an optional ``conversation_id`` query-param.  For authenticated
+        users topic data is keyed by conversation_id (a Supabase UUID), NOT by
+        user_id.  Falling back to user_id silently returns null for every
+        logged-in user (Fix #9).
+        """
+        user_id = self._get_user_id_from_cookie()
+        if not user_id or not self.topic_service:
             return jsonify({"current_topic": None, "related_topics": []}), 200
 
+        conversation_id = request.args.get("conversation_id", "").strip() or None
+        if conversation_id and self.conversation_repository:
+            if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
+                return jsonify({"error": "Not found"}), 404
+            lookup_id = conversation_id
+        else:
+            # Guests: conversation_id == user_id; authenticated users without
+            # an explicit param fall back to user_id (best-effort).
+            lookup_id = user_id
+
         try:
-            topic = self.topic_service.get_topic(session_id)
+            topic = self.topic_service.get_topic(lookup_id)
             if topic:
                 return jsonify(topic), 200
             return jsonify({"current_topic": None, "related_topics": []}), 200
@@ -457,13 +486,25 @@ class ChatController:
             return jsonify({"error": str(exc)}), 500
 
     def get_session_summary(self):
-        """GET /api/memory/summary — returns the rolling study summary."""
-        session_id = self._get_user_id_from_cookie()
-        if not session_id or not self.summary_service:
+        """GET /api/memory/summary - returns the rolling study summary.
+
+        Accepts an optional ``conversation_id`` query-param.  For authenticated
+        users summaries are keyed by conversation_id, NOT user_id (Fix #9).
+        """
+        user_id = self._get_user_id_from_cookie()
+        if not user_id or not self.summary_service:
             return jsonify({"summary": None}), 200
 
+        conversation_id = request.args.get("conversation_id", "").strip() or None
+        if conversation_id and self.conversation_repository:
+            if not self.conversation_repository.user_owns_conversation(conversation_id, user_id):
+                return jsonify({"error": "Not found"}), 404
+            lookup_id = conversation_id
+        else:
+            lookup_id = user_id
+
         try:
-            summary = self.summary_service.get_summary(session_id)
+            summary = self.summary_service.get_summary(lookup_id)
             return jsonify({"summary": summary}), 200
         except Exception as exc:
             logger.exception("Failed to fetch session summary")
@@ -541,6 +582,10 @@ class ChatController:
                     details={"conversation_id": conversation_id, "message_id": message_id, "liked": liked}
                 )
             return jsonify({"status": "success"})
+        except NotImplementedError:
+            # Fix #10: rate_message is not yet implemented (missing DB column).
+            # Return 501 instead of silent false success.
+            return jsonify({"error": "Message rating is not yet supported"}), 501
         except Exception:
             logger.exception("Failed to rate message %s", message_id)
             return jsonify({"error": "Failed to rate message"}), 500
@@ -562,13 +607,17 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         if not self.flashcard_service:
             return jsonify({"error": "Service unavailable"}), 503
-            
+
         payload = request.get_json() or {}
         topic = payload.get("topic")
-        count = payload.get("count", 5)
+        # Fix #13: clamp count to prevent abuse-driven LLM cost spikes.
+        count = max(1, min(int(payload.get("count", 5)), 20))
         if not topic:
             return jsonify({"error": "Topic is required"}), 400
-            
+        # Fix #14: enforce max length on topic to match chat endpoint behaviour.
+        if len(topic) > self.settings.max_chat_message_length:
+            return jsonify({"error": "Topic is too long"}), 400
+
         deck_id = self.flashcard_service.generate_deck(user_id, topic, count, self.chat_service.llm)
         return jsonify({"message": "Deck generated", "deck_id": deck_id})
 
@@ -599,9 +648,10 @@ class ChatController:
             return jsonify({"error": "Invalid rating. Must be 'known' or 'unknown'"}), 400
 
         try:
-            # Verify deck ownership via the service repository
-            self.flashcard_service.repository.get_deck(deck_id, user_id)
-            self.flashcard_service.repository.rate_card(deck_id, card_id, rating)
+            # Ownership is now enforced inside rate_card itself — no separate
+            # pre-check needed; calling get_deck first and discarding the result
+            # was the original IDOR pattern (Issue #6).
+            self.flashcard_service.repository.rate_card(deck_id, card_id, rating, user_id)
             return jsonify({"success": True})
         except Exception as exc:
             logger.exception("Failed to rate flashcard card_id=%s deck_id=%s", card_id, deck_id)
@@ -624,13 +674,17 @@ class ChatController:
         user_id = self._get_user_id_from_cookie()
         if not self.quiz_service:
             return jsonify({"error": "Service unavailable"}), 503
-            
+
         payload = request.get_json() or {}
         topic = payload.get("topic")
-        count = payload.get("count", 5)
+        # Fix #13: clamp count to prevent abuse-driven LLM cost spikes.
+        count = max(1, min(int(payload.get("count", 5)), 20))
         if not topic:
             return jsonify({"error": "Topic is required"}), 400
-            
+        # Fix #14: enforce max length on topic.
+        if len(topic) > self.settings.max_chat_message_length:
+            return jsonify({"error": "Topic is too long"}), 400
+
         session_id = self.quiz_service.generate_quiz(user_id, topic, count, self.chat_service.llm)
         return jsonify({"message": "Quiz generated", "session_id": session_id})
 
@@ -672,6 +726,9 @@ class ChatController:
         topic = (request.get_json() or {}).get("topic")
         if not topic:
             return jsonify({"error": "Topic is required"}), 400
+        # Fix #14: cap topic length before LLM interpolation.
+        if len(topic) > self.settings.max_chat_message_length:
+            return jsonify({"error": "Topic is too long"}), 400
         answer = self.study_tools_service.explain(topic, self.chat_service.llm)
         return jsonify({"result": answer})
 
@@ -681,6 +738,11 @@ class ChatController:
         text = (request.get_json() or {}).get("text")
         if not text:
             return jsonify({"error": "Text is required"}), 400
+        # Fix #14: the body-size limit allows ~10 MB; cap text to the same
+        # max_chat_message_length used everywhere else to avoid forwarding
+        # megabytes to the LLM.
+        if len(text) > self.settings.max_chat_message_length:
+            return jsonify({"error": "Text is too long — please shorten or split it"}), 400
         answer = self.study_tools_service.summarize(text, self.chat_service.llm)
         return jsonify({"result": answer})
 
@@ -690,6 +752,9 @@ class ChatController:
         topic = (request.get_json() or {}).get("topic")
         if not topic:
             return jsonify({"error": "Topic is required"}), 400
+        # Fix #14: cap topic length.
+        if len(topic) > self.settings.max_chat_message_length:
+            return jsonify({"error": "Topic is too long"}), 400
         answer = self.study_tools_service.generate_mnemonics(topic, self.chat_service.llm)
         return jsonify({"result": answer})
 
