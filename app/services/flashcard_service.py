@@ -42,7 +42,16 @@ class FlashcardService:
             cards = json.loads(content)
             if not isinstance(cards, list) or len(cards) == 0:
                 raise ValueError("Invalid format: expected a non-empty JSON array")
-                
+
+            # Fix #23: validate each item's shape before persisting.
+            for i, card in enumerate(cards):
+                if not isinstance(card, dict):
+                    raise ValueError(f"Card {i} is not an object")
+                if "front" not in card or "back" not in card:
+                    raise ValueError(f"Card {i} missing 'front' or 'back' key")
+                if not isinstance(card["front"], str) or not isinstance(card["back"], str):
+                    raise ValueError(f"Card {i} 'front' and 'back' must be strings")
+
             return self.repository.save_deck(user_id, topic, cards)
         except Exception as exc:
             logger.exception("Failed to generate flashcard deck")

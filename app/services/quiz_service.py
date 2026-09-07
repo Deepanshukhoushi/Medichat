@@ -45,7 +45,21 @@ class QuizService:
             questions = json.loads(content)
             if not isinstance(questions, list) or len(questions) == 0:
                 raise ValueError("Invalid format: expected a non-empty JSON array")
-                
+
+            # Fix #23: validate each item's shape before persisting.
+            # A malformed item from the LLM would cause a KeyError in grade_answers.
+            _REQUIRED_QUIZ_KEYS = {"question", "options", "correct", "explanation"}
+            for i, item in enumerate(questions):
+                if not isinstance(item, dict):
+                    raise ValueError(f"Question {i} is not an object")
+                missing = _REQUIRED_QUIZ_KEYS - item.keys()
+                if missing:
+                    raise ValueError(f"Question {i} missing keys: {missing}")
+                if not isinstance(item["options"], list) or len(item["options"]) != 4:
+                    raise ValueError(f"Question {i} must have exactly 4 options")
+                if not isinstance(item["correct"], int) or not (0 <= item["correct"] <= 3):
+                    raise ValueError(f"Question {i} 'correct' must be an int 0-3")
+
             return self.repository.save_session(user_id, topic, questions)
         except Exception as exc:
             logger.exception("Failed to generate quiz")
