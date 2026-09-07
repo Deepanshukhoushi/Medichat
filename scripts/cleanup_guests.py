@@ -1,6 +1,21 @@
 """
 Script to hard-delete guest sessions older than 7 days.
 Run this as a cron job to enforce the data retention policy.
+
+NOTE (Issue #31): Under the current architecture this script is intentionally a no-op.
+Guest sessions (user_id starting with settings.guest_session_prefix) are NEVER persisted
+to Supabase:
+  - ConversationRepository.ensure_conversation() returns early for guest IDs without
+    inserting a row.
+  - ChatHistoryRepository.save_chat_message() and MemoryService.save_message() also
+    no-op for guest IDs.
+
+The guest data retention policy is therefore enforced at write-time (by simply not
+writing), not at deletion-time. Running this script against production is safe — it will
+connect, execute two DELETE queries, find zero matching rows, and report 0 deletions.
+
+This script is retained so that any cron job referencing it is not broken, and to serve
+as a starting point if the architecture ever changes to persist-then-expire guest data.
 """
 import logging
 from datetime import datetime, timedelta, timezone
