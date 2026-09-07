@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import logging
+import re
 import threading
 import time
 import concurrent.futures
@@ -9,9 +11,15 @@ from uuid import uuid4
 
 from app.core.config.settings import AppSettings
 from app.core.security.exceptions import ServiceError
-from app.rag.chains import build_qa_chain, create_llm
+from app.rag.chains import create_llm
+from app.rag.grounding import GroundingReport, GroundingStatus, validate_grounding
 from app.rag.prompt_builder import build_memory_prompt
-from app.rag.retrieval import is_relevant_score
+from app.rag.query_processor import ProcessedQuery, QueryIntent, process_query
+from app.rag.retrieval_gate import (
+    RetrievalDecision,
+    RetrievalGateResult,
+    evaluate_retrieval,
+)
 from app.rag.vector_store import build_user_namespace, retrieve_documents_with_scores
 from app.services.conversation_service import ConversationService
 from app.services.memory_service import MemoryService
@@ -43,10 +51,6 @@ class ChatService:
     @cached_property
     def llm(self):
         return create_llm(self.settings)
-
-    @cached_property
-    def qa_chain(self):
-        return build_qa_chain(self.settings)
 
     # ------------------------------------------------------------------
     # Session resolution
@@ -84,20 +88,201 @@ class ChatService:
         message_count: int,
     ) -> None:
         """Fire off topic extraction and optional summarisation using Celery."""
-        from app.tasks.memory_tasks import extract_topic_task, generate_summary_task
+        try:
+            from app.tasks.memory_tasks import extract_topic_task, generate_summary_task
 
-        if self.topic_service and self.settings.topic_extraction_enabled and recent_messages:
-            extract_topic_task.delay(session_id, recent_messages)
+            if self.topic_service and self.settings.topic_extraction_enabled and recent_messages:
+                extract_topic_task.delay(session_id, recent_messages)
 
-        if (
-            self.summary_service
-            and self.memory_service
-            and self.summary_service.should_summarize(message_count)
-        ):
-            generate_summary_task.delay(session_id, recent_messages)
+            if (
+                self.summary_service
+                and self.memory_service
+                and self.summary_service.should_summarize(message_count)
+            ):
+                generate_summary_task.delay(session_id, recent_messages)
+        except Exception:
+            logger.warning("Background memory task trigger skipped or unavailable", exc_info=False)
 
     # ------------------------------------------------------------------
-    # Main answer method
+    # RAG Pipeline: Query -> Retrieval -> Gate -> Generate -> Validate
+    # ------------------------------------------------------------------
+
+    def _process_and_retrieve(
+        self,
+        user_input: str,
+        user_id: str,
+        recent_messages: list[dict],
+        topic_memory: dict | None,
+    ) -> tuple[ProcessedQuery, RetrievalGateResult]:
+        """
+        1. Process & contextually rewrite query (resolves 'it', 'its complications').
+        2. Retrieve vector embeddings from Pinecone.
+        3. Evaluate multi-signal retrieval confidence gate.
+        """
+        processed_query = process_query(
+            user_query=user_input,
+            chat_history=recent_messages,
+            topic_memory=topic_memory,
+        )
+
+        user_ns = build_user_namespace(user_id)
+        search_query = processed_query.rewritten_query
+
+        retrieved_documents_with_scores = retrieve_documents_with_scores(
+            self.settings,
+            search_query,
+            k=self.settings.retriever_k,
+            namespaces=self._document_namespaces(user_id),
+        )
+
+        gate_result = evaluate_retrieval(
+            settings=self.settings,
+            processed_query=processed_query,
+            retrieved_documents_with_scores=retrieved_documents_with_scores,
+            user_namespace=user_ns,
+        )
+
+        return processed_query, gate_result
+
+    def _generate_and_validate_answer(
+        self,
+        user_input: str,
+        processed_query: ProcessedQuery,
+        gate_result: RetrievalGateResult,
+        recent_messages: list[dict],
+        topic_memory: dict | None,
+        session_summary: str | None,
+    ) -> tuple[str, GroundingReport | None]:
+        """
+        Execute grounded generation and claim-level validation.
+        """
+        target_name = processed_query.target_entity or user_input
+
+        # ── Fast-path 1: Ambiguous Follow-Up Clarification ──────────────────
+        if processed_query.is_ambiguous and processed_query.ambiguity_candidates:
+            candidates_str = " or ".join(f"**{c}**" for c in processed_query.ambiguity_candidates[:2])
+            answer = (
+                f"Your question refers to a previous condition, but we were discussing multiple topics ({candidates_str}).\n\n"
+                f"Could you please clarify which one you would like to know about?"
+            )
+            return answer, GroundingReport(
+                overall_status=GroundingStatus.REFUSAL,
+                is_valid=True,
+                refusal_detected=True,
+            )
+
+        # ── Fast-path 2: Source-Specific Document Not Found ──────────────────
+        if gate_result.decision == RetrievalDecision.SOURCE_NOT_FOUND:
+            answer = (
+                f"I couldn't find information about **{target_name}** in the uploaded material."
+            )
+            return answer, GroundingReport(
+                overall_status=GroundingStatus.REFUSAL,
+                is_valid=True,
+                refusal_detected=True,
+            )
+
+        # ── Fast-path 3: Fictional / Hypothetical / Out-of-Knowledge Entities ──
+        if (
+            gate_result.decision == RetrievalDecision.INSUFFICIENT_EVIDENCE
+            and (
+                processed_query.intent == QueryIntent.HYPOTHETICAL_EXPLICIT
+                or (processed_query.target_entity and len(processed_query.target_entity) > 2 and gate_result.top_score < 0.72)
+            )
+        ):
+            answer = (
+                f"I couldn't find reliable information about **{target_name}** in the available medical sources, "
+                f"so I don't want to speculate or invent an answer."
+            )
+            return answer, GroundingReport(
+                overall_status=GroundingStatus.REFUSAL,
+                is_valid=True,
+                refusal_detected=True,
+            )
+
+        # ── Grounded Generation ──────────────────────────────────────────────
+        docs_to_use = gate_result.relevant_documents if gate_result.decision == RetrievalDecision.SUFFICIENT_EVIDENCE else []
+        
+        enriched_prompt = build_memory_prompt(
+            user_query=processed_query.rewritten_query,
+            retrieved_documents=docs_to_use,
+            topic_memory=topic_memory,
+            session_summary=session_summary,
+            chat_history=recent_messages,
+            intent=processed_query.intent,
+            is_strict_regeneration=False,
+        )
+
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(self.llm.invoke, enriched_prompt)
+                response = future.result(timeout=self.settings.llm_timeout_seconds)
+            
+            raw_answer = (
+                response.content if hasattr(response, "content") else str(response)
+            ).strip()
+        except concurrent.futures.TimeoutError:
+            logger.warning("LLM call timed out after %s seconds", self.settings.llm_timeout_seconds)
+            raw_answer = "I apologize, but the request timed out. Please try asking your question again."
+        except Exception:
+            logger.exception("LLM generation failed")
+            raw_answer = "Unable to generate an answer right now. Please try again in a moment."
+
+        # ── Claim-Level Grounding Validation ─────────────────────────────────
+        grounding_report = validate_grounding(
+            answer=raw_answer,
+            retrieved_documents=docs_to_use,
+            processed_query=processed_query,
+        )
+
+        # ── Regeneration on Validation Failure ───────────────────────────────
+        if not grounding_report.is_valid and self.settings.grounding_validation_enabled:
+            logger.info("Answer failed grounding check (%s); attempting regeneration", grounding_report.overall_status.value)
+            
+            strict_prompt = build_memory_prompt(
+                user_query=processed_query.rewritten_query,
+                retrieved_documents=docs_to_use,
+                topic_memory=topic_memory,
+                session_summary=session_summary,
+                chat_history=recent_messages,
+                intent=processed_query.intent,
+                is_strict_regeneration=True,
+            )
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(self.llm.invoke, strict_prompt)
+                    regen_response = future.result(timeout=self.settings.llm_timeout_seconds)
+                
+                regen_answer = (
+                    regen_response.content if hasattr(regen_response, "content") else str(regen_response)
+                ).strip()
+
+                regen_report = validate_grounding(
+                    answer=regen_answer,
+                    retrieved_documents=docs_to_use,
+                    processed_query=processed_query,
+                )
+
+                if regen_report.is_valid:
+                    return regen_answer, regen_report
+                else:
+                    logger.warning("Regenerated answer also failed grounding; returning safe refusal")
+                    safe_fallback = (
+                        f"I don't have enough reliable information in the available medical sources to answer '{target_name}' confidently."
+                    )
+                    return safe_fallback, regen_report
+
+            except Exception:
+                logger.exception("Regeneration attempt failed")
+                safe_fallback = (
+                    f"I don't have enough reliable information in the available medical sources to answer '{target_name}' confidently."
+                )
+                return safe_fallback, grounding_report
+
+        return raw_answer, grounding_report
+
+    # ------------------------------------------------------------------
+    # Main synchronous answer method
     # ------------------------------------------------------------------
 
     def get_answer(
@@ -108,7 +293,6 @@ class ChatService:
                 self._resolve_conversation_context(user_id, conversation_id)
             )
 
-            # ── 1. Fetch memory context ──────────────────────────────────────
             recent_messages: list[dict] = []
             topic_memory: dict | None = None
             session_summary: str | None = None
@@ -118,45 +302,46 @@ class ChatService:
                     resolved_conversation_id,
                     limit=self.settings.context_window_size,
                 )
-
             if self.topic_service:
                 topic_memory = self.topic_service.get_topic(resolved_conversation_id)
-
             if self.summary_service:
                 session_summary = self.summary_service.get_summary(resolved_conversation_id)
 
-            # ── 2. Retrieve documents from Pinecone ──────────────────────────
-            retrieved_documents_with_scores = retrieve_documents_with_scores(
-                self.settings,
-                user_input,
-                k=self.settings.retriever_k,
-                namespaces=self._document_namespaces(user_id),
-            )
-            relevant_documents = [
-                document
-                for document, score in retrieved_documents_with_scores
-                if is_relevant_score(score, self.settings.relevance_score_threshold)
-            ]
-
-            # ── 3. Build enriched prompt & call LLM ─────────────────────────
-            answer = self._generate_answer(
+            processed_query, gate_result = self._process_and_retrieve(
                 user_input=user_input,
-                relevant_documents=relevant_documents,
+                user_id=user_id,
+                recent_messages=recent_messages,
+                topic_memory=topic_memory,
+            )
+
+            answer, grounding_report = self._generate_and_validate_answer(
+                user_input=user_input,
+                processed_query=processed_query,
+                gate_result=gate_result,
                 recent_messages=recent_messages,
                 topic_memory=topic_memory,
                 session_summary=session_summary,
-                resolved_conversation_id=resolved_conversation_id,
             )
 
-            # ── 4. Degrade notice ────────────────────────────────────────────
+            if self.settings.dev_debug_logging:
+                logger.info(
+                    "RAG_DEBUG_TRACE: query=%r rewritten=%r intent=%s top_score=%.4f decision=%s status=%s valid=%s",
+                    user_input,
+                    processed_query.rewritten_query,
+                    processed_query.intent.value,
+                    gate_result.top_score,
+                    gate_result.decision.value,
+                    grounding_report.overall_status.value if grounding_report else "N/A",
+                    grounding_report.is_valid if grounding_report else True,
+                )
+
             if persistence_degraded:
                 answer = (
                     f"{answer}\n\n"
-                    "⚠️ Conversation storage is temporarily unavailable; "
+                    "[!] Conversation storage is temporarily unavailable; "
                     "this reply may not be saved."
                 )
 
-            # ── 5. Persist messages + fire background tasks ──────────────
             if self.memory_service and not resolved_conversation_id.startswith(
                 self.settings.guest_session_prefix
             ):
@@ -166,10 +351,7 @@ class ChatService:
                 self.memory_service.save_message(
                     resolved_conversation_id, user_id, "assistant", answer
                 )
-                # ── 6. Background: update topic + maybe summarise ────────────
-                message_count = self.memory_service.get_message_count(
-                    resolved_conversation_id
-                )
+                message_count = self.memory_service.get_message_count(resolved_conversation_id)
                 all_messages = recent_messages + [
                     {"role": "user", "content": user_input},
                     {"role": "assistant", "content": answer},
@@ -184,6 +366,22 @@ class ChatService:
             logger.exception("Failed to generate answer")
             raise ServiceError("Unable to generate an answer right now") from exc
 
+    # ------------------------------------------------------------------
+    # Streaming answer method (Generate -> Validate -> Stream)
+    # ------------------------------------------------------------------
+    #
+    # TODO (Issue #17 / Performance): The current implementation is NOT true
+    # token-streaming.  The full answer is generated internally first, then
+    # re-chunked with time.sleep(0.015) for UX cadence, blocking one sync
+    # worker for the entire LLM round-trip.  To fix:
+    #   1. Switch the Cohere LLM call to use stream=True and yield tokens
+    #      as the model produces them.
+    #   2. Run gunicorn with --worker-class gevent (or migrate to an ASGI
+    #      server such as uvicorn) so workers are not exhausted during
+    #      streaming sessions.
+    # Until that migration, concurrent chat capacity ≈ number of workers.
+    #
+
     def get_answer_stream(
         self,
         user_input: str,
@@ -192,31 +390,31 @@ class ChatService:
         is_regenerate: bool = False,
     ):
         """
-        Stream the answer via Server-Sent Events (SSE).
-        Yields chunk tokens and performs background tasks after completion.
+        Stream the validated answer via Server-Sent Events (SSE).
+        Generates full candidate, validates grounding, and streams validated tokens
+        preserving the exact Angular frontend SSE contract.
         """
-        # Pre-initialize so the finally block never hits UnboundLocalError
         full_answer = ""
-        stream_completed = False
-        already_persisted = False  # guard: skip finally-block if try already persisted
+        already_persisted = False
         resolved_conversation_id = None
         is_new_conversation = False
         recent_messages: list[dict] = []
-        relevant_documents: list = []
 
         try:
             resolved_conversation_id, is_new_conversation, persistence_degraded = (
                 self._resolve_conversation_context(user_id, conversation_id)
             )
-            yield f"data: {{\"conversation_id\": \"{resolved_conversation_id}\"}}\n\n"
+            yield f"data: {json.dumps({'conversation_id': resolved_conversation_id})}\n\n"
 
-            # ── 0. Set conversation title from the first message ─────────────────
+            # ── 0. Set conversation title on initial turn ────────────────────────
             if is_new_conversation and not resolved_conversation_id.startswith(self.settings.guest_session_prefix):
                 try:
                     title = user_input[:60].strip()
-                    self.conversation_service.conversation_repository.update_title(resolved_conversation_id, title)
+                    self.conversation_service.conversation_repository.update_title(
+                        resolved_conversation_id, title, user_id
+                    )
                 except Exception:
-                    pass  # non-critical
+                    pass
 
             # ── 1. Load context ──────────────────────────────────────────────────
             topic_memory = None
@@ -232,47 +430,55 @@ class ChatService:
             if self.summary_service:
                 session_summary = self.summary_service.get_summary(resolved_conversation_id)
 
-            # ── 2. Retrieve documents ────────────────────────────────────────────
-            retrieved_documents_with_scores = retrieve_documents_with_scores(
-                self.settings,
-                user_input,
-                k=self.settings.retriever_k,
-                namespaces=self._document_namespaces(user_id),
-            )
-            relevant_documents = [
-                document
-                for document, score in retrieved_documents_with_scores
-                if is_relevant_score(score, self.settings.relevance_score_threshold)
-            ]
-
-            # ── 3. Stream LLM Answer ─────────────────────────────────────────────
-            stream_generator = self._generate_answer_stream(
+            # ── 2. Process query & Retrieve ──────────────────────────────────────
+            processed_query, gate_result = self._process_and_retrieve(
                 user_input=user_input,
-                relevant_documents=relevant_documents,
+                user_id=user_id,
+                recent_messages=recent_messages,
+                topic_memory=topic_memory,
+            )
+
+            # ── 3. Generate & Validate Complete Answer Internally ────────────────
+            validated_answer, grounding_report = self._generate_and_validate_answer(
+                user_input=user_input,
+                processed_query=processed_query,
+                gate_result=gate_result,
                 recent_messages=recent_messages,
                 topic_memory=topic_memory,
                 session_summary=session_summary,
             )
 
-            for chunk in stream_generator:
-                full_answer += chunk
-                import json
-                # Replace newlines so JSON doesn't break
-                safe_chunk = chunk.replace('\n', '\\n').replace('\r', '\\r').replace('"', '\\"')
-                yield f"data: {{\"token\": \"{safe_chunk}\"}}\n\n"
-            stream_completed = True
-            
-            # ── 4. Suffix (Removed) ──────────────────────────────────────────────
+            full_answer = validated_answer
+
+            if self.settings.dev_debug_logging:
+                logger.info(
+                    "RAG_DEBUG_TRACE: query=%r rewritten=%r intent=%s top_score=%.4f decision=%s status=%s valid=%s",
+                    user_input,
+                    processed_query.rewritten_query,
+                    processed_query.intent.value,
+                    gate_result.top_score,
+                    gate_result.decision.value,
+                    grounding_report.overall_status.value if grounding_report else "N/A",
+                    grounding_report.is_valid if grounding_report else True,
+                )
+
+            # ── 4. Stream Validated Answer Tokens to SSE Client ──────────────────
+            # Chunk by tokens / words for smooth natural streaming
+            chunks = re.findall(r"\S+|\n+|\s+", validated_answer)
+            for chunk in chunks:
+                yield f"data: {json.dumps({'token': chunk})}\n\n"
+                time.sleep(0.015)  # Natural token cadence
 
             # ── 5. Persist to database ───────────────────────────────────────────
+            assistant_msg_id = None
             if self.memory_service and not resolved_conversation_id.startswith(
                 self.settings.guest_session_prefix
             ):
                 try:
-                    if is_regenerate:
-                        # For regeneration, delete the last pair of messages before persisting the new ones
-                        if hasattr(self.memory_service.chat_history_repository, "delete_latest_exchange"):
-                            self.memory_service.chat_history_repository.delete_latest_exchange(resolved_conversation_id)
+                    if is_regenerate and hasattr(self.memory_service.chat_history_repository, "delete_latest_exchange"):
+                        self.memory_service.chat_history_repository.delete_latest_exchange(
+                            resolved_conversation_id, user_id
+                        )
 
                     self.memory_service.save_message(
                         resolved_conversation_id, user_id, "user", user_input
@@ -288,25 +494,20 @@ class ChatService:
                     self._run_background_memory_tasks(
                         resolved_conversation_id, all_messages, message_count
                     )
-                    already_persisted = True  # prevent finally from duplicating
+                    already_persisted = True
                 except Exception as exc:
                     logger.warning("Persistence degraded: %s", exc)
-                    yield f"data: {{\"warning\": \"Persistence degraded — your messages may not be saved.\"}}\n\n"
+                    yield f"data: {json.dumps({'warning': 'Persistence degraded - your messages may not be saved.'})}\n\n"
 
-            # ── 6. Emit structured citation sources (Removed) ────────────────────
+            if assistant_msg_id:
+                yield f"data: {json.dumps({'message_id': str(assistant_msg_id)})}\n\n"
 
-            if already_persisted and 'assistant_msg_id' in locals() and assistant_msg_id:
-                yield f"data: {{\"message_id\": \"{assistant_msg_id}\"}}\n\n"
-            
             yield "data: [DONE]\n\n"
 
         except Exception as exc:
             logger.exception("Failed to stream answer")
-            yield f"data: {{\"error\": \"Unable to generate an answer right now\"}}\n\n"
+            yield f"data: {json.dumps({'error': 'Unable to generate an answer right now'})}\n\n"
         finally:
-            # Only run the persistence logic below as a disconnect-recovery path:
-            # if the try block already persisted successfully, skip to avoid
-            # writing duplicate rows and firing Celery tasks twice.
             if (
                 already_persisted
                 or not full_answer
@@ -316,158 +517,25 @@ class ChatService:
             ):
                 return
 
-
             try:
-                persisted_answer = full_answer
-                # Suffix removed
-
                 if is_regenerate and hasattr(self.memory_service.chat_history_repository, "delete_latest_exchange"):
                     self.memory_service.chat_history_repository.delete_latest_exchange(
-                        resolved_conversation_id
+                        resolved_conversation_id, user_id
                     )
 
                 self.memory_service.save_message(
                     resolved_conversation_id, user_id, "user", user_input
                 )
                 self.memory_service.save_message(
-                    resolved_conversation_id, user_id, "assistant", persisted_answer
+                    resolved_conversation_id, user_id, "assistant", full_answer
                 )
                 message_count = self.memory_service.get_message_count(resolved_conversation_id)
                 all_messages = recent_messages + [
                     {"role": "user", "content": user_input},
-                    {"role": "assistant", "content": persisted_answer},
+                    {"role": "assistant", "content": full_answer},
                 ]
                 self._run_background_memory_tasks(
                     resolved_conversation_id, all_messages, message_count
                 )
             except Exception as exc:
-                logger.warning("Persistence degraded: %s", exc)
-
-    # ------------------------------------------------------------------
-    # Answer generation (with fallback chain)
-    # ------------------------------------------------------------------
-
-    def _generate_answer_stream(
-        self,
-        user_input: str,
-        relevant_documents: list,
-        recent_messages: list[dict],
-        topic_memory: dict | None,
-        session_summary: str | None,
-    ):
-        """
-        Yields chunks directly from the LLM. Currently uses the memory-aware path 
-        for streaming.
-        """
-        enriched_prompt = build_memory_prompt(
-            user_query=user_input,
-            retrieved_documents=relevant_documents,
-            topic_memory=topic_memory,
-            session_summary=session_summary,
-            chat_history=recent_messages,
-        )
-        try:
-            for chunk in self.llm.stream(enriched_prompt):
-                yield chunk.content if hasattr(chunk, "content") else str(chunk)
-        except Exception as e:
-            logger.exception("LLM stream failed")
-            if "429" in str(e) or "too_many_requests" in str(e).lower() or "too many requests" in str(e).lower():
-                yield "I am currently receiving too many requests. Please wait a moment and try again."
-            else:
-                yield "Sorry, I encountered an error while streaming the response."
-
-    def _generate_answer(
-        self,
-        user_input: str,
-        relevant_documents: list,
-        recent_messages: list[dict],
-        topic_memory: dict | None,
-        session_summary: str | None,
-        resolved_conversation_id: str,
-    ) -> str:
-        """
-        Try the memory-aware path first, then the legacy QA chain, then a
-        bare LLM call as a last resort.
-        """
-        has_memory = bool(
-            recent_messages or topic_memory or session_summary
-        )
-
-        # ── Memory-aware path (primary) ──────────────────────────────────────
-        if has_memory or relevant_documents:
-            enriched_prompt = build_memory_prompt(
-                user_query=user_input,
-                retrieved_documents=relevant_documents,
-                topic_memory=topic_memory,
-                session_summary=session_summary,
-                chat_history=recent_messages,
-            )
-
-            try:
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                    future = executor.submit(self.llm.invoke, enriched_prompt)
-                    response = future.result(timeout=self.settings.llm_timeout_seconds)
-                
-                answer = (
-                    response.content if hasattr(response, "content") else str(response)
-                ).strip()
-                return answer
-            except concurrent.futures.TimeoutError:
-                logger.warning("Memory-aware LLM call timed out after %s seconds", self.settings.llm_timeout_seconds)
-            except Exception:
-                logger.exception("Memory-aware LLM call failed; falling back to QA chain")
-
-        # ── Legacy QA chain fallback ─────────────────────────────────────────
-        if relevant_documents:
-            try:
-                from langchain_community.chat_message_histories import ChatMessageHistory
-                history = ChatMessageHistory()
-                for msg in reversed(recent_messages):
-                    if msg.get("role") == "user":
-                        history.add_user_message(msg.get("content", ""))
-                    elif msg.get("role") == "assistant":
-                        history.add_ai_message(msg.get("content", ""))
-                        
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                    future = executor.submit(
-                        self.qa_chain.invoke,
-                        {
-                            "input": user_input,
-                            "context": relevant_documents,
-                            "history": history.messages,
-                        }
-                    )
-                    response = future.result(timeout=self.settings.llm_timeout_seconds)
-                
-                if isinstance(response, dict):
-                    answer = str(
-                        response.get("answer") or response.get("output") or response
-                    ).strip()
-                elif hasattr(response, "content"):
-                    answer = str(response.content).strip()
-                else:
-                    answer = str(response).strip()
-
-                return answer
-            except concurrent.futures.TimeoutError:
-                logger.warning("QA chain fallback timed out after %s seconds", self.settings.llm_timeout_seconds)
-            except Exception:
-                logger.exception("QA chain fallback failed; using direct LLM call")
-                context_text = "\n".join(
-                    doc.page_content[:500] for doc in relevant_documents[:3]
-                )
-                response = self.llm.invoke(
-                    f"Answer this medical question using the provided context:\n\n"
-                    f"Context: {context_text}\n\nQuestion: {user_input}\n\n"
-                    "If the context is not enough, use general medical knowledge and say so clearly."
-                )
-                answer = str(response.content).strip()
-                return answer
-
-        # ── Bare LLM (no docs retrieved) ────────────────────────────────────
-        response = self.llm.invoke(
-            f"Answer this medical question using general medical knowledge:\n\n"
-            f"Question: {user_input}\n\n"
-            "The question was not matched in the indexed medical database."
-        )
-        return str(response.content).strip()
+                logger.warning("Persistence recovery degraded: %s", exc)
