@@ -1,8 +1,9 @@
 {
   "name": "MediChat",
   "short_name": "MediChat",
-  "theme_color": "#f4f8ff",
-  "background_color": "#f4f8ff",
+  "description": "AI-powered medical learning assistant for MBBS, nursing, BDS & pre-med students",
+  "theme_color": "#FFF0F5",
+  "background_color": "#FFF0F5",
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
@@ -13,9 +14,10 @@
       "type": "image/svg+xml"
     },
     {
-      "src": "/icons/icon.svg",
+      "src": "/icons/icon-maskable.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

@@ -1,8 +1,22 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- ── FOUC prevention: set data-theme before Angular bootstraps ──────────
+         Reads localStorage('medichat-theme'), falls back to prefers-color-scheme.
+         Must be the very first script so no CSS paint happens before the attribute
+         is present on <html>. ThemeService will read the same key on bootstrap and
+         its effect() becomes a harmless no-op re-set.                            -->
+    <script>
+      (function () {
+        var t = localStorage.getItem('medichat-theme');
+        var theme = (t === 'dark' || t === 'light') ? t
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset['theme'] = theme;
+      })();
+    </script>
+
     <meta charset="utf-8">
-    <title>MediChat</title>
+    <title>MediChat — AI Medical Learning Assistant</title>
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
@@ -10,9 +24,34 @@
       content="MediChat is an AI-powered medical learning assistant for students preparing across MBBS, nursing, BDS, and pre-med journeys."
     >
     <meta name="medichat-api-base-url" content="">
+
+    <!-- PWA / browser chrome colour -->
+    <meta name="theme-color" content="#FFF0F5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1A0C12" media="(prefers-color-scheme: dark)">
+    <link rel="manifest" href="manifest.webmanifest">
+
+    <!-- iOS home-screen icon (PNG required; SVG is ignored by iOS Safari) -->
+    <link rel="apple-touch-icon" href="/icons/icon-180.png">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:title"       content="MediChat — AI Medical Learning Assistant">
+    <meta property="og:description" content="AI-powered study companion for MBBS, nursing, BDS &amp; pre-med students. Ask anything, get grounded, source-cited answers.">
+    <meta property="og:image"       content="https://medichat.vercel.app/og-image.png">
+    <meta property="og:url"         content="https://medichat.vercel.app">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="MediChat — AI Medical Learning Assistant">
+    <meta name="twitter:description" content="AI-powered study companion for MBBS, nursing &amp; pre-med students.">
+    <meta name="twitter:image"       content="https://medichat.vercel.app/og-image.png">
+
+    <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" sizes="32x32" href="favicon-32x32.svg">
     <link rel="icon" type="image/svg+xml" sizes="16x16" href="favicon-16x16.svg">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,4 +60,5 @@
   <body>
     <mc-root></mc-root>
   </body>
-  </html>
+</html>
+
