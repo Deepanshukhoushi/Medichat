@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import logging
+import time
 
 from flask import g, request
 
@@ -44,6 +46,15 @@ _POST_RATE_LIMIT_CONFIG = {
     "generate_mnemonics": ("content_generation_rate_limit", "content_generation_rate_window_seconds"),
 }
 
+# Fix #24: mutating non-POST endpoints that also need rate-limiting.
+_RATE_LIMITED_WRITE_ENDPOINTS = {
+    "update_profile",  # PUT /api/profile/me
+}
+
+_WRITE_RATE_LIMIT_CONFIG = {
+    "update_profile": ("memory_api_rate_limit", "memory_api_rate_window_seconds"),
+}
+
 # New memory API endpoints that need GET rate-limiting (Issue #1)
 _MEMORY_API_ENDPOINTS = {"get_topic_memory", "get_session_summary"}
 
@@ -54,6 +65,33 @@ _STATIC_SECURITY_HEADERS = {
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 }
+
+# ---------------------------------------------------------------------------
+# Fix #18 — verify_session TTL cache
+# ---------------------------------------------------------------------------
+# We cache token verification results for up to _SESSION_CACHE_TTL_SECONDS so
+# each authenticated request does NOT incur a Supabase round-trip.  The cache
+# key is the first 32 hex chars of SHA-256(token) — never the raw token.
+_SESSION_VERIFY_CACHE: dict[str, tuple[float, bool]] = {}
+_SESSION_CACHE_TTL_SECONDS: float = 60.0
+
+
+def _cached_verify_session(auth_service, token: str) -> bool:
+    """Return a cached session-validity result, refreshing after TTL."""
+    key = hashlib.sha256(token.encode()).hexdigest()[:32]
+    entry = _SESSION_VERIFY_CACHE.get(key)
+    now = time.monotonic()
+    if entry and (now - entry[0]) < _SESSION_CACHE_TTL_SECONDS:
+        return entry[1]
+    result = auth_service.verify_session(token)
+    _SESSION_VERIFY_CACHE[key] = (now, result)
+    return result
+
+
+def _invalidate_session_cache(token: str) -> None:
+    """Remove a token's cache entry on logout / password change."""
+    key = hashlib.sha256(token.encode()).hexdigest()[:32]
+    _SESSION_VERIFY_CACHE.pop(key, None)
 
 
 def _build_csp(frontend_origins: tuple[str, ...]) -> str:
@@ -92,10 +130,15 @@ def register_security_guards(
             and auth_service is not None
             and settings.persistence_enabled
         ):
-            if not auth_service.verify_session(session_context.access_token):
+            # Fix #18: use a 60-second TTL cache so we don't hit Supabase on
+            # every request.  The cache key is SHA-256(token)[:32] — never the
+            # raw token.  The cache is invalidated by _invalidate_session_cache()
+            # on logout and password change.
+            if not _cached_verify_session(auth_service, session_context.access_token):
                 logger.warning(
                     "Invalid auth session detected user_id=%s", session_context.user_id
                 )
+                _invalidate_session_cache(session_context.access_token)
                 session_context = session_manager.create_guest_cookie()
 
         g.session_context = session_context
@@ -147,6 +190,24 @@ def register_security_guards(
             ):
                 logger.warning(
                     "Memory API rate limit exceeded endpoint=%s user_id=%s remote_addr=%s",
+                    endpoint,
+                    session_context.user_id,
+                    request.remote_addr,
+                )
+                raise AppError("Too many requests", status_code=429, error_type="rate_limited")
+
+        # Fix #24: rate-limit mutating non-POST endpoints (PUT/PATCH).
+        if request.method in ("PUT", "PATCH") and endpoint in _RATE_LIMITED_WRITE_ENDPOINTS:
+            rate_key = f"rl:{endpoint}:{request.remote_addr}:{session_context.user_id}"
+            rate_limit_attr, rate_window_attr = _WRITE_RATE_LIMIT_CONFIG.get(
+                endpoint,
+                ("memory_api_rate_limit", "memory_api_rate_window_seconds"),
+            )
+            rate_limit = getattr(settings, rate_limit_attr)
+            rate_window = getattr(settings, rate_window_attr)
+            if not rate_limiter.check(rate_key, rate_limit, rate_window):
+                logger.warning(
+                    "Write rate limit exceeded endpoint=%s user_id=%s remote_addr=%s",
                     endpoint,
                     session_context.user_id,
                     request.remote_addr,

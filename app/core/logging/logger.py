@@ -32,7 +32,10 @@ def register_request_logging(application, logger: logging.Logger) -> None:
             request.path,
             response.status_code,
             elapsed_ms,
-            request.headers.get("X-Forwarded-For", request.remote_addr),
+            # Fix #22: log the ProxyFix-sanitized remote_addr, NOT the raw
+            # X-Forwarded-For header (which any client can forge, undermining
+            # IP attribution during incident response).
+            request.remote_addr,
         )
         return response
 

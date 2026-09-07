@@ -7,14 +7,14 @@ Fire-and-forget audit logger.
 
 All writes to the ``audit_log`` Supabase table happen in daemon threads so
 they never block the HTTP response.  Any exception is swallowed and only
-logged — audit logging must never break authentication or chat flows.
+logged - audit logging must never break authentication or chat flows.
 """
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Recognised event types — add new ones here as needed.
+# Recognised event types - add new ones here as needed.
 EVENT_LOGIN = "login"
 EVENT_LOGIN_FAILED = "login_failed"
 EVENT_SIGNUP = "signup"
@@ -59,13 +59,27 @@ class AuditService:
         :param details:     Optional dict of additional context (e.g. email, endpoint).
         """
         if self._supabase is None:
-            return  # persistence disabled — no-op
+            return  # persistence disabled - no-op
 
         try:
             from app.tasks.audit_tasks import log_audit_event_task
             log_audit_event_task.delay(event_type, user_id, remote_addr, details or {})
         except Exception as exc:
-            logger.warning("AuditService: failed to queue audit event: %s", exc)
+            # Fix #21: broker failure must not silently drop security-relevant
+            # events.  Fall back to a synchronous write in a daemon thread so
+            # the HTTP response is not blocked.  Log at ERROR so any pipeline
+            # alerting on ERROR level will surface repeated broker outages.
+            logger.error(
+                "AuditService: Celery broker unavailable, falling back to sync write "
+                "for event=%s user_id=%s error=%s",
+                event_type, user_id, exc,
+            )
+            import threading
+            threading.Thread(
+                target=self._write,
+                args=(event_type, user_id, remote_addr, details or {}),
+                daemon=True,
+            ).start()
 
     # ------------------------------------------------------------------
     # Internal
@@ -88,7 +102,7 @@ class AuditService:
                 }
             ).execute()
         except Exception:
-            # Intentionally swallowed — audit must never crash the app.
+            # Intentionally swallowed - audit must never crash the app.
             logger.warning(
                 "AuditService: failed to write event=%s user_id=%s",
                 event_type,

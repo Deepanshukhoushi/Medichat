@@ -47,7 +47,7 @@ class AppSettings:
     session_history_ttl_seconds: int = 60 * 60
     redis_url: str | None = None
     require_redis: bool = False
-    relevance_score_threshold: float = 0.55
+    relevance_score_threshold: float = 0.65  # must match get_settings() env fallback
     max_content_length_bytes: int = 10 * 1024 * 1024 + 4096
     max_chat_message_length: int = 4000
     login_rate_limit: int = 5
@@ -82,6 +82,11 @@ class AppSettings:
     content_generation_rate_limit: int = 20
     content_generation_rate_window_seconds: int = 60
 
+    # --- RAG Grounding & Safety ---
+    grounding_validation_enabled: bool = True
+    max_regeneration_attempts: int = 1
+    strict_source_only_mode: bool = False
+    dev_debug_logging: bool = False
 
 
 @lru_cache(maxsize=1)
@@ -111,7 +116,7 @@ def get_settings() -> AppSettings:
         session_history_ttl_seconds=int(os.getenv("SESSION_HISTORY_TTL_SECONDS", "3600")),
         redis_url=os.getenv("REDIS_URL"),
         require_redis=os.getenv("REQUIRE_REDIS", "false").lower() in {"1", "true", "yes"},
-        relevance_score_threshold=float(os.getenv("RELEVANCE_SCORE_THRESHOLD", "0.55")),
+        relevance_score_threshold=float(os.getenv("RELEVANCE_SCORE_THRESHOLD", "0.65")),
         max_indexed_chunks=int(os.getenv("MAX_INDEXED_CHUNKS", "20000")),
         max_content_length_bytes=int(os.getenv("MAX_CONTENT_LENGTH_BYTES", str(10 * 1024 * 1024 + 4096))),
         max_chat_message_length=int(os.getenv("MAX_CHAT_MESSAGE_LENGTH", "4000")),
@@ -137,4 +142,8 @@ def get_settings() -> AppSettings:
         document_upload_rate_window_seconds=int(os.getenv("DOCUMENT_UPLOAD_RATE_WINDOW_SECONDS", str(60 * 60))),
         content_generation_rate_limit=int(os.getenv("CONTENT_GENERATION_RATE_LIMIT", "20")),
         content_generation_rate_window_seconds=int(os.getenv("CONTENT_GENERATION_RATE_WINDOW_SECONDS", "60")),
+        grounding_validation_enabled=os.getenv("GROUNDING_VALIDATION_ENABLED", "true").lower() in {"1", "true", "yes"},
+        max_regeneration_attempts=int(os.getenv("MAX_REGENERATION_ATTEMPTS", "1")),
+        strict_source_only_mode=os.getenv("STRICT_SOURCE_ONLY_MODE", "false").lower() in {"1", "true", "yes"},
+        dev_debug_logging=os.getenv("DEV_DEBUG_LOGGING", "false").lower() in {"1", "true", "yes"},
     )
