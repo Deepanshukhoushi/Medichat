@@ -2,14 +2,17 @@ import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/cor
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, take } from 'rxjs';
 
+import { CookieConsentComponent } from './shared/components/cookie-consent/cookie-consent.component';
+
 import { ChatService } from './core/services/chat.service';
 import { ThemeService } from './core/services/theme.service';
+import { AnalyticsService } from './core/services/analytics.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'mc-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CookieConsentComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -19,6 +22,7 @@ export class AppComponent {
   private readonly chatService = inject(ChatService);
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
+  private readonly analytics = inject(AnalyticsService);
 
   constructor() {
     // Only wake up the backend when the user actually navigates into the
@@ -32,6 +36,15 @@ export class AppComponent {
       if (e.urlAfterRedirects.startsWith('/app')) {
         this.chatService.bootstrap();
       }
+    });
+
+    // Track page views after each navigation — also re-checks consent so
+    // analytics activates if the user accepted the cookie banner this session.
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+    ).subscribe((e) => {
+      this.analytics.init();
+      this.analytics.trackPageView(e.urlAfterRedirects);
     });
 
     effect(() => {
@@ -54,3 +67,4 @@ export class AppComponent {
     }
   }
 }
+
