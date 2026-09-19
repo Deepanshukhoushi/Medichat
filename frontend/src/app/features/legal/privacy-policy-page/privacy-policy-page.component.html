@@ -1,0 +1,263 @@
+<div class="relative overflow-hidden bg-canvas min-h-screen">
+  <!-- Ambient glow -->
+  <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div class="absolute top-[-5%] left-[-5%] h-[400px] w-[400px] rounded-full bg-accent/10 opacity-20 blur-[100px]"></div>
+    <div class="absolute bottom-[-10%] right-[-5%] h-[500px] w-[500px] rounded-full bg-accent/8 opacity-15 blur-[120px]"></div>
+  </div>
+
+  <div class="relative z-10 mx-auto w-full max-w-4xl px-4 sm:px-6 py-16 sm:py-20 lg:py-24">
+    <!-- Header -->
+    <div class="mb-10 sm:mb-12">
+      <a routerLink="/" class="inline-flex items-center gap-2 text-sm font-medium text-secondary hover:text-accent transition-colors mb-8 group">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-0.5" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Home
+      </a>
+      <div class="inline-flex items-center gap-2 rounded-full border border-line bg-surface/90 px-4 py-1.5 text-xs font-semibold text-accent mb-4">
+        Legal
+      </div>
+      <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-ink">Privacy Policy</h1>
+      <p class="mt-3 text-sm text-secondary">Last updated: {{ lastUpdated }}</p>
+    </div>
+
+    <!-- Notice -->
+    <div class="glass-card bg-surface/85 border border-accent/20 rounded-2xl p-5 sm:p-6 mb-8 flex gap-4">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent shrink-0 mt-0.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      <p class="text-sm text-secondary leading-relaxed">
+        <strong class="text-ink">Note:</strong> This privacy policy uses placeholder text where marked. Replace all <code class="text-accent bg-accent/8 px-1.5 py-0.5 rounded text-xs">[PLACEHOLDER]</code> sections with your actual company details before going live.
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="glass-card bg-surface/85 backdrop-blur-md border border-line/70 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-card space-y-10">
+
+      <!-- 1. Introduction -->
+      <section aria-labelledby="privacy-intro">
+        <h2 id="privacy-intro" class="font-display text-xl font-bold text-ink mb-3">1. Introduction</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          Welcome to MediChat ("we", "us", or "our"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our AI-powered medical learning platform.
+        </p>
+        <p class="text-sm text-secondary leading-relaxed mt-3">
+          Please read this policy carefully. If you disagree with its terms, please discontinue use of the site. For questions, contact us at <a href="mailto:[PLACEHOLDER: your&#64;email.com]" class="text-accent hover:underline">[PLACEHOLDER: your&#64;email.com]</a>.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 2. Information We Collect -->
+      <section aria-labelledby="privacy-collection">
+        <h2 id="privacy-collection" class="font-display text-xl font-bold text-ink mb-3">2. Information We Collect</h2>
+        <p class="text-sm text-secondary leading-relaxed mb-4">We may collect the following categories of information:</p>
+        <ul class="space-y-3">
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Account Information:</strong> When you register, we collect your email address, display name, and a hashed password. If you sign in via Google OAuth, we receive your name and email from Google.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Profile Information:</strong> Medical year, specialty, and university — all optional, used only to personalize your learning experience.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Usage Data:</strong> Chat messages, conversation history, flashcard decks, quiz results, and study statistics — to power the service and improve your learning.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Uploaded Documents:</strong> PDFs or notes you upload for AI analysis. These are processed and indexed for your session; we do not share them with third parties.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Technical Data:</strong> IP address, browser type, operating system, and pages visited — collected automatically for security and analytics purposes.</span>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 3. How We Use Your Information -->
+      <section aria-labelledby="privacy-use">
+        <h2 id="privacy-use" class="font-display text-xl font-bold text-ink mb-3">3. How We Use Your Information</h2>
+        <ul class="space-y-3">
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span>To provide, operate, and maintain the MediChat platform.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span>To personalize your AI tutor responses based on your study level and specialty.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span>To communicate with you about your account, updates, or service announcements.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span>To detect, prevent, and address technical issues, fraud, or abuse.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span>To improve our AI models and service quality through aggregated, anonymized analytics.</span>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 4. Cookies -->
+      <section aria-labelledby="privacy-cookies">
+        <h2 id="privacy-cookies" class="font-display text-xl font-bold text-ink mb-3">4. Cookies</h2>
+        <p class="text-sm text-secondary leading-relaxed mb-4">We use the following types of cookies:</p>
+        <ul class="space-y-3">
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Session Cookies (Essential):</strong> Secure, HttpOnly cookies to maintain your login session. These are strictly necessary and cannot be disabled without breaking the service.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">CSRF Cookies (Essential):</strong> Used to protect against cross-site request forgery attacks.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Preference Cookies:</strong> Local storage keys to remember your theme preference (dark/light mode).</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Analytics Cookies (Optional):</strong> If analytics is enabled, we may use cookies to understand aggregate usage patterns. You can opt out via our cookie consent banner.</span>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 5. Analytics -->
+      <section aria-labelledby="privacy-analytics">
+        <h2 id="privacy-analytics" class="font-display text-xl font-bold text-ink mb-3">5. Analytics</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          We may use analytics services (such as Google Analytics) to collect aggregate, anonymized information about how visitors use MediChat. This data helps us improve the platform. Analytics are only loaded with your consent. You may withdraw consent at any time by clearing the cookie consent preference in your browser.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 6. Third-Party Services -->
+      <section aria-labelledby="privacy-third-party">
+        <h2 id="privacy-third-party" class="font-display text-xl font-bold text-ink mb-3">6. Third-Party Services</h2>
+        <p class="text-sm text-secondary leading-relaxed mb-4">We rely on the following third-party services to operate MediChat:</p>
+        <ul class="space-y-3">
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Supabase</strong> — Authentication and database hosting. <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">Privacy Policy</a>.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Cohere</strong> — AI language model processing. Your prompts are sent to Cohere for response generation. <a href="https://cohere.com/privacy" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">Privacy Policy</a>.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Google OAuth</strong> — Optional sign-in with Google. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">Privacy Policy</a>.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Vercel / Render</strong> — Hosting providers for frontend and backend.</span>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 7. Data Retention -->
+      <section aria-labelledby="privacy-retention">
+        <h2 id="privacy-retention" class="font-display text-xl font-bold text-ink mb-3">7. Data Retention</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          We retain your account data and conversation history for as long as your account is active. If you delete your account, we will delete your personal data within <strong class="text-ink">[PLACEHOLDER: 30 days]</strong>, except where we are required by law to retain it longer.
+        </p>
+        <p class="text-sm text-secondary leading-relaxed mt-3">
+          Anonymous, aggregated analytics data may be retained indefinitely as it cannot be linked back to you.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 8. Your Rights -->
+      <section aria-labelledby="privacy-rights">
+        <h2 id="privacy-rights" class="font-display text-xl font-bold text-ink mb-3">8. Your Rights</h2>
+        <p class="text-sm text-secondary leading-relaxed mb-4">Depending on your jurisdiction, you may have the right to:</p>
+        <ul class="space-y-3">
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Access</strong> the personal data we hold about you.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Rectify</strong> inaccurate or incomplete data.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Erase</strong> your data (right to be forgotten).</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Object</strong> to certain types of processing.</span>
+          </li>
+          <li class="flex gap-3 text-sm text-secondary">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"></span>
+            <span><strong class="text-ink">Portability</strong> — request a copy of your data in a machine-readable format.</span>
+          </li>
+        </ul>
+        <p class="text-sm text-secondary leading-relaxed mt-4">
+          To exercise any of these rights, contact us at <a href="mailto:[PLACEHOLDER: your&#64;email.com]" class="text-accent hover:underline">[PLACEHOLDER: your&#64;email.com]</a>.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 9. Security -->
+      <section aria-labelledby="privacy-security">
+        <h2 id="privacy-security" class="font-display text-xl font-bold text-ink mb-3">9. Security</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          We implement industry-standard security measures including HTTPS encryption, HttpOnly CSRF-protected session cookies, bcrypt password hashing, and rate limiting on all sensitive endpoints. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 10. Children's Privacy -->
+      <section aria-labelledby="privacy-children">
+        <h2 id="privacy-children" class="font-display text-xl font-bold text-ink mb-3">10. Children's Privacy</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          MediChat is intended for users aged 16 and over. We do not knowingly collect personal information from children under 16. If you believe a child under 16 has provided us with personal information, please contact us immediately.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 11. Changes -->
+      <section aria-labelledby="privacy-changes">
+        <h2 id="privacy-changes" class="font-display text-xl font-bold text-ink mb-3">11. Changes to This Policy</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          We may update this Privacy Policy from time to time. We will notify you of significant changes by updating the "Last updated" date at the top. Your continued use of MediChat after any changes constitutes your acceptance of the updated policy.
+        </p>
+      </section>
+
+      <hr class="border-line/50" />
+
+      <!-- 12. Contact -->
+      <section aria-labelledby="privacy-contact">
+        <h2 id="privacy-contact" class="font-display text-xl font-bold text-ink mb-3">12. Contact Us</h2>
+        <p class="text-sm text-secondary leading-relaxed">
+          If you have any questions, concerns, or requests regarding this Privacy Policy, please contact us:
+        </p>
+        <div class="mt-4 glass-card bg-sidebar/60 rounded-xl p-4 text-sm text-secondary space-y-1">
+          <p><strong class="text-ink">MediChat</strong> <span class="text-muted">[PLACEHOLDER: MediChat Inc.]</span></p>
+          <p>Email: <a href="mailto:[PLACEHOLDER: privacy&#64;medichat.app]" class="text-accent hover:underline">[PLACEHOLDER: privacy&#64;medichat.app]</a></p>
+          <p>Address: <span class="text-muted">[PLACEHOLDER: Company address]</span></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer navigation -->
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-secondary">
+      <a routerLink="/legal/terms" class="hover:text-accent transition-colors">Terms &amp; Conditions →</a>
+      <a routerLink="/" class="hover:text-accent transition-colors">Back to MediChat</a>
+    </div>
+  </div>
+</div>
