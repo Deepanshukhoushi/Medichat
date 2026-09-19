@@ -84,37 +84,37 @@
                 </div>
               }
 
-              <!-- Action Toolbar — reduced visual weight; answer content must dominate -->
-              <div class="pt-2 border-t border-line flex items-center gap-1 text-xs text-muted">
+              <!-- Action Toolbar (issue #19): always visible on mobile (opacity-100),
+                   hover-only on sm+ screens (opacity-0 → group-hover/message:opacity-100).
+                   Issue #1: All action buttons use the shared .msg-action-btn class. -->
+              <div class="pt-2 border-t border-line flex items-center gap-1 text-xs text-muted
+                          opacity-100 sm:opacity-0 sm:group-hover/message:opacity-100 transition-opacity duration-150">
                 <button
-                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  class="msg-action-btn"
                   title="Copy message"
                   (click)="copy()"
                 >
                   <svg [lucideIcon]="icons.Copy" class="h-3.5 w-3.5"></svg>
                   <span>Copy</span>
                 </button>
-                <!-- Issue #1: Flashcards wired to coming-soon toast -->
                 <button
-                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  class="msg-action-btn"
                   title="Generate Flashcards"
                   (click)="openFlashcards()"
                 >
                   <svg [lucideIcon]="icons.BookOpen" class="h-3.5 w-3.5"></svg>
                   <span>Flashcards</span>
                 </button>
-                <!-- Issue #1: Quiz wired to coming-soon toast -->
                 <button
-                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  class="msg-action-btn"
                   title="Create Quiz"
                   (click)="createQuiz()"
                 >
                   <svg [lucideIcon]="icons.ClipboardList" class="h-3.5 w-3.5"></svg>
                   <span>Quiz</span>
                 </button>
-                <!-- Issue #1: Notes wired to coming-soon toast -->
                 <button
-                  class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                  class="msg-action-btn"
                   title="Create Notes"
                   (click)="createNotes()"
                 >
@@ -124,14 +124,14 @@
                 
                 <div class="w-px h-3 bg-line mx-0.5"></div>
                 
-                <!-- Issue #2: More Menu — click-toggled signal, touch-safe -->
+                <!-- More Menu — click-toggled signal, touch-safe -->
                 <div class="relative">
                   <!-- Outside-click backdrop -->
                   @if (showMoreMenu()) {
                     <div class="fixed inset-0 z-40" (click)="closeMoreMenu()"></div>
                   }
                   <button
-                    class="px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-hover hover:text-accent border border-transparent hover:border-line transition-colors flex items-center gap-1.5 cursor-pointer"
+                    class="msg-action-btn"
                     title="More Actions"
                     [attr.aria-expanded]="showMoreMenu()"
                     aria-haspopup="menu"
@@ -155,7 +155,6 @@
                         <svg [lucideIcon]="icons.RefreshCcw" class="h-3.5 w-3.5"></svg>
                         Regenerate
                       </button>
-                      <!-- Issue #1: Bookmark wired to coming-soon toast -->
                       <button
                         role="menuitem"
                         class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-accent transition"
@@ -165,7 +164,6 @@
                         <svg [lucideIcon]="icons.Bookmark" class="h-3.5 w-3.5"></svg>
                         Bookmark
                       </button>
-                      <!-- Issue #1: Share wired to coming-soon toast -->
                       <button
                         role="menuitem"
                         class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-secondary hover:bg-hover hover:text-accent transition"
