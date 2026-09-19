@@ -41,10 +41,14 @@
             <svg [lucideIcon]="icons.Paperclip" class="h-[17px] w-[17px]"></svg>
           }
         </button>
+        <!-- Voice input: visually disabled until the feature is live (issue #18 — false affordance).
+             opacity-40 + cursor-not-allowed + aria-disabled signal the unavailability clearly. -->
         <button
-          class="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-hover hover:text-accent"
+          class="flex h-8 w-8 items-center justify-center rounded-full text-muted opacity-40 cursor-not-allowed"
           type="button"
           aria-label="Voice input (coming soon)"
+          aria-disabled="true"
+          title="Voice input — coming soon"
           (click)="showVoiceToast()"
         >
           <svg [lucideIcon]="icons.Mic" class="h-[17px] w-[17px]"></svg>
