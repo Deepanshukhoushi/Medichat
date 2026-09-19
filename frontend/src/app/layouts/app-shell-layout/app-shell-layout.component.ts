@@ -3,6 +3,8 @@ import { RouterLink, RouterOutlet, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideDynamicIcon } from '@lucide/angular';
 
+import { ConversationSummary } from '../../shared/models/chat.model';
+
 import { ChatService } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BackendApiService } from '../../core/services/backend-api.service';
@@ -56,6 +58,36 @@ export class AppShellLayoutComponent implements OnInit {
   protected readonly historyPreview = computed(() =>
     this.isSidebarOpen() ? this.filteredHistory() : this.filteredHistory().slice(0, 3)
   );
+
+  /** Groups filtered history into date buckets for issue #16 (flat unorganised list). */
+  protected readonly groupedHistory = computed(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(todayStart.getTime() - 86_400_000);
+    const weekStart = new Date(todayStart.getTime() - 7 * 86_400_000);
+
+    const buckets: { label: string; items: ConversationSummary[] }[] = [
+      { label: 'Today', items: [] },
+      { label: 'Yesterday', items: [] },
+      { label: 'This Week', items: [] },
+      { label: 'Older', items: [] },
+    ];
+
+    for (const c of this.filteredHistory()) {
+      const d = c.updatedAt ? new Date(c.updatedAt) : null;
+      if (!d || isNaN(d.getTime())) {
+        buckets[3].items.push(c);
+        continue;
+      }
+      const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      if (day >= todayStart)           buckets[0].items.push(c);
+      else if (day >= yesterdayStart)  buckets[1].items.push(c);
+      else if (day >= weekStart)       buckets[2].items.push(c);
+      else                             buckets[3].items.push(c);
+    }
+
+    return buckets.filter(b => b.items.length > 0);
+  });
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
