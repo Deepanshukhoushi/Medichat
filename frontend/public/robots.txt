@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /auth/login
+Allow: /auth/signup
+Allow: /legal/privacy
+Allow: /legal/terms
+
+# Disallow authenticated app pages — they require login and should not be indexed
+Disallow: /app/
+
+# Disallow auth utility pages not useful for search indexing
+Disallow: /auth/forgot-password
+Disallow: /auth/reset-password
+
+# Disallow API endpoints
+Disallow: /api/
+
+Sitemap: https://medichat.vercel.app/sitemap.xml
