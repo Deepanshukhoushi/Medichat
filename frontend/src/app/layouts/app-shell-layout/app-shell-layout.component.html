@@ -22,9 +22,13 @@
     ></div>
   }
 
+  <!-- Visually-hidden H1: gives screen-readers and search engines a page title
+       even when the aside is the dominant landmark. Fixes issue #15. -->
+  <h1 class="sr-only">MediChat – Chat</h1>
+
   <!-- Left Sidebar (The Notebook) -->
   <aside
-    class="glass-sidebar flex-shrink-0 p-3 flex flex-col justify-between transition-all duration-300 z-40 overflow-hidden h-full"
+    class="glass-sidebar flex-shrink-0 p-3 flex flex-col transition-all duration-300 z-40 overflow-hidden h-full"
     [class.w-64]="isSidebarOpen()"
     [class.w-0]="!isSidebarOpen()"
     [class.fixed]="isMobile()"
@@ -58,8 +62,8 @@
       </div>
     </header>
 
-    <!-- Header -->
-    <div class="flex w-full shrink-0 items-center justify-between gap-3 overflow-hidden px-4 py-4">
+    <!-- Header — px-3 matches New Chat and nav below (fix #20) -->
+    <div class="flex w-full shrink-0 items-center justify-between gap-3 overflow-hidden px-3 py-4">
       <a routerLink="/" class="flex items-center gap-2.5 no-underline">
         <app-logo size="32"></app-logo>
         <span class="mt-0.5 font-display text-[17px] font-bold leading-none tracking-tight text-ink">MediChat</span>
@@ -69,25 +73,26 @@
       </button>
     </div>
 
-    <!-- New Chat / Action Button -->
+    <!-- New Chat — gap-2.5 and px-3 align with nav items below (fix #22) -->
     <div class="w-full shrink-0 overflow-hidden px-3 pb-3">
-      <button class="group flex h-10 w-full items-center gap-2.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-accentHover active:scale-[0.98]" type="button" (click)="startNewChat()">
+      <button class="group flex h-10 w-full items-center gap-2.5 rounded-xl bg-accent px-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-accentHover active:scale-[0.98]" type="button" (click)="startNewChat()">
         <svg [lucideIcon]="icons.Plus" class="h-4 w-4 shrink-0 transition-transform group-hover:rotate-90 duration-200 text-white"></svg>
         <span class="flex-1 text-left">New Chat</span>
       </button>
     </div>
 
-    <!-- Navigation -->
-    <nav class="w-full shrink-0 overflow-hidden px-2 pb-2">
+    <!-- Navigation — active items get bg-accent/10 for stronger contrast (fix #17/#21) -->
+    <nav class="w-full shrink-0 overflow-hidden px-2 pb-2" aria-label="Main navigation">
       <div class="space-y-0.5">
         @for (item of navItems; track item.route) {
           <a
             [routerLink]="item.route"
             class="group relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium text-secondary no-underline transition-all hover:bg-hover hover:text-ink"
-            [class.bg-hover]="isActiveRoute(item.route)"
+            [class.bg-accent\/10]="isActiveRoute(item.route)"
             [class.text-accent]="isActiveRoute(item.route)"
             [class.font-semibold]="isActiveRoute(item.route)"
             [title]="isGuestUser() ? 'Sign up to unlock' : item.hint"
+            [attr.aria-current]="isActiveRoute(item.route) ? 'page' : null"
           >
             <!-- Active left-border indicator -->
             @if (isActiveRoute(item.route)) {
@@ -108,53 +113,27 @@
     <div class="mx-4 my-2 shrink-0 border-t border-line"></div>
 
     <!-- Smart History (Recent) -->
+    <!-- flex-1 + min-h-0 allows this region to scroll without overflowing the sidebar -->
     <div class="flex w-full min-h-0 flex-1 flex-col overflow-hidden px-2">
-      <div class="mb-2 mt-1 shrink-0 px-2">
+
+      <!-- Search — pt-2 gives breathing room from the divider above (fix #25) -->
+      <div class="mb-2 mt-2 shrink-0 px-1">
         <div class="group/search relative flex items-center">
           <svg [lucideIcon]="icons.Search" class="absolute left-2.5 h-3.5 w-3.5 text-muted transition-colors group-focus-within/search:text-accent"></svg>
           <input 
             type="text" 
             placeholder="Search sessions..." 
+            aria-label="Search chat sessions"
             class="h-8 w-full rounded-[10px] border border-line bg-surface pl-8 pr-3 text-xs text-ink outline-none placeholder:text-muted transition-all hover:bg-hover focus:border-accent focus:bg-hover"
             [ngModel]="searchTerm()" 
             (ngModelChange)="searchTerm.set($event)"
           />
         </div>
       </div>
-      <p class="shrink-0 px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">Recent</p>
-      <div class="flex flex-1 flex-col gap-0.5 overflow-y-auto sidebar-scroll pr-1 pb-3">
-        @for (conversation of historyPreview(); track conversation.id) {
-          <div
-            class="group/history relative flex h-9 items-center rounded-lg px-2 transition-colors hover:bg-hover"
-            [class.bg-hover]="chatService.activeConversationId() === conversation.id"
-          >
-            <!-- Active left-border indicator — mirrors nav item treatment -->
-            @if (chatService.activeConversationId() === conversation.id) {
-              <span class="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-accent"></span>
-            }
-            <button class="flex h-full min-w-0 flex-1 items-center gap-2 overflow-hidden px-0 pl-1 text-left" type="button" (click)="loadConversation(conversation.id)">
-              <!-- Visual scent icon badge -->
-              <svg
-                [lucideIcon]="icons.MessageCircle"
-                class="h-3.5 w-3.5 shrink-0 transition-colors"
-                [class.text-accent]="chatService.activeConversationId() === conversation.id"
-                [class.text-muted]="chatService.activeConversationId() !== conversation.id"
-              ></svg>
-              <span
-                class="block min-w-0 flex-1 truncate pr-6 text-[13px] font-medium transition-colors"
-                [class.text-accent]="chatService.activeConversationId() === conversation.id"
-                [class.font-semibold]="chatService.activeConversationId() === conversation.id"
-                [class.text-secondary]="chatService.activeConversationId() !== conversation.id"
-                [class.group-hover\/history\:text-ink]="chatService.activeConversationId() !== conversation.id"
-              >{{ conversation.title }}</span>
-            </button>
-            <div class="absolute right-1.5 z-10 flex items-center gap-0.5 rounded-md bg-sidebar bg-gradient-to-r from-transparent via-sidebar to-sidebar px-1 opacity-0 transition-opacity pointer-events-none group-hover/history:pointer-events-auto group-hover/history:opacity-100">
-              <button class="rounded-md p-1.5 text-muted transition-colors hover:bg-warning/10 hover:text-warning" type="button" title="Delete session" (click)="requestDelete(conversation.id, $event)">
-                <svg [lucideIcon]="icons.Trash2" class="h-[13px] w-[13px]"></svg>
-              </button>
-            </div>
-          </div>
-        }
+
+      <!-- Scrollable history list — pb-2 prevents last item from hiding under footer (fix #24) -->
+      <div class="flex flex-1 flex-col overflow-y-auto sidebar-scroll pr-1 pb-2">
+
         @if (isHistoryLoading()) {
           <div class="space-y-3 px-3 py-3">
             <div class="h-3 w-3/4 animate-pulse rounded bg-surface border border-line"></div>
@@ -162,8 +141,56 @@
           </div>
         }
 
+        <!-- Date-grouped history — fixes #16 (flat list) and #2 (hierarchy: group
+             labels at 10px/uppercase sit clearly above 13px item text) -->
+        @if (!isHistoryLoading() && groupedHistory().length > 0) {
+          @for (group of groupedHistory(); track group.label) {
+            <!-- Group label — <h2> gives semantic hierarchy (fix #2, #15) -->
+            <h2 class="shrink-0 px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted first:pt-1" aria-label="{{ group.label }} conversations">{{ group.label }}</h2>
+
+            @for (conversation of group.items; track conversation.id) {
+              <!-- h-10 (was h-9) gives a larger tap target — fixes #23 -->
+              <div
+                class="group/history relative flex h-10 items-center rounded-lg px-2 transition-colors hover:bg-hover"
+                [class.bg-accent\/10]="chatService.activeConversationId() === conversation.id"
+              >
+                <!-- Active left-border indicator -->
+                @if (chatService.activeConversationId() === conversation.id) {
+                  <span class="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-accent"></span>
+                }
+                <!-- title attribute reveals the full text on hover — fixes #3-14 -->
+                <button
+                  class="flex h-full min-w-0 flex-1 items-center gap-2 overflow-hidden px-0 pl-1 text-left"
+                  type="button"
+                  [title]="conversation.title"
+                  (click)="loadConversation(conversation.id)"
+                >
+                  <svg
+                    [lucideIcon]="icons.MessageCircle"
+                    class="h-3.5 w-3.5 shrink-0 transition-colors"
+                    [class.text-accent]="chatService.activeConversationId() === conversation.id"
+                    [class.text-muted]="chatService.activeConversationId() !== conversation.id"
+                  ></svg>
+                  <span
+                    class="block min-w-0 flex-1 truncate pr-6 text-[13px] font-medium transition-colors"
+                    [class.text-accent]="chatService.activeConversationId() === conversation.id"
+                    [class.font-semibold]="chatService.activeConversationId() === conversation.id"
+                    [class.text-secondary]="chatService.activeConversationId() !== conversation.id"
+                    [class.group-hover\/history\:text-ink]="chatService.activeConversationId() !== conversation.id"
+                  >{{ conversation.title }}</span>
+                </button>
+                <div class="absolute right-1.5 z-10 flex items-center gap-0.5 rounded-md bg-sidebar bg-gradient-to-r from-transparent via-sidebar to-sidebar px-1 opacity-0 transition-opacity pointer-events-none group-hover/history:pointer-events-auto group-hover/history:opacity-100">
+                  <button class="rounded-md p-1.5 text-muted transition-colors hover:bg-warning/10 hover:text-warning" type="button" title="Delete session" (click)="requestDelete(conversation.id, $event)">
+                    <svg [lucideIcon]="icons.Trash2" class="h-[13px] w-[13px]"></svg>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        }
+
         @if (filteredHistory().length > 0 && chatService.hasMoreHistorySignal()) {
-          <div class="px-2 pb-2">
+          <div class="px-2 pb-2 pt-1">
             <button class="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface py-2 text-xs font-semibold text-secondary transition-all hover:bg-hover hover:text-ink disabled:opacity-50"
                     (click)="chatService.loadMoreHistory()"
                     [disabled]="chatService.isLoadingMoreHistorySignal()">
