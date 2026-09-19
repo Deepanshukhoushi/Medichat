@@ -1,3 +1,28 @@
 :host {
   display: block;
 }
+
+/**
+ * Shared token for every "Copy / Flashcards / Quiz / Notes / More" button
+ * inside the AI response action toolbar. A single canonical style replaces
+ * four identical inline class strings (issue #1 — too many button styles).
+ */
+.msg-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;        /* gap-1.5 */
+  padding: 0.375rem 0.625rem; /* py-1.5 px-2.5 */
+  border-radius: 0.5rem; /* rounded-lg */
+  font-size: 0.75rem;   /* text-xs */
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+
+  &:hover {
+    background-color: var(--color-hover);
+    color: var(--color-accent);
+    border-color: var(--color-line);
+  }
+}
