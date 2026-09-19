@@ -23,7 +23,12 @@
       name="description"
       content="MediChat is an AI-powered medical learning assistant for students preparing across MBBS, nursing, BDS, and pre-med journeys."
     >
+    <!-- Canonical URL — prevents duplicate-content issues for the SPA root -->
+    <link rel="canonical" href="https://deepanshu-medichat.vercel.app">
     <meta name="medichat-api-base-url" content="">
+    <!-- Analytics ID — set the NG_APP_GA_ID environment variable in your hosting dashboard.
+         Leave empty string to disable analytics. Never hardcode the real key here. -->
+    <meta name="medichat-ga-id" content="">
 
     <!-- PWA / browser chrome colour -->
     <meta name="theme-color" content="#FFF0F5" media="(prefers-color-scheme: light)">
@@ -37,14 +42,14 @@
     <meta property="og:type"        content="website">
     <meta property="og:title"       content="MediChat — AI Medical Learning Assistant">
     <meta property="og:description" content="AI-powered study companion for MBBS, nursing, BDS &amp; pre-med students. Ask anything, get grounded, source-cited answers.">
-    <meta property="og:image"       content="https://medichat.vercel.app/og-image.png">
-    <meta property="og:url"         content="https://medichat.vercel.app">
+    <meta property="og:image"       content="https://deepanshu-medichat.vercel.app/og-image.png">
+    <meta property="og:url"         content="https://deepanshu-medichat.vercel.app">
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title"       content="MediChat — AI Medical Learning Assistant">
     <meta name="twitter:description" content="AI-powered study companion for MBBS, nursing &amp; pre-med students.">
-    <meta name="twitter:image"       content="https://medichat.vercel.app/og-image.png">
+    <meta name="twitter:image"       content="https://deepanshu-medichat.vercel.app/og-image.png">
 
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" sizes="32x32" href="favicon-32x32.svg">
