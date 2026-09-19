@@ -13,6 +13,26 @@ export const routes: Routes = [
         pathMatch: 'full',
         title: 'MediChat - Medical AI Assistant',
         loadComponent: () => import('./features/landing/landing-page/landing-page.component').then((m) => m.LandingPageComponent)
+      },
+      {
+        path: 'legal',
+        children: [
+          {
+            path: 'privacy',
+            title: 'Privacy Policy | MediChat',
+            loadComponent: () => import('./features/legal/privacy-policy-page/privacy-policy-page.component').then((m) => m.PrivacyPolicyPageComponent)
+          },
+          {
+            path: 'terms',
+            title: 'Terms & Conditions | MediChat',
+            loadComponent: () => import('./features/legal/terms-page/terms-page.component').then((m) => m.TermsPageComponent)
+          },
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'privacy'
+          }
+        ]
       }
     ]
   },
