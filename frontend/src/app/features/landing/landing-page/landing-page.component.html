@@ -91,7 +91,9 @@
                     <p class="text-xs font-semibold text-ink truncate">Flashcard Generated</p>
                     <p class="text-[10px] text-muted truncate">Substantia Nigra - Dopamine Depletion</p>
                   </div>
-                  <button class="shrink-0 rounded-full bg-sidebar border border-line px-2.5 py-1 text-[10px] font-bold text-ink hover:bg-hover transition-colors">Review</button>
+                  <!-- Issue #5: py-1.5 + px-3.5 gives a taller, wider tap target so the button
+                       reads as a clickable control rather than a static status tag. -->
+                  <button class="shrink-0 rounded-full bg-sidebar border border-line px-3.5 py-1.5 text-xs font-bold text-ink hover:bg-hover transition-colors">Review</button>
                 </div>
               </div>
             </div>
@@ -129,7 +131,8 @@
 
       <div class="mx-auto max-w-4xl">
         <div class="relative flex flex-col gap-6 sm:gap-8 md:flex-row md:items-start md:gap-4">
-          <div class="absolute left-[27px] top-[40px] bottom-0 w-0.5 bg-gradient-to-b from-accent/50 to-transparent md:left-0 md:right-0 md:top-[27px] md:h-0.5 md:w-full md:bg-gradient-to-r md:bottom-auto"></div>
+          <!-- Issue #4: top-[28px] = half of h-14 (56px) — passes through exact center of circles -->
+          <div class="absolute left-[27px] top-[40px] bottom-0 w-0.5 bg-gradient-to-b from-accent/50 to-transparent md:left-0 md:right-0 md:top-[28px] md:h-0.5 md:w-full md:bg-gradient-to-r md:bottom-auto"></div>
           @for (step of ['Ask Question', 'Search Sources', 'Explain Clearly', 'Generate Quiz']; track step; let i = $index) {
             <div class="relative flex flex-1 flex-col gap-3 sm:gap-4 md:items-center md:text-center pl-16 md:pl-0">
               <div class="absolute left-0 top-0 flex h-14 w-14 items-center justify-center rounded-full border-4 border-canvas bg-accent text-lg font-bold text-white md:relative md:left-auto md:top-auto shadow-md z-10">
@@ -209,6 +212,47 @@
         </div>
         <div class="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-32 bg-gradient-to-r from-canvas to-transparent"></div>
         <div class="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-32 bg-gradient-to-l from-canvas to-transparent"></div>
+      </div>
+    </section>
+
+    <!-- Pricing Section — resolves the #pricing nav + footer anchor (issue #3) -->
+    <section id="pricing" class="py-20 sm:py-28 lg:py-32 border-t border-line/60" mcReveal>
+      <div class="text-center mb-12 sm:mb-16">
+        <h2 class="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl lg:text-5xl">Simple, transparent pricing</h2>
+        <p class="mx-auto mt-4 max-w-2xl text-base sm:text-lg text-secondary">Start free. No credit card required.</p>
+      </div>
+      <div class="mx-auto max-w-3xl grid gap-6 md:grid-cols-2">
+        <!-- Free tier -->
+        <div class="glass-card bg-surface/85 backdrop-blur-md border border-line/70 flex flex-col gap-5 rounded-2xl p-7 sm:p-8 shadow-card">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-muted">Free</p>
+            <p class="mt-2 font-display text-4xl font-extrabold text-ink">$0 <span class="text-base font-medium text-muted">/ month</span></p>
+          </div>
+          <ul class="flex flex-col gap-3 text-sm text-secondary">
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Unlimited AI chat sessions</li>
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Instant medical explanations</li>
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Basic flashcard generation</li>
+          </ul>
+          <a [routerLink]="isLoggedIn() ? '/app/dashboard' : '/auth/signup'" class="primary-button group justify-center mt-auto py-3">
+            {{ isLoggedIn() ? 'Go to App' : 'Get Started Free' }}
+            <svg [lucideIcon]="icons.ArrowRight" class="h-4 w-4 transition-transform group-hover:translate-x-1"></svg>
+          </a>
+        </div>
+        <!-- Pro tier — coming soon -->
+        <div class="glass-card bg-accent/[0.07] backdrop-blur-md border border-accent/30 flex flex-col gap-5 rounded-2xl p-7 sm:p-8 shadow-card relative overflow-hidden">
+          <div class="absolute top-4 right-4 rounded-full bg-accent/15 border border-accent/20 px-3 py-1 text-[11px] font-bold text-accent uppercase tracking-wider">Coming Soon</div>
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-accent">Pro</p>
+            <p class="mt-2 font-display text-4xl font-extrabold text-ink">$9 <span class="text-base font-medium text-muted">/ month</span></p>
+          </div>
+          <ul class="flex flex-col gap-3 text-sm text-secondary">
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Everything in Free</li>
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Priority AI responses</li>
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Advanced quiz &amp; note generation</li>
+            <li class="flex items-center gap-2"><svg [lucideIcon]="icons.CheckCircle2" class="h-4 w-4 text-accent shrink-0"></svg>Saved study streaks &amp; analytics</li>
+          </ul>
+          <button class="secondary-button justify-center mt-auto py-3 opacity-60 cursor-not-allowed" disabled aria-disabled="true">Notify me</button>
+        </div>
       </div>
     </section>
 
