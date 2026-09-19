@@ -5,6 +5,12 @@
   </div>
 
   <form class="auth-form" (ngSubmit)="submit()" novalidate>
+    <!-- Honeypot: hidden from real users via CSS; bots fill it in automatically.
+         The field is intentionally not bound to a signal — it stays empty for humans. -->
+    <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+      <label for="signup-website">Leave this empty</label>
+      <input id="signup-website" name="website" type="text" tabindex="-1" autocomplete="off" [ngModel]="honeypot()" (ngModelChange)="honeypot.set($event)" />
+    </div>
     <div class="field-group">
       <label for="signup-display-name">Display Name</label>
       <div class="relative">
@@ -138,8 +144,8 @@
           <svg [lucideIcon]="icons.Check" class="h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity absolute pointer-events-none z-10"></svg>
           <div class="absolute inset-0 rounded-[4px] bg-accent scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
         </div>
-        <!-- TODO: replace spans with real <a routerLink="/legal/terms"> and <a routerLink="/legal/privacy"> once those pages exist -->
-        <span>By signing up, you agree to our <span class="font-semibold text-ink">Terms of Service</span> &amp; <span class="font-semibold text-ink">Privacy Policy</span>.</span>
+        <!-- Terms & Privacy Policy links — now real routes exist -->
+        <span>By signing up, you agree to our <a routerLink="/legal/terms" class="font-semibold text-ink hover:text-accent transition-colors">Terms of Service</a> &amp; <a routerLink="/legal/privacy" class="font-semibold text-ink hover:text-accent transition-colors">Privacy Policy</a>.</span>
       </label>
     </div>
 

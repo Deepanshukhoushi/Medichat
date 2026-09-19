@@ -36,6 +36,8 @@ export class SignupPageComponent implements OnInit {
   protected readonly submitted = signal(false);
   protected readonly showPassword = signal(false);
   protected readonly showConfirmPassword = signal(false);
+  /** Honeypot field — must remain empty for legitimate submissions. */
+  protected readonly honeypot = signal('');
   protected readonly googleOAuthUrl = this.backendApi.googleLoginUrl();
 
   ngOnInit(): void {
@@ -46,6 +48,12 @@ export class SignupPageComponent implements OnInit {
     this.submitted.set(true);
     this.statusMessage.set('');
     this.statusType.set(null);
+
+    // Honeypot check — bots fill in hidden fields; humans don't.
+    if (this.honeypot()) {
+      return;
+    }
+
     const emailValue = this.email().trim();
     const displayNameValue = this.displayName().trim();
     const passwordValue = this.password();
@@ -146,5 +154,6 @@ export class SignupPageComponent implements OnInit {
     this.submitted.set(false);
     this.showPassword.set(false);
     this.showConfirmPassword.set(false);
+    this.honeypot.set('');
   }
 }
